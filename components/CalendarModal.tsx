@@ -9,6 +9,7 @@ interface CalendarModalProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   matches: Match[]; // To show dots
+  calendarEntries?: { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[];
 }
 
 const CalendarModal: React.FC<CalendarModalProps> = ({ 
@@ -16,7 +17,8 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   onClose, 
   selectedDate, 
   onSelectDate,
-  matches 
+  matches,
+  calendarEntries
 }) => {
   // Simple state for browsing months inside the calendar
   // Initialize with selectedDate's month/year
@@ -37,8 +39,18 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
   };
 
   // Helper to check if a day has matches
-  const hasMatch = (day: Date) => {
-    return matches.some(m => isSameDay(m.startTime, day));
+  const matchTypesForDay = (day: Date) => {
+    const types = new Set<string>();
+    if (calendarEntries && calendarEntries.length > 0) {
+      calendarEntries.forEach(c => {
+        if (isSameDay(c.date, day)) types.add(c.sport);
+      });
+    } else {
+      matches.forEach(m => {
+        if (isSameDay(m.startTime, day)) types.add('soccer'); // fallback
+      });
+    }
+    return Array.from(types);
   };
 
   return (
@@ -99,7 +111,7 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                 
                 const isSelected = isSameDay(day, selectedDate);
                 const isToday = isSameDay(day, new Date());
-                const dayHasMatch = hasMatch(day);
+                const dayTypes = matchTypesForDay(day);
 
                 return (
                     <button
@@ -116,15 +128,16 @@ const CalendarModal: React.FC<CalendarModalProps> = ({
                     >
                         {day.getDate()}
                         
-                        {/* The Match Day Indicator Dot */}
-                        {dayHasMatch && (
-                            <div className={`
-                                absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full
-                                ${isSelected 
-                                    ? 'bg-white/80 dark:bg-black/80' 
-                                    : 'bg-indigo-500'
-                                }
-                            `} />
+                        {/* Match Day Indicator Dots */}
+                        {dayTypes.length > 0 && (
+                            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex space-x-0.5 text-[10px] leading-none">
+                              {dayTypes.includes('soccer') && (
+                                <span className={`${isSelected ? 'text-white/90 dark:text-black/80' : 'text-green-500'}`}>⚽</span>
+                              )}
+                              {dayTypes.includes('basketball') && (
+                                <span className={`${isSelected ? 'text-white/90 dark:text-black/80' : 'text-orange-500'}`}>🏀</span>
+                              )}
+                            </div>
                         )}
                     </button>
                 );

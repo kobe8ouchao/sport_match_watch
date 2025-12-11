@@ -1,27 +1,32 @@
 import React from 'react';
 import { Match } from '../types';
+import { LEAGUES } from '../constants';
 import { MapPin, Clock } from 'lucide-react';
 
 interface MatchCardProps {
   match: Match;
+  onClick?: () => void;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
+const MatchCard: React.FC<MatchCardProps> = ({ match, onClick }) => {
   const isLive = match.status === 'LIVE' || match.status === 'HT';
   const isScheduled = match.status === 'SCHEDULED';
   const isFinished = match.status === 'FINISHED';
 
   // Format time for scheduled matches
-  const timeString = match.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const timeString = match.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   
   return (
-    <div className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-white/60 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 group flex flex-col justify-between min-h-[160px] border border-white/40 dark:border-white/5 hover:border-white/60 dark:hover:border-white/20">
+    <div 
+      onClick={onClick}
+      className="glass-card rounded-2xl p-5 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-white/60 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 group flex flex-col justify-between min-h-[160px] border border-white/40 dark:border-white/5 hover:border-white/60 dark:hover:border-white/20 cursor-pointer"
+    >
       
       {/* Top Meta: League & Status Indicator */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center space-x-2">
            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 uppercase tracking-widest border border-gray-200 dark:border-white/5 transition-colors group-hover:border-gray-300 dark:group-hover:border-white/20">
-              {match.leagueId === 'uefa.champions' ? 'UCL' : match.leagueId}
+              {LEAGUES.find(l => l.id === match.leagueId)?.name || match.leagueId}
            </span>
         </div>
 
@@ -37,17 +42,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
                 </span>
              </div>
         )}
-        {isFinished && (
-            <span className="text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full border border-gray-100 dark:border-white/5">
-                Full Time
-            </span>
-        )}
-        {isScheduled && (
-             <div className="flex items-center text-blue-500 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-500/20">
-                <Clock size={10} className="mr-1" />
-                <span className="text-[10px] font-bold">{timeString}</span>
-             </div>
-        )}
+        {/* Removed time from top-right for scheduled matches as requested */}
       </div>
 
       {/* Teams & Score Section */}
@@ -72,18 +67,28 @@ const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
         {/* Center Score / VS */}
         <div className="flex flex-col items-center justify-center w-[30%]">
             {isScheduled ? (
-                <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-1">
-                    VS
+                <div className="flex flex-col items-center">
+                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{timeString}</span>
+                    <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-gray-500">
+                        VS
+                    </div>
                 </div>
             ) : (
-                <div className="flex items-center space-x-2">
-                    <span className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white font-mono tracking-tighter group-hover:text-black dark:group-hover:text-white transition-colors">
-                        {match.homeScore}
-                    </span>
-                    <span className="text-gray-300 dark:text-gray-600 font-light text-xl">-</span>
-                    <span className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white font-mono tracking-tighter group-hover:text-black dark:group-hover:text-white transition-colors">
-                        {match.awayScore}
-                    </span>
+                <div className="flex flex-col items-center">
+                    {isFinished && (
+                        <span className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1">
+                            {match.minute ? `${match.minute}'` : 'FT'}
+                        </span>
+                    )}
+                    <div className="flex items-center space-x-2">
+                        <span className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white font-mono tracking-tighter group-hover:text-black dark:group-hover:text-white transition-colors">
+                            {match.homeScore}
+                        </span>
+                        <span className="text-gray-300 dark:text-gray-600 font-light text-xl">-</span>
+                        <span className="text-2xl md:text-3xl font-medium text-gray-900 dark:text-white font-mono tracking-tighter group-hover:text-black dark:group-hover:text-white transition-colors">
+                            {match.awayScore}
+                        </span>
+                    </div>
                 </div>
             )}
         </div>

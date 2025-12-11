@@ -24,9 +24,10 @@ export const formatDashboardDate = (date: Date): string => {
  * Formats a date object to YYYYMMDD string for ESPN API.
  */
 export const formatDateForApi = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
+  // Use UTC to avoid off-by-one when client timezone is ahead/behind venue time
+  const year = date.getUTCFullYear();
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const day = date.getUTCDate().toString().padStart(2, '0');
   return `${year}${month}${day}`;
 };
 

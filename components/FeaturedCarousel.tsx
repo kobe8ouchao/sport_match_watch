@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MatchWithHot } from '../constants';
-import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
+import { MatchWithHot, LEAGUES } from '../constants';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface FeaturedCarouselProps {
   matches: MatchWithHot[];
+  onMatchClick?: (match: MatchWithHot) => void;
 }
 
-const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches }) => {
+const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -27,7 +28,12 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches }) => {
     return () => resetTimeout();
   }, [currentIndex, matches.length]);
 
-  if (matches.length === 0) return null;
+  // Sync state if out of bounds
+  useEffect(() => {
+    if (currentIndex >= matches.length) {
+        setCurrentIndex(0);
+    }
+  }, [matches.length, currentIndex]);
 
   const nextSlide = () => {
     setCurrentIndex(prev => prev === matches.length - 1 ? 0 : prev + 1);
@@ -37,9 +43,21 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches }) => {
     setCurrentIndex(prev => prev === 0 ? matches.length - 1 : prev - 1);
   };
 
-  const currentMatch = matches[currentIndex];
+  // Ensure safe access to matches
+  const safeIndex = currentIndex >= matches.length ? 0 : currentIndex;
+  const currentMatch = matches[safeIndex];
+
+  if (!currentMatch) return null;
+
   const isLive = currentMatch.status === 'LIVE';
   const hasImage = !!currentMatch.bannerImage;
+  const status = currentMatch.status;
+
+  const statusBadge = () => {
+    if (status === 'LIVE') return { label: `LIVE • ${currentMatch.minute || ''}`.trim(), className: 'bg-red-500 text-white' };
+    if (status === 'FINISHED') return { label: 'FINISHED', className: 'bg-gray-900/80 text-white border border-white/10' };
+    return { label: 'UPCOMING', className: 'bg-white/80 text-gray-900' };
+  };
 
   return (
     <div className="relative w-full h-80 md:h-96 group rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-3xl">
@@ -69,53 +87,71 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches }) => {
       </div>
 
       {/* Content Container */}
-      <div className="relative h-full flex flex-col justify-center px-6 md:px-12 z-10">
+      <div 
+        className="relative h-full flex flex-col justify-center px-6 md:px-12 z-10 cursor-pointer"
+        onClick={() => onMatchClick && onMatchClick(currentMatch)}
+      >
         
-        {/* Hot Badge */}
-        <div className="absolute top-6 left-6 flex items-center space-x-2">
-           <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg flex items-center gap-1">
-             <Trophy size={11} /> Featured
-           </span>
-           {isLive && (
-              <span className="bg-white/20 backdrop-blur-md text-white border border-white/20 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest animate-pulse shadow-lg">
-                Live • {currentMatch.minute}'
-              </span>
-           )}
-        </div>
+      {/* Status Badge */}
+      <div className="absolute top-6 left-6 flex items-center space-x-2 z-20">
+        <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg ${statusBadge().className}`}>
+          {statusBadge().label}
+        </span>
+      </div>
 
         {/* Match Info */}
         <div className={`flex items-center justify-between w-full max-w-5xl mx-auto transition-colors duration-300 ${hasImage ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
             
             {/* Home Team */}
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-center md:text-right flex-1 justify-end">
-                <span className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight order-2 md:order-1 drop-shadow-sm">
-                    {currentMatch.homeTeam.name}
+            <div className="flex flex-col items-center gap-2 text-center flex-1 justify-end">
+                <span className="text-5xl md:text-7xl filter drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
+                  {typeof currentMatch.homeTeam.logo === 'string' ? (
+                    <img src={currentMatch.homeTeam.logo} alt={currentMatch.homeTeam.name} className="h-20 w-20 md:h-24 md:w-24 object-contain" />
+                  ) : currentMatch.homeTeam.logo}
                 </span>
-                <span className="text-5xl md:text-6xl lg:text-7xl order-1 md:order-2 filter drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
-                    {currentMatch.homeTeam.logo}
+                <span className="text-base md:text-lg font-semibold tracking-tight drop-shadow-sm">
+                    {currentMatch.homeTeam.name}
                 </span>
             </div>
 
             {/* Score / VS */}
-            <div className="px-2 md:px-12 flex flex-col items-center">
+            <div className="px-2 md:px-12 flex flex-col items-center justify-center">
                 <div className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter drop-shadow-xl whitespace-nowrap">
                     {currentMatch.status === 'SCHEDULED' 
-                        ? <span className="opacity-50 text-3xl md:text-5xl">VS</span>
+                        ? <span className="text-5xl md:text-7xl text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] font-black tracking-widest">VS</span>
                         : `${currentMatch.homeScore} : ${currentMatch.awayScore}`
                     }
                 </div>
+                
+                {/* Match Details for Scheduled Games */}
+                {currentMatch.status === 'SCHEDULED' && (
+                    <div className={`mt-4 flex flex-col items-center space-y-1 text-center ${hasImage ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'}`}>
+                         <div className="text-lg md:text-xl font-bold tracking-wide">
+                            {currentMatch.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                         </div>
+                         <div className="text-xs md:text-sm font-medium opacity-80 max-w-[200px] truncate">
+                            {currentMatch.stadium}
+                         </div>
+                         <div className="text-[10px] uppercase tracking-widest opacity-70 mt-1">
+                             {currentMatch.startTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                         </div>
+                    </div>
+                )}
+
                 <div className={`mt-3 text-[10px] md:text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-inner hidden sm:block
                     ${hasImage ? 'bg-black/30 text-white/90 border border-white/10' : 'bg-white/40 dark:bg-black/20 border border-black/5 dark:border-white/10'}`}>
-                    {currentMatch.leagueId}
+                    {LEAGUES.find(l => l.id === currentMatch.leagueId)?.name || currentMatch.leagueId}
                 </div>
             </div>
 
             {/* Away Team */}
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-center md:text-left flex-1 justify-start">
-                <span className="text-5xl md:text-6xl lg:text-7xl filter drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
-                    {currentMatch.awayTeam.logo}
+            <div className="flex flex-col items-center gap-2 text-center flex-1 justify-start">
+                <span className="text-5xl md:text-7xl filter drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
+                  {typeof currentMatch.awayTeam.logo === 'string' ? (
+                    <img src={currentMatch.awayTeam.logo} alt={currentMatch.awayTeam.name} className="h-20 w-20 md:h-24 md:w-24 object-contain" />
+                  ) : currentMatch.awayTeam.logo}
                 </span>
-                <span className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight drop-shadow-sm">
+                <span className="text-base md:text-lg font-semibold tracking-tight drop-shadow-sm">
                     {currentMatch.awayTeam.name}
                 </span>
             </div>
@@ -125,7 +161,7 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches }) => {
       {/* Navigation Dots */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2.5 z-20">
         {matches.map((_, idx) => {
-          const isActive = idx === currentIndex;
+          const isActive = idx === safeIndex;
           const activeClass = hasImage ? 'bg-white w-8' : 'bg-gray-800 dark:bg-white w-8';
           const inactiveClass = hasImage ? 'bg-white/40 hover:bg-white/60' : 'bg-gray-400/50 dark:bg-white/30 hover:bg-gray-500 dark:hover:bg-white/50';
 

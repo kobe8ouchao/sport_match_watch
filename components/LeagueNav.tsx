@@ -9,10 +9,10 @@ interface LeagueNavProps {
 
 const LeagueNav: React.FC<LeagueNavProps> = ({ leagues, selectedLeagueId, onSelectLeague }) => {
   return (
-    <div className="w-full overflow-x-auto scrollbar-hide py-2 pl-4 md:pl-0">
+    <div className="w-full overflow-x-auto py-2 pl-4 md:pl-0">
       <div className="flex space-x-3 min-w-max pr-4 items-center">
         {leagues.map((league, index) => {
-          const isActive = selectedLeagueId === league.id && (league.name !== 'TOP' || index === 0);
+          const isActive = selectedLeagueId === league.id;
           
           return (
             <button

@@ -7,12 +7,14 @@ interface InlineCalendarProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   matches: Match[];
+  calendarEntries?: { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[];
 }
 
 const InlineCalendar: React.FC<InlineCalendarProps> = ({ 
   selectedDate, 
   onSelectDate,
-  matches 
+  matches,
+  calendarEntries
 }) => {
   const [viewDate, setViewDate] = useState(new Date(selectedDate));
 
@@ -28,7 +30,19 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
   const prevMonth = () => setViewDate(new Date(currentYear, currentMonth - 1, 1));
   const nextMonth = () => setViewDate(new Date(currentYear, currentMonth + 1, 1));
 
-  const hasMatch = (day: Date) => matches.some(m => isSameDay(m.startTime, day));
+  const matchTypesForDay = (day: Date) => {
+    const types = new Set<string>();
+    if (calendarEntries && calendarEntries.length > 0) {
+      calendarEntries.forEach(c => {
+        if (isSameDay(c.date, day)) types.add(c.sport);
+      });
+    } else {
+      matches.forEach(m => {
+        if (isSameDay(m.startTime, day)) types.add('soccer'); // fallback assume soccer
+      });
+    }
+    return Array.from(types);
+  };
 
   return (
     <div className="h-full glass-card rounded-2xl p-6 flex flex-col bg-white/60 dark:bg-zinc-900/60 transition-colors duration-300">
@@ -64,7 +78,7 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
               
               const isSelected = isSameDay(day, selectedDate);
               const isToday = isSameDay(day, new Date());
-              const dayHasMatch = hasMatch(day);
+              const dayTypes = matchTypesForDay(day);
 
               return (
                   <button
@@ -81,15 +95,16 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
                   >
                       {day.getDate()}
                       
-                      {/* Match Dot */}
-                      {dayHasMatch && (
-                          <div className={`
-                              absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full transition-colors
-                              ${isSelected 
-                                  ? 'bg-white dark:bg-black' 
-                                  : 'bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.6)]'
-                              }
-                          `} />
+                      {/* Match Dots */}
+                      {dayTypes.length > 0 && (
+                        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex space-x-0.5 text-[6px] leading-none">
+                          {dayTypes.includes('soccer') && (
+                            <span className={`${isSelected ? 'text-white dark:text-black' : 'text-green-500'}`}>⚽</span>
+                          )}
+                          {dayTypes.includes('basketball') && (
+                            <span className={`${isSelected ? 'text-white dark:text-black' : 'text-orange-500'}`}>🏀</span>
+                          )}
+                        </div>
                       )}
                   </button>
               );
