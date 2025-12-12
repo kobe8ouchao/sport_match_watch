@@ -60,7 +60,7 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchCli
   };
 
   return (
-    <div className="relative w-full h-80 md:h-96 group rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-3xl">
+    <div className="relative w-full h-48 md:h-56 group rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-3xl">
       
       {/* Background Layer */}
       <div className="absolute inset-0 transition-colors duration-500 bg-gray-200 dark:bg-gray-900">
@@ -103,55 +103,55 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchCli
         <div className={`flex items-center justify-between w-full max-w-5xl mx-auto transition-colors duration-300 ${hasImage ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
             
             {/* Home Team */}
-            <div className="flex flex-col items-center gap-2 text-center flex-1 justify-end">
-                <span className="text-5xl md:text-7xl filter drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
+            <div className="flex flex-col items-center gap-2 text-center flex-1 justify-end min-w-0">
+                <span className="relative flex items-center justify-center filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110">
                   {typeof currentMatch.homeTeam.logo === 'string' ? (
-                    <img src={currentMatch.homeTeam.logo} alt={currentMatch.homeTeam.name} className="h-20 w-20 md:h-24 md:w-24 object-contain" />
+                    <img src={currentMatch.homeTeam.logo} alt={currentMatch.homeTeam.name} className="h-12 w-12 md:h-16 md:w-16 object-contain" />
                   ) : currentMatch.homeTeam.logo}
                 </span>
-                <span className="text-base md:text-lg font-semibold tracking-tight drop-shadow-sm">
+                <span className="text-sm md:text-base font-bold tracking-tight drop-shadow-sm truncate w-full px-2">
                     {currentMatch.homeTeam.name}
                 </span>
             </div>
 
             {/* Score / VS */}
-            <div className="px-2 md:px-12 flex flex-col items-center justify-center">
-                <div className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter drop-shadow-xl whitespace-nowrap">
+            <div className="px-2 md:px-8 flex flex-col items-center justify-center shrink-0">
+                <div className="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-xl whitespace-nowrap">
                     {currentMatch.status === 'SCHEDULED' 
-                        ? <span className="text-5xl md:text-7xl text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] font-black tracking-widest">VS</span>
+                        ? <span className="text-4xl md:text-5xl text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] font-black tracking-widest"></span>
                         : `${currentMatch.homeScore} : ${currentMatch.awayScore}`
                     }
                 </div>
                 
                 {/* Match Details for Scheduled Games */}
                 {currentMatch.status === 'SCHEDULED' && (
-                    <div className={`mt-4 flex flex-col items-center space-y-1 text-center ${hasImage ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'}`}>
-                         <div className="text-lg md:text-xl font-bold tracking-wide">
+                    <div className={`mt-2 flex flex-col items-center space-y-0.5 text-center ${hasImage ? 'text-white/90' : 'text-gray-600 dark:text-gray-300'}`}>
+                         <div className="text-sm md:text-base font-bold tracking-wide">
                             {currentMatch.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                          </div>
-                         <div className="text-xs md:text-sm font-medium opacity-80 max-w-[200px] truncate">
+                         <div className="text-xs font-medium opacity-80 max-w-[150px] truncate hidden md:block">
                             {currentMatch.stadium}
                          </div>
-                         <div className="text-[10px] uppercase tracking-widest opacity-70 mt-1">
-                             {currentMatch.startTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                         <div className="text-[10px] uppercase tracking-widest opacity-70">
+                             {currentMatch.startTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                          </div>
                     </div>
                 )}
 
-                <div className={`mt-3 text-[10px] md:text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-inner hidden sm:block
+                <div className={`mt-2 text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full backdrop-blur-md shadow-inner hidden sm:block
                     ${hasImage ? 'bg-black/30 text-white/90 border border-white/10' : 'bg-white/40 dark:bg-black/20 border border-black/5 dark:border-white/10'}`}>
                     {LEAGUES.find(l => l.id === currentMatch.leagueId)?.name || currentMatch.leagueId}
                 </div>
             </div>
 
             {/* Away Team */}
-            <div className="flex flex-col items-center gap-2 text-center flex-1 justify-start">
-                <span className="text-5xl md:text-7xl filter drop-shadow-2xl transition-transform duration-300 group-hover:scale-110">
+            <div className="flex flex-col items-center gap-2 text-center flex-1 justify-start min-w-0">
+                <span className="relative flex items-center justify-center filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110">
                   {typeof currentMatch.awayTeam.logo === 'string' ? (
-                    <img src={currentMatch.awayTeam.logo} alt={currentMatch.awayTeam.name} className="h-20 w-20 md:h-24 md:w-24 object-contain" />
+                    <img src={currentMatch.awayTeam.logo} alt={currentMatch.awayTeam.name} className="h-12 w-12 md:h-16 md:w-16 object-contain" />
                   ) : currentMatch.awayTeam.logo}
                 </span>
-                <span className="text-base md:text-lg font-semibold tracking-tight drop-shadow-sm">
+                <span className="text-sm md:text-base font-bold tracking-tight drop-shadow-sm truncate w-full px-2">
                     {currentMatch.awayTeam.name}
                 </span>
             </div>
@@ -176,20 +176,20 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchCli
       </div>
 
       {/* Arrows (Desktop Only) */}
-      <button 
+      {/* <button 
         onClick={prevSlide}
         className={`absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full backdrop-blur-md transition-all hidden md:flex hover:scale-110 active:scale-95
             ${hasImage ? 'bg-black/20 text-white/70 hover:bg-black/40 hover:text-white' : 'bg-white/30 dark:bg-black/30 text-gray-600 dark:text-white/70 hover:bg-white/50 dark:hover:bg-black/50'}`}
       >
-        <ChevronLeft size={28} />
-      </button>
-      <button 
+        <ChevronLeft size={10} />
+      </button> */}
+      {/* <button 
         onClick={nextSlide}
         className={`absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full backdrop-blur-md transition-all hidden md:flex hover:scale-110 active:scale-95
             ${hasImage ? 'bg-black/20 text-white/70 hover:bg-black/40 hover:text-white' : 'bg-white/30 dark:bg-black/30 text-gray-600 dark:text-white/70 hover:bg-white/50 dark:hover:bg-black/50'}`}
       >
-        <ChevronRight size={28} />
-      </button>
+        <ChevronRight size={10} />
+      </button> */}
     </div>
   );
 };

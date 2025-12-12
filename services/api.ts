@@ -1,4 +1,4 @@
-import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat } from '../types';
+import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory } from '../types';
 import { formatDateForApi } from '../utils';
 import { MatchWithHot } from '../constants';
 
@@ -71,9 +71,38 @@ const attachBanner = (matches: MatchWithHot[]): MatchWithHot[] => {
   }));
 };
 
-export const fetchMatches = async (leagueId: string, date: Date): Promise<MatchesResponse> => {
-  const dateStr = formatDateForApi(date);
+const LEAGUE_TIMEZONES: Record<string, string> = {
+  'nba': 'America/New_York',
+  'eng.1': 'Europe/London',
+  'esp.1': 'Europe/Madrid',
+  'ita.1': 'Europe/Rome',
+  'ger.1': 'Europe/Berlin',
+  'fra.1': 'Europe/Paris',
+  'uefa.champions': 'Europe/Paris',
+};
 
+// Helper to format date for specific league timezone
+const formatDateForLeague = (date: Date, timezone: string): string => {
+  const d = new Date(date);
+  // Set to noon to represent the "day" robustly regardless of timezone shift at midnight
+  d.setHours(12, 0, 0, 0);
+
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  const parts = formatter.formatToParts(d);
+  const year = parts.find(p => p.type === 'year')?.value;
+  const month = parts.find(p => p.type === 'month')?.value;
+  const day = parts.find(p => p.type === 'day')?.value;
+
+  return `${year}${month}${day}`;
+};
+
+export const fetchMatches = async (leagueId: string, date: Date): Promise<MatchesResponse> => {
   // If "top" fetch upcoming matches (today and tomorrow)
   if (leagueId === 'top') {
     const leaguesToFetch = [
@@ -124,12 +153,16 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
 
   let url = '';
   const queryId = leagueId;
+  const timezone = LEAGUE_TIMEZONES[queryId];
+
+  // Calculate date string based on league timezone if known, otherwise fallback to UTC
+  const queryDateStr = timezone ? formatDateForLeague(date, timezone) : formatDateForApi(date);
 
   if (queryId === 'nba') {
-    url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${dateStr}`;
+    url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
   } else {
     // Soccer
-    url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${dateStr}`;
+    url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
   }
 
   try {
@@ -364,5 +397,253 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
   } catch (error) {
     console.error("Error fetching match details:", error);
     return null;
+  }
+};
+
+export const fetchStandings = async (leagueId: string): Promise<StandingEntry[]> => {
+  let url = '';
+  const isNba = leagueId === 'nba';
+
+  if (isNba) {
+    url = `https://site.api.espn.com/apis/v2/sports/basketball/nba/standings`;
+  } else {
+    url = `https://site.api.espn.com/apis/v2/sports/soccer/${leagueId}/standings`;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch standings');
+    const data = await response.json();
+
+    const result: StandingEntry[] = [];
+    const children = data.children || []; // Sometimes top level has children
+
+    // Flatten logic for NBA which has conferences/divisions
+    // Usually NBA response: children[0] (East) -> standings, children[1] (West) -> standings
+    // Or sometimes just children -> standings entries directly if minimal param used
+    // Let's recursively find "standings" entries or "entries"
+
+    // Helper to process a "standings" array
+    const processEntries = (entries: any[], groupName?: string) => {
+      entries.forEach((entry: any) => {
+        const team = entry.team;
+        const stats = entry.stats || [];
+
+        const getStat = (name: string) => {
+          const s = stats.find((x: any) => x.name === name || x.type === name);
+          return s ? s.value : undefined;
+        };
+
+        const rank = parseInt(getStat('rank') || entry.seed || '0'); // seed for NBA usually nice, or rank
+
+        // NBA Stats
+        // wins, losses, winPercent, gamesBehind
+        // Soccer Stats
+        // wins, losses, ties, points, gamesPlayed, goalDiff, goalsFor, goalsAgainst
+
+        const wins = parseInt(getStat('wins') || '0');
+        const losses = parseInt(getStat('losses') || '0');
+
+        let statsObj: any = {
+          rank: rank || 0,
+          wins,
+          losses
+        };
+
+        if (isNba) {
+          statsObj.winPct = parseFloat(getStat('winPercent') || '0');
+          statsObj.gamesBehind = parseFloat(getStat('gamesBehind') || '0');
+        } else {
+          statsObj.draws = parseInt(getStat('ties') || '0');
+          statsObj.points = parseInt(getStat('points') || '0');
+          statsObj.gamesPlayed = parseInt(getStat('gamesPlayed') || '0');
+          statsObj.goalDiff = parseInt(getStat('pointDifferential') || '0'); // Soccer uses pointDifferential for GD in API often
+          statsObj.goalsFor = parseInt(getStat('pointsFor') || '0');
+          statsObj.goalsAgainst = parseInt(getStat('pointsAgainst') || '0');
+        }
+
+        result.push({
+          group: groupName,
+          team: {
+            id: team.id,
+            name: team.displayName,
+            shortName: team.shortDisplayName || team.abbreviation,
+            logo: team.logos?.[0]?.href || ''
+          },
+          stats: statsObj
+        });
+      });
+    };
+
+    // Traverse logic
+    const traverse = (node: any, paramGroupName?: string) => {
+      const currentGroupName = node.name || paramGroupName;
+      if (node.standings && node.standings.entries) {
+        processEntries(node.standings.entries, currentGroupName);
+      } else if (node.children) {
+        node.children.forEach((child: any) => traverse(child, currentGroupName));
+      }
+    };
+
+    traverse(data);
+
+    // Sort by rank if available, otherwise points/winPct
+    return result.sort((a, b) => {
+      if (a.stats.rank && b.stats.rank) return a.stats.rank - b.stats.rank;
+      if (isNba) return (b.stats.winPct || 0) - (a.stats.winPct || 0);
+      return (b.stats.points || 0) - (a.stats.points || 0);
+    });
+
+  } catch (error) {
+    console.error(`Error fetching standings for ${leagueId}:`, error);
+    return [];
+  }
+};
+
+export const fetchPlayerStats = async (leagueId: string): Promise<PlayerStatCategory[]> => {
+  let url = '';
+  const isNba = leagueId === 'nba';
+
+  if (isNba) {
+    url = `https://site.web.api.espn.com/apis/site/v3/sports/basketball/nba/leaders?region=us&lang=en&contentorigin=espn&limit=5&qualified=true`;
+  } else {
+    url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueId}/statistics`;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch player stats');
+    const data = await response.json();
+    const categories: PlayerStatCategory[] = [];
+
+    // NBA uses 'leaders.categories' structure
+    // Soccer uses 'statistics' or 'stats' array at root
+    let statsSource: any[] = [];
+
+    if (isNba && data.leaders && data.leaders.categories) {
+      statsSource = data.leaders.categories;
+    } else {
+      statsSource = data.statistics || data.stats || [];
+    }
+
+    // Filter interesting stats
+    // We used to filter, but user requested ALL stats to be shown
+    // Keeping the list just for reference or priority sorting if needed later
+    /*
+    const interestedStats = isNba
+      ? ['points', 'rebounds', 'assists', 'steals', 'blocks']
+      : ['goals', 'assists', 'yellow', 'red', 'shutouts', 'clean'];
+    */
+
+    statsSource.forEach((cat: any) => {
+      // User requested all stats
+      // const catName = (cat.name || '').toLowerCase();
+      // if (!interestedStats.some(k => catName.includes(k))) return;
+
+      // The user specified structure: cat.groups[0].athletes
+       // But we should also support the old structure cat.leaders just in case
+       // And the NEW NBA structure: cat.leaders (array of athletes directly)
+       
+       let leadersRaw: any[] = [];
+       
+       if (isNba) {
+          // NBA V3 API structure: cat.leaders is the array of athletes
+          leadersRaw = cat.leaders || [];
+       } else {
+          // Soccer Structure
+          if (cat.groups && cat.groups.length > 0) {
+             // Check for athletes first, then teams
+             leadersRaw = cat.groups[0].athletes || cat.groups[0].teams || [];
+          } else if (cat.leaders) {
+             leadersRaw = cat.leaders;
+          }
+       }
+
+      const leaders = leadersRaw.map((lead: any, idx: number) => {
+        // Handle both Athlete (player) and Team structures
+        // Player structure: lead.athlete, lead.statistics
+        // Team structure: lead.team, lead.statistics
+        // Old structure: lead.athlete, lead.value/displayValue directly
+        
+        const entity = lead.athlete || lead.team || {};
+        const isTeam = !!lead.team && !lead.athlete; // If it's a team leaderboard
+        
+        // Value extraction
+        let displayValue = lead.displayValue;
+        let value = lead.value;
+
+        // User specified: statistics[].displayValue
+        if (lead.statistics && lead.statistics.length > 0) {
+            displayValue = lead.statistics[0].displayValue;
+            value = lead.statistics[0].value;
+        }
+
+        // Clean up displayValue if it's too verbose (e.g., "Matches: 15, Goals: 15")
+        // We prefer just the number if possible, or try to extract it
+        if (displayValue && displayValue.includes(':')) {
+            // Try to find the relevant number at the end or matching the category
+            // But simpler is to rely on 'value' if available and format it, 
+            // OR just show the number if value is present.
+            // However, sometimes value is raw (e.g. 15.0).
+            if (value !== undefined) {
+                displayValue = String(value);
+            } else {
+                // Fallback: extract last number
+                const match = displayValue.match(/(\d+)$/);
+                if (match) displayValue = match[1];
+            }
+        }
+
+        // For team leaderboards, entity is the team itself
+        // For player leaderboards, entity is the athlete, and athlete.team contains team info
+        
+        const id = entity.id;
+        const name = entity.displayName || entity.shortName || entity.name || '';
+        const headshot = entity.headshot?.href || entity.logo || entity.logos?.[0]?.href || ''; // Team uses logo
+        
+        // Team info for players
+        let teamName = '';
+        let teamLogo = '';
+        
+        if (!isTeam && entity.team) {
+            teamName = entity.team.abbreviation || entity.team.shortDisplayName || '';
+            teamLogo = entity.team.logos?.[0]?.href || entity.team.logo || '';
+        } else if (isTeam) {
+            // It is a team, so we don't have a "parent team"
+             teamName = entity.abbreviation || entity.shortDisplayName || '';
+             teamLogo = entity.logos?.[0]?.href || '';
+        }
+
+        // Special handling for NBA V3 structure
+        // The team info might be directly on 'lead.team' instead of 'lead.athlete.team'
+        if (isNba && lead.team) {
+             teamName = lead.team.abbreviation || lead.team.shortDisplayName || '';
+             teamLogo = lead.team.logos?.[0]?.href || lead.team.logo || '';
+        }
+
+        return {
+          id,
+          name,
+          team: teamName,
+          teamLogo,
+          headshot,
+          value: value || 0,
+          rank: lead.rank || (idx + 1),
+          displayValue: displayValue || String(value || '')
+        };
+      });
+
+      categories.push({
+        name: cat.name,
+        displayName: cat.displayName || cat.header || cat.name,
+        leaders
+      });
+    });
+
+    return categories;
+
+  } catch (error) {
+    console.error(`Error fetching player stats for ${leagueId}:`, error);
+    return [];
   }
 };

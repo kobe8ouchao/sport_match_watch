@@ -67,3 +67,43 @@ export interface League {
   name: string;
   logo: string | React.ReactNode; // Can be a URL string or an Icon component
 }
+
+export interface StandingEntry {
+  group?: string; // e.g. "Eastern Conference"
+  team: {
+    id: string;
+    name: string;
+    shortName: string;
+    logo: string;
+  };
+  stats: {
+    rank: number;
+    wins?: number;
+    losses?: number;
+    draws?: number;
+    points?: number;
+    gamesPlayed?: number;
+    goalDiff?: number; // Soccer
+    goalsFor?: number; // Soccer
+    goalsAgainst?: number; // Soccer
+    winPct?: number; // NBA
+    gamesBehind?: number; // NBA
+  };
+}
+
+export interface PlayerLeader {
+  id: string;
+  name: string;
+  team: string; // Team ID or Abbreviation
+  teamLogo?: string;
+  headshot?: string;
+  value: number; // The stat value (e.g. 20 goals)
+  rank: number;
+  displayValue: string;
+}
+
+export interface PlayerStatCategory {
+  name: string; // e.g. "goals", "assists"
+  displayName: string; // e.g. "Goals"
+  leaders: PlayerLeader[];
+}

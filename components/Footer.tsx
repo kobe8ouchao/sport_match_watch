@@ -34,17 +34,30 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Partners & External */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Support</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Partners</h3>
             <ul className="space-y-2.5">
-              {['Help Center', 'Terms of Service', 'Privacy Policy', 'Cookie Policy', 'Advertise'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-                    {item}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <a href="https://www.nba.com" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1">
+                  NBA Official
+                </a>
+              </li>
+              <li>
+                <a href="https://www.espn.com" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1">
+                  ESPN
+                </a>
+              </li>
+               <li>
+                <a href="https://www.premierleague.com" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1">
+                  Premier League
+                </a>
+              </li>
+              <li>
+                <a href="https://www.uefa.com/uefachampionsleague/" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors flex items-center gap-1">
+                  Champions League
+                </a>
+              </li>
             </ul>
           </div>
 
