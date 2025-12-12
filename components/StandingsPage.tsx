@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { fetchStandings, fetchPlayerStats } from '../services/api';
 import { StandingEntry, PlayerStatCategory } from '../types';
 import { LEAGUES } from '../constants';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -188,7 +188,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                             .filter(s => !isNba || s.group === conferenceTab)
                                                             .map((entry, idx) => (
                                                                 <tr key={entry.team.id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                                                                    <td className="px-6 py-4 font-semibold text-gray-500">
+                                                                    <td className="px-6 py-4 font-semibold text-gray-500 text-center">
                                                                         {entry.stats.rank || idx + 1}
                                                                     </td>
                                                                     <td className="px-6 py-4">
@@ -261,7 +261,13 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                                     {player.rank}
                                                                 </span>
                                                                 <div className="relative flex-shrink-0">
-                                                                    <img src={player.headshot} alt="" className="w-8 h-8 rounded-full bg-gray-100 object-cover" />
+                                                                    {isNba ? (
+                                                                        <img src={player.headshot} alt="" className="w-8 h-8 rounded-full bg-gray-100 object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                                                                            <User size={18} />
+                                                                        </div>
+                                                                    )}
                                                                     <img src={player.teamLogo} alt="" className="w-3 h-3 absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 border shadow-sm" />
                                                                 </div>
                                                                 <div className="min-w-0">
