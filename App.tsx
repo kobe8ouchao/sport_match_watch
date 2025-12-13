@@ -10,8 +10,9 @@ import Footer from './components/Footer';
 import { LEAGUES, MOCK_MATCHES, MatchWithHot } from './constants';
 import { fetchMatches } from './services/api';
 import { isSameDay } from './utils';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowUp } from 'lucide-react';
 import MatchDetail from './components/MatchDetail';
+import NewsSection from './components/NewsSection';
 import StandingsWidget from './components/StandingsWidget';
 
 // Wrapper to handle navigation
@@ -20,6 +21,7 @@ const Dashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLeagueId, setSelectedLeagueId] = useState('top');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const navigate = useNavigate();
 
@@ -31,6 +33,11 @@ const Dashboard: React.FC = () => {
   };
 
   const [matches, setMatches] = useState<MatchWithHot[]>([]);
+  const [pastMatches, setPastMatches] = useState<MatchWithHot[]>([]);
+  const [loadingPast, setLoadingPast] = useState(false);
+  // Keep track of how many days back we have loaded
+  const [daysBackLoaded, setDaysBackLoaded] = useState(0);
+
   const [calendarEntries, setCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[]>([]);
   const [featuredMatches, setFeaturedMatches] = useState<MatchWithHot[]>([]);
   const [featuredCalendarEntries, setFeaturedCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[]>([]);
@@ -62,6 +69,91 @@ const Dashboard: React.FC = () => {
 
     loadMatches();
   }, [selectedDate, selectedLeagueId]);
+
+  // Reset past matches when selection changes
+  useEffect(() => {
+    setPastMatches([]);
+    setDaysBackLoaded(0);
+  }, [selectedDate, selectedLeagueId]);
+
+  // Infinite Scroll Handler for Past Matches
+  useEffect(() => {
+    if (!isSameDay(selectedDate, new Date())) return;
+
+    const checkAndLoad = () => {
+      // If content is short (less than viewport + buffer), load 3 days at once
+      // "If screen is half empty" - we check if scrollHeight is small
+      if (document.documentElement.scrollHeight <= window.innerHeight * 1.5 && !loadingPast) {
+        loadMorePastMatches(3);
+      }
+    };
+
+    const handleScroll = () => {
+      // Check if near bottom of page
+      if (
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500 &&
+        !loadingPast
+      ) {
+        // Normal scroll loads 1 day at a time
+        loadMorePastMatches(1);
+      }
+    };
+
+    // Check immediately and on updates
+    checkAndLoad();
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingPast, daysBackLoaded, selectedDate, selectedLeagueId, matches, pastMatches]);
+
+  // Scroll to Top Logic
+  useEffect(() => {
+    const handleScrollTopVisibility = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScrollTopVisibility);
+    return () => window.removeEventListener('scroll', handleScrollTopVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  const loadMorePastMatches = async (daysToLoad = 1) => {
+    if (loadingPast) return;
+    setLoadingPast(true);
+    try {
+      const requests = [];
+      for (let i = 1; i <= daysToLoad; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - (daysBackLoaded + i));
+        requests.push(fetchMatches(selectedLeagueId, d));
+      }
+      
+      const results = await Promise.all(requests);
+      const newMatches = results.flatMap(r => r.matches);
+      
+      setPastMatches(prev => {
+        // Filter out duplicates just in case
+        const existingIds = new Set(prev.map(m => m.id));
+        const uniqueNewMatches = newMatches.filter(m => !existingIds.has(m.id));
+        return [...prev, ...uniqueNewMatches].sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+      });
+      setDaysBackLoaded(prev => prev + daysToLoad);
+    } catch (error) {
+      console.error("Error loading past matches:", error);
+    } finally {
+      setLoadingPast(false);
+    }
+  };
 
   // Fetch hero/featured matches
   useEffect(() => {
@@ -112,6 +204,21 @@ const Dashboard: React.FC = () => {
     return Array.from(map.values());
   }, [calendarEntries, featuredCalendarEntries]);
 
+  // Group past matches by date for display
+  const groupedPastMatches = useMemo(() => {
+    const groups = pastMatches.reduce((acc, match) => {
+      const dateKey = match.startTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      if (!acc[dateKey]) acc[dateKey] = [];
+      acc[dateKey].push(match);
+      return acc;
+    }, {} as Record<string, MatchWithHot[]>);
+
+    // Sort by date descending
+    return Object.entries(groups)
+      .map(([date, matches]) => ({ date, matches }))
+      .sort((a, b) => b.matches[0].startTime.getTime() - a.matches[0].startTime.getTime());
+  }, [pastMatches]);
+
   const openMatchDetail = (matchId: string, leagueId: string) => {
     // Use window.open to open in new tab as requested
     const url = `/match/${leagueId}/${matchId}`;
@@ -150,7 +257,7 @@ const Dashboard: React.FC = () => {
           
           <button 
             onClick={() => setIsCalendarOpen(true)}
-            className="flex-shrink-0 p-2.5 rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/20 text-gray-700 dark:text-white transition-all shadow-sm hover:shadow-md active:scale-95"
+            className="flex-shrink-0 p-2.5 rounded-2xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/20 text-gray-700 dark:text-white transition-all shadow-sm hover:shadow-md active:scale-95"
             title="Select Date"
           >
             <span className="sr-only">Select Date</span>
@@ -183,20 +290,50 @@ const Dashboard: React.FC = () => {
                       key={match.id}
                       match={match}
                       onClick={() => openMatchDetail(match.id, match.leagueId)}
+                      showLeagueLogo={selectedLeagueId === 'top'}
                     />
                   ))}
-                </div>
-              ) : (
-                 <div className="flex flex-col items-center justify-center py-20 text-center glass-card rounded-3xl">
-                    <div className="h-16 w-16 bg-gray-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mb-4">
-                      <span className="text-3xl grayscale">⚽</span>
+      </div>
+    ) : (
+      <NewsSection leagueId={selectedLeagueId} />
+    )}
+
+            {/* Past Matches Section - Infinite Scroll */}
+            {!loading && isSameDay(selectedDate, new Date()) && (
+              <div className="mt-8 space-y-8">
+                {groupedPastMatches.map(({ date, matches: dayMatches }) => (
+                  <div key={date} className="space-y-4 animate-slide-up">
+                    <div className="flex items-center space-x-3 border-b border-gray-200 dark:border-white/10 pb-2">
+                       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                        {date}
+                      </h3>
+                       <span className="text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                        {dayMatches.length} Games
+                      </span>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">No matches found</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                      No games scheduled for this league on this date.
-                    </p>
-                 </div>
-              )}
+                   
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {dayMatches.map(match => (
+                        <MatchCard
+                          key={match.id}
+                          match={match}
+                          onClick={() => openMatchDetail(match.id, match.leagueId)}
+                          showLeagueLogo={selectedLeagueId === 'top'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {loadingPast && (
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="animate-spin text-gray-400" size={30} />
+                  </div>
+                )}
+                
+                {/* Invisible sentinel for scroll detection if needed, but using window scroll event for now */}
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN: Banner & Standings */}
@@ -205,7 +342,7 @@ const Dashboard: React.FC = () => {
             {/* Banner / Featured Carousel */}
             <div className="w-full">
                <div className="flex items-center space-x-2 h-8 mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Featured</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Show & Standings</h3>
                </div>
               <FeaturedCarousel
                 matches={hotMatches}
@@ -243,6 +380,16 @@ const Dashboard: React.FC = () => {
         matches={matches}
         calendarEntries={mergedCalendarEntries}
       />
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 p-3 rounded-full bg-black text-white dark:bg-white dark:text-black shadow-lg hover:opacity-90 transition-all z-50 animate-in fade-in zoom-in duration-300"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
     </div>
   );
 };
@@ -295,6 +442,10 @@ const MatchDetailPageWrapper: React.FC = () => {
 };
 
 import StandingsPage from './components/StandingsPage';
+import LeaguesPage from './components/LeaguesPage';
+import NewsPage from './components/NewsPage';
+import SchedulePage from './components/SchedulePage';
+import SitemapPage from './components/SitemapPage';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -315,6 +466,10 @@ const App: React.FC = () => {
         <Route path="/" element={<Dashboard />} />
         <Route path="/match/:leagueId/:matchId" element={<MatchDetailPageWrapper />} />
         <Route path="/standings/:leagueId" element={<StandingsPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route path="/leagues" element={<LeaguesPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route path="/news" element={<NewsPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
       </Routes>
     </Router>
   );

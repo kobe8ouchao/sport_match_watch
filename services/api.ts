@@ -1,5 +1,5 @@
 import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory } from '../types';
-import { formatDateForApi } from '../utils';
+import { formatDateForApi, isSameDay } from '../utils';
 import { MatchWithHot } from '../constants';
 
 export interface MatchesResponse {
@@ -103,7 +103,7 @@ const formatDateForLeague = (date: Date, timezone: string): string => {
 };
 
 export const fetchMatches = async (leagueId: string, date: Date): Promise<MatchesResponse> => {
-  // If "top" fetch upcoming matches (today and tomorrow)
+  // If "top" fetch matches for the selected date across top leagues
   if (leagueId === 'top') {
     const leaguesToFetch = [
       'nba',
@@ -116,23 +116,18 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
     ];
 
     try {
-      const today = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(today.getDate() + 1);
-
-      // Fetch matches for today AND tomorrow for all leagues
+      // Fetch matches for the selected date for all leagues
+      // Note: Recursive calls will handle timezone/date filtering logic
       const results = await Promise.all(
-        leaguesToFetch.flatMap(id => [
-          fetchMatches(id, today),
-          fetchMatches(id, tomorrow)
-        ])
+        leaguesToFetch.map(id => fetchMatches(id, date))
       );
 
       const allMatches = results.flatMap(r => r.matches);
-      // We don't really need to merge calendars for "top" view extensively but we can if we want dots
-      // However, "top" might be treated as a special list.
-      // Let's just return unique calendar entries from results.
+      
+      // Merge and deduplicate calendar entries
       const allCalendar = results.flatMap(r => r.calendar);
+      // Optional: Deduplicate calendar if needed, but for now flatMap is fine
+      // or we could use a Map to unique by date+league
 
       // Sort: Live first, then by time
       const sortedMatches = allMatches.sort((a, b) => {
@@ -151,44 +146,70 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
     }
   }
 
-  let url = '';
-  const queryId = leagueId;
-  const timezone = LEAGUE_TIMEZONES[queryId];
+  // Helper to fetch matches for a single date
+  const fetchForDate = async (d: Date): Promise<MatchesResponse> => {
+    let url = '';
+    const queryId = leagueId;
+    const timezone = LEAGUE_TIMEZONES[queryId];
+    const queryDateStr = timezone ? formatDateForLeague(d, timezone) : formatDateForApi(d);
 
-  // Calculate date string based on league timezone if known, otherwise fallback to UTC
-  const queryDateStr = timezone ? formatDateForLeague(date, timezone) : formatDateForApi(date);
+    if (queryId === 'nba') {
+      url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
+    } else {
+      url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
+    }
 
-  if (queryId === 'nba') {
-    url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
-  } else {
-    // Soccer
-    url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
-  }
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        // Silently fail for individual dates
+        return { matches: [], calendar: [] };
+      }
+      const data = await response.json();
+
+      const calendar: { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[] =
+        Array.isArray(data?.leagues?.[0]?.calendar)
+          ? data.leagues[0].calendar.map((c: string) => ({
+            date: new Date(c),
+            sport: leagueId === 'nba' ? 'basketball' : 'soccer',
+            leagueId,
+          }))
+          : [];
+
+      if (!data.events) return { matches: [], calendar };
+
+      const matches = data.events.map((event: any) => transformEspnEvent(event, leagueId));
+      return { matches: attachBanner(matches), calendar };
+    } catch (error) {
+      console.error(`Failed to fetch matches for ${queryDateStr}:`, error);
+      return { matches: [], calendar: [] };
+    }
+  };
+
+  // Fetch for current date and previous date to cover timezone overlaps
+  // especially for "early morning" games (which might be "yesterday" in league time)
+  const prevDate = new Date(date);
+  prevDate.setDate(date.getDate() - 1);
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
+    const [current, previous] = await Promise.all([
+      fetchForDate(date),
+      fetchForDate(prevDate)
+    ]);
 
-    // Calendar dates from API (if provided)
-    const calendar: { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[] =
-      Array.isArray(data?.leagues?.[0]?.calendar)
-        ? data.leagues[0].calendar.map((c: string) => ({
-          date: new Date(c),
-          sport: leagueId === 'nba' ? 'basketball' : 'soccer',
-          leagueId,
-        }))
-        : [];
+    // Merge and deduplicate matches
+    const allMatches = [...current.matches, ...previous.matches];
+    const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
 
-    // Safety check for events
-    if (!data.events) return { matches: [], calendar };
+    // Filter by local date
+    const filteredMatches = uniqueMatches.filter(m => isSameDay(m.startTime, date));
 
-    const matches = data.events.map((event: any) => transformEspnEvent(event, leagueId));
-    return { matches: attachBanner(matches), calendar };
+    // Merge calendars
+    const allCalendar = [...current.calendar, ...previous.calendar];
+
+    return { matches: filteredMatches, calendar: allCalendar };
   } catch (error) {
-    console.error("Failed to fetch matches:", error);
+    console.error("Error in fetchMatches strategy:", error);
     return { matches: [], calendar: [] };
   }
 };

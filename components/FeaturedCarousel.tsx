@@ -60,7 +60,7 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchCli
   };
 
   return (
-    <div className="relative w-full h-48 md:h-56 group rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-3xl">
+    <div className="relative w-full h-48 md:h-56 group rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-3xl">
       
       {/* Background Layer */}
       <div className="absolute inset-0 transition-colors duration-500 bg-gray-200 dark:bg-gray-900">

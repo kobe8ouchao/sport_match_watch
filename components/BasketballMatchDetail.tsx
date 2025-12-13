@@ -17,7 +17,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                 <table className="w-full text-sm text-left">
                     <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-white/5">
                         <tr>
-                            <th className="px-3 py-2 rounded-l-lg"><span><img src={teamLogo} alt={teamName} className="w-8 h-8 object-contain" /> </span></th>
+                            <th className="px-3 py-2 rounded-l-xl"><span><img src={teamLogo} alt={teamName} className="w-8 h-8 object-contain" /> </span></th>
                             <th className="px-2 py-2 text-center">MIN</th>
                             <th className="px-2 py-2 text-center font-bold">PTS</th>
                             <th className="px-2 py-2 text-center">REB</th>
@@ -26,7 +26,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                             <th className="px-2 py-2 text-center">BLK</th>
                             <th className="px-2 py-2 text-center">TO</th>
                             <th className="px-2 py-2 text-center">PF</th>
-                            <th className="px-2 py-2 text-center rounded-r-lg">+/-</th>
+                            <th className="px-2 py-2 text-center rounded-r-xl">+/-</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
@@ -81,6 +81,12 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
         );
     };
 
+    const getTeamRecord = (team: any) => {
+        // Look for record in standingSummary if available, or try to construct from stats if possible
+        // The API often provides "record" or "standingSummary" in the team object
+        return team.record || team.standingSummary || '';
+    };
+
     return (
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
             {/* Banner */}
@@ -101,6 +107,11 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                             <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" />
                             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-center">{match.homeScore}</h2>
                             <span className="text-lg font-bold text-orange-200 mt-2">{match.homeTeam.shortName}</span>
+                            {match.leagueId === 'nba' && (
+                                <div className="text-xs text-white/60 mt-1 font-medium bg-white/10 px-2 py-0.5 rounded-full">
+                                    {getTeamRecord(match.homeTeam)}
+                                </div>
+                            )}
                         </div>
 
                         {/* Center Info */}
@@ -109,7 +120,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
 
                             {/* Quarter Scoreboard */}
                             {(match.homeTeam.linescores && match.awayTeam.linescores) && (
-                                <div className="bg-black/30 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                                <div className="bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-white/10">
                                     <table className="text-sm text-center">
                                         <thead>
                                             <tr className="text-white/40 text-xs border-b border-white/10">
@@ -146,6 +157,11 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                             <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" />
                             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-center">{match.awayScore}</h2>
                             <span className="text-lg font-bold text-white/80 mt-2">{match.awayTeam.shortName}</span>
+                            {match.leagueId === 'nba' && (
+                                <div className="text-xs text-white/60 mt-1 font-medium bg-white/10 px-2 py-0.5 rounded-full">
+                                    {getTeamRecord(match.awayTeam)}
+                                </div>
+                            )}
                         </div>
                     </div>
 

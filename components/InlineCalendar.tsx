@@ -45,7 +45,7 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
   };
 
   return (
-    <div className="h-full glass-card rounded-2xl p-6 flex flex-col bg-white/60 dark:bg-zinc-900/60 transition-colors duration-300">
+    <div className="h-full glass-card rounded-3xl p-6 flex flex-col bg-white dark:bg-zinc-900 transition-colors duration-300">
       
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-6">
@@ -85,7 +85,7 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
                       key={day.toISOString()}
                       onClick={() => onSelectDate(day)}
                       className={`
-                          relative h-9 w-9 mx-auto flex items-center justify-center rounded-xl text-sm transition-all duration-300
+                          relative h-9 w-9 mx-auto flex items-center justify-center rounded-2xl text-sm transition-all duration-300
                           ${isSelected 
                               ? 'bg-black text-white dark:bg-white dark:text-black shadow-lg shadow-black/20 dark:shadow-white/20 font-semibold transform scale-105' 
                               : 'text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-white/10'

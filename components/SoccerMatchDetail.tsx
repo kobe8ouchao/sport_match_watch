@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MatchDetailData, MatchEvent, MatchStat } from '../types';
+import { LEAGUES } from '../constants';
 import { Clock, MapPin, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface SoccerMatchDetailProps {
@@ -58,13 +59,21 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
     if (activeTab === 'news') fetchNews();
   }, [activeTab, match.id, match.leagueId]);
 
+  const getGoalEvents = (teamId: string) => {
+    return match.events.filter(e =>
+      e.teamId === teamId &&
+      e.type.toLowerCase().includes('goal')
+    );
+  };
+
+  const league = LEAGUES.find(l => l.id === match.leagueId);
+  const leagueName = league ? league.name : match.leagueId.toUpperCase();
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
 
-
-
       {/* Match Banner */}
-      <div className="relative w-full h-64 md:h-80 rounded-3xl overflow-hidden shadow-2xl mb-8 group">
+      <div className="relative w-full h-auto min-h-[22rem] rounded-3xl overflow-hidden shadow-2xl mb-8 group">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-black">
           {/* Optional: Add league specific background or team colors if available */}
@@ -72,11 +81,11 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
         </div>
 
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-center items-center text-white px-4">
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-white px-4 py-10 pb-16">
 
           {/* League Badge */}
           <div className="absolute top-6 left-6 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
-            {match.leagueId}
+            {leagueName}
           </div>
 
           {/* Score Board */}
@@ -118,6 +127,38 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
             <div className="flex flex-col items-center flex-1">
               <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-2xl mb-4" />
               <h2 className="text-2xl md:text-4xl font-bold text-center tracking-tight">{match.awayTeam.name}</h2>
+            </div>
+          </div>
+
+          {/* Goals List */}
+          <div className="flex justify-between w-full max-w-4xl mt-6 px-4">
+            {/* Home Goals */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="space-y-1">
+                {getGoalEvents(match.homeTeam.id).map(e => (
+                  <div key={e.id} className="text-sm text-white/90 flex items-center justify-center gap-1.5 font-medium">
+                    <span>{e.player}</span>
+                    <span className="text-xs opacity-75 font-mono">{e.minute}'</span>
+                    <span className="text-xs">⚽</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Spacer */}
+            <div className="w-16 md:w-32"></div>
+
+            {/* Away Goals */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="space-y-1">
+                {getGoalEvents(match.awayTeam.id).map(e => (
+                  <div key={e.id} className="text-sm text-white/90 flex items-center justify-center gap-1.5 font-medium">
+                    <span className="text-xs">⚽</span>
+                    <span className="text-xs opacity-75 font-mono">{e.minute}'</span>
+                    <span>{e.player}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -207,9 +248,9 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                           <div className="z-10 w-12 h-7 rounded-lg bg-white dark:bg-zinc-800 border-2 border-gray-200 dark:border-white/10 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300 shadow-sm">
                             {event.minute}'
                           </div>
-                          <div className={`w-5/12 flex ${isHome ? 'justify-start' : 'justify-end'}`}>
+                          <div className={`w-5/12 flex ${isHome ? 'justify-end' : 'justify-start'}`}>
                             <div className={`
-                                                  p-3 rounded-xl border shadow-sm w-full max-w-[240px] transition-all hover:scale-105
+                                                  p-3 rounded-2xl border shadow-sm w-full max-w-[240px] transition-all hover:scale-105
                                                   ${isHome
                                 ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-500/20'
                                 : 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-500/20'
@@ -301,7 +342,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                   <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 text-center">{match.homeTeam.name}</h4>
 
                   {/* Soccer Field - Home (Attacking Up -> GK at Bottom) */}
-                  <div className="relative h-[600px] bg-[#2c8f2c] rounded-xl overflow-hidden shadow-2xl mb-6 select-none">
+                  <div className="relative h-[600px] bg-[#2c8f2c] rounded-3xl overflow-hidden shadow-2xl mb-6 select-none">
                     {/* Field Texture (Stripes) */}
                     <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_49px,#000000_50px)]"></div>
 
@@ -415,28 +456,61 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                     </div>
                   </div>
 
-                  {/* Substitutes */}
-                  <div className="mt-4">
-                    <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Substitutes</h5>
-                    <div className="grid grid-cols-3 gap-2">
-                      {match.homePlayers.filter(p => !p.isStarter).map(p => (
-                        <div key={`hsub-${p.id}`} className="flex items-center gap-2 text-sm px-2 py-1 rounded-xl bg-white/60 dark:bg-white/10 border border-white/30 dark:border-white/10 hover:shadow-sm transition">
-                          {p.headshot ? (
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer">
-                              <img src={p.headshot} alt={p.name} className="w-6 h-6 rounded-full border border-white/40" />
-                            </a>
-                          ) : (
-                            <span className="w-6 h-6 flex items-center justify-center bg-gray-100 dark:bg-white/10 rounded-full text-xs font-bold text-gray-600">{p.jersey}</span>
-                          )}
-                          <div className="flex-1 truncate">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="font-medium text-gray-900 dark:text-white hover:underline text-xs">
-                              {p.name}
-                            </a>
+                  {/* Squad List (Starters + Substitutes) */}
+                  <div className="mt-6 space-y-4">
+                    {/* Starters */}
+                    <div>
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Starters</h5>
+                      <div className="space-y-1">
+                        {match.homePlayers.filter(p => p.isStarter).map(p => (
+                          <div key={`hstart-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition">
+                            <span className="w-6 text-center font-bold text-gray-500 dark:text-gray-400 text-xs">{p.jersey}</span>
+                            {p.headshot ? (
+                              <img src={p.headshot} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center">
+                                <span className="text-xs">👤</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="font-semibold text-gray-900 dark:text-white hover:underline truncate block">
+                                {p.name}
+                              </a>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">{p.position}</div>
+                            </div>
+                            {p.subbedOut && <ArrowDown size={14} className="text-red-500" />}
+                            {(p.goals || 0) > 0 && <span className="text-xs">⚽ {p.goals > 1 ? `x${p.goals}` : ''}</span>}
                           </div>
-                          {p.subbedIn && <ArrowUp size={10} className="text-green-500" />}
-                        </div>
-                      ))}
-                      {match.homePlayers.filter(p => !p.isStarter).length === 0 && <div className="text-xs text-gray-400 italic col-span-3">No substitutes</div>}
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Substitutes */}
+                    <div>
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Substitutes</h5>
+                      <div className="space-y-1">
+                        {match.homePlayers.filter(p => !p.isStarter).map(p => (
+                          <div key={`hsub-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/10 transition opacity-80 hover:opacity-100">
+                            <span className="w-6 text-center font-bold text-gray-500 dark:text-gray-400 text-xs">{p.jersey}</span>
+                            {p.headshot ? (
+                              <img src={p.headshot} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover grayscale" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center grayscale">
+                                <span className="text-xs">👤</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="font-medium text-gray-700 dark:text-gray-300 hover:underline truncate block">
+                                {p.name}
+                              </a>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-500">{p.position}</div>
+                            </div>
+                            {p.subbedIn && <ArrowUp size={14} className="text-green-500" />}
+                            {(p.goals || 0) > 0 && <span className="text-xs">⚽ {p.goals > 1 ? `x${p.goals}` : ''}</span>}
+                          </div>
+                        ))}
+                        {match.homePlayers.filter(p => !p.isStarter).length === 0 && <div className="text-xs text-gray-400 italic px-2">No substitutes listed</div>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -446,7 +520,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                   <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 text-center">{match.awayTeam.name}</h4>
 
                   {/* Soccer Field - Away (Attacking Down -> GK at Top) */}
-                  <div className="relative h-[600px] bg-[#2c8f2c] rounded-xl overflow-hidden shadow-2xl mb-6 select-none">
+                  <div className="relative h-[600px] bg-[#2c8f2c] rounded-3xl overflow-hidden shadow-2xl mb-6 select-none">
                     {/* Field Texture (Stripes) */}
                     <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_49px,#000000_50px)]"></div>
 
@@ -560,28 +634,61 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                     </div>
                   </div>
 
-                  {/* Substitutes */}
-                  <div className="mt-4">
-                    <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Substitutes</h5>
-                    <div className="grid grid-cols-3 gap-2">
-                      {match.awayPlayers.filter(p => !p.isStarter).map(p => (
-                        <div key={`asub-${p.id}`} className="flex items-center gap-2 text-sm px-2 py-1 rounded-xl bg-white/60 dark:bg-white/10 border border-white/30 dark:border-white/10 hover:shadow-sm transition">
-                          {p.headshot ? (
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer">
-                              <img src={p.headshot} alt={p.name} className="w-6 h-6 rounded-full border border-white/40" />
-                            </a>
-                          ) : (
-                            <span className="w-6 h-6 flex items-center justify-center bg-gray-100 dark:bg-white/10 rounded-full text-xs font-bold text-gray-600">{p.jersey}</span>
-                          )}
-                          <div className="flex-1 truncate">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="font-medium text-gray-900 dark:text-white hover:underline text-xs">
-                              {p.name}
-                            </a>
+                  {/* Squad List (Starters + Substitutes) */}
+                  <div className="mt-6 space-y-4">
+                    {/* Starters */}
+                    <div>
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Starters</h5>
+                      <div className="space-y-1">
+                        {match.awayPlayers.filter(p => p.isStarter).map(p => (
+                          <div key={`astart-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition">
+                            <span className="w-6 text-center font-bold text-gray-500 dark:text-gray-400 text-xs">{p.jersey}</span>
+                            {p.headshot ? (
+                              <img src={p.headshot} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center">
+                                <span className="text-xs">👤</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="font-semibold text-gray-900 dark:text-white hover:underline truncate block">
+                                {p.name}
+                              </a>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">{p.position}</div>
+                            </div>
+                            {p.subbedOut && <ArrowDown size={14} className="text-red-500" />}
+                            {(p.goals || 0) > 0 && <span className="text-xs">⚽ {p.goals > 1 ? `x${p.goals}` : ''}</span>}
                           </div>
-                          {p.subbedIn && <ArrowUp size={10} className="text-green-500" />}
-                        </div>
-                      ))}
-                      {match.awayPlayers.filter(p => !p.isStarter).length === 0 && <div className="text-xs text-gray-400 italic col-span-3">No substitutes</div>}
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Substitutes */}
+                    <div>
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Substitutes</h5>
+                      <div className="space-y-1">
+                        {match.awayPlayers.filter(p => !p.isStarter).map(p => (
+                          <div key={`asub-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-2xl bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/10 transition opacity-80 hover:opacity-100">
+                            <span className="w-6 text-center font-bold text-gray-500 dark:text-gray-400 text-xs">{p.jersey}</span>
+                            {p.headshot ? (
+                              <img src={p.headshot} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover grayscale" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center grayscale">
+                                <span className="text-xs">👤</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="font-medium text-gray-700 dark:text-gray-300 hover:underline truncate block">
+                                {p.name}
+                              </a>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-500">{p.position}</div>
+                            </div>
+                            {p.subbedIn && <ArrowUp size={14} className="text-green-500" />}
+                            {(p.goals || 0) > 0 && <span className="text-xs">⚽ {p.goals > 1 ? `x${p.goals}` : ''}</span>}
+                          </div>
+                        ))}
+                        {match.awayPlayers.filter(p => !p.isStarter).length === 0 && <div className="text-xs text-gray-400 italic px-2">No substitutes listed</div>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -662,7 +769,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
               const img = a.images?.[0]?.url;
               const link = a.links?.web?.href || a.links?.web?.self?.href || a.links?.api?.self?.href;
               return (
-                <a key={a.id} href={link} target="_blank" rel="noreferrer" className="group rounded-2xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/5 shadow-sm hover:shadow-md transition-all hover:bg-white/20 dark:hover:bg-white/10">
+                <a key={a.id} href={link} target="_blank" rel="noreferrer" className="group rounded-3xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/5 shadow-sm hover:shadow-md transition-all hover:bg-white/20 dark:hover:bg-white/10">
                   <div className="aspect-video bg-gray-100/10 dark:bg-white/5 overflow-hidden">
                     {img ? (
                       <img src={img} alt={a.headline || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />

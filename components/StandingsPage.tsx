@@ -143,12 +143,12 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                     
                                     <div className="space-y-6">
                                         {isNba && (
-                                            <div className="flex space-x-2 p-1 bg-gray-100 dark:bg-white/5 rounded-xl w-fit mb-4">
+                                            <div className="flex space-x-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl w-fit mb-4">
                                                 {(['Western Conference', 'Eastern Conference'] as const).map((conf) => (
                                                     <button
                                                         key={conf}
                                                         onClick={() => setConferenceTab(conf)}
-                                                        className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${conferenceTab === conf
+                                                        className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${conferenceTab === conf
                                                             ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm'
                                                             : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                                             }`}
@@ -160,7 +160,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                         )}
 
                                         <div className="bg-white dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm">
-                                            <div className="overflow-x-auto">
+                                            <div className="overflow-x-auto w-full">
                                                 <table className="w-full text-sm text-left">
                                                     <thead className="bg-gray-50/50 dark:bg-white/5 text-xs text-gray-500 font-medium uppercase tracking-wider">
                                                         <tr>

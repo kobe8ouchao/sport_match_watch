@@ -1,3 +1,12 @@
+/*
+ * @Descripttion: 
+ * @Author: ouchao
+ * @Email: ouchao@sendpalm.com
+ * @version: 1.0
+ * @Date: 2025-12-13 16:35:41
+ * @LastEditors: ouchao
+ * @LastEditTime: 2025-12-13 20:15:44
+ */
 import React from 'react';
 import { Moon, Sun, CalendarDays } from 'lucide-react';
 
@@ -7,22 +16,22 @@ interface HeaderProps {
   onOpenCalendar: () => void;
   isCalendarOpen?: boolean;
 }
-
+  
 const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, isCalendarOpen }) => {
   return (
     <div className="flex items-center justify-between py-5 mb-2">
       {/* Logo Area */}
       <div className="flex items-center space-x-3 group cursor-pointer">
-          <div className="h-12 w-12 bg-black dark:bg-white rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 duration-300">
-              <span className="text-white dark:text-black font-bold text-xl font-mono">S</span>
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="SportsLive Logo" 
+            className="h-14 w-14 rounded-2xl shadow-lg transition-transform group-hover:scale-105 duration-300 object-cover bg-white"
+          />
           <div className="flex flex-col">
             <span className="font-bold text-2xl tracking-tight text-gray-900 dark:text-white leading-none">
                 Sports<span className="font-light text-gray-500 dark:text-gray-400">Live</span>
             </span>
-            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 tracking-widest uppercase mt-0.5">
-                Dashboard
-            </span>
+            
           </div>
       </div>
 
@@ -43,13 +52,6 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
           >
               <CalendarDays size={18} />
           </button>
-
-          {/* User Profile Placeholder (Desktop visual balance) */}
-          {!isCalendarOpen && (
-            <div className="hidden lg:flex h-10 w-10 rounded-full bg-gradient-to-tr from-gray-200 to-white dark:from-zinc-800 dark:to-zinc-700 border border-white/20 items-center justify-center shadow-sm">
-               <span className="text-xs font-bold text-gray-500 dark:text-gray-300">U</span>
-            </div>
-          )}
       </div>
     </div>
   );

@@ -6,9 +6,10 @@ import { MapPin, Clock } from 'lucide-react';
 interface MatchCardProps {
   match: Match;
   onClick?: () => void;
+  showLeagueLogo?: boolean;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match, onClick }) => {
+const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = false }) => {
   const isLive = match.status === 'LIVE' || match.status === 'HT';
   const isScheduled = match.status === 'SCHEDULED';
   const isFinished = match.status === 'FINISHED';
@@ -19,15 +20,28 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="glass-card rounded-2xl p-4 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-white/60 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 group flex flex-col justify-between min-h-[140px] border border-white/40 dark:border-white/5 hover:border-white/60 dark:hover:border-white/20 cursor-pointer"
+      className="glass-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-white/60 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 group flex flex-col justify-between min-h-[140px] border border-white/40 dark:border-white/5 hover:border-white/60 dark:hover:border-white/20 cursor-pointer"
     >
 
       {/* Top Meta: League & Status Indicator */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center space-x-2">
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 uppercase tracking-widest border border-gray-200 dark:border-white/5 transition-colors group-hover:border-gray-300 dark:group-hover:border-white/20">
-            {LEAGUES.find(l => l.id === match.leagueId)?.name || match.leagueId}
-          </span>
+          {showLeagueLogo && (() => {
+             const league = LEAGUES.find(l => l.id === match.leagueId);
+             if (league) {
+                return (
+                  <>
+                    {typeof league.logo === 'string' && (
+                      <img src={league.logo} alt={league.name} className="h-5 w-5 object-contain" />
+                    )}
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {league.name}
+                    </span>
+                  </>
+                );
+             }
+             return null; 
+          })()}
         </div>
 
         {/* Status Badge */}
