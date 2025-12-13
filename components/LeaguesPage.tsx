@@ -5,7 +5,7 @@
  * @version: 1.0
  * @Date: 2025-12-13 18:03:56
  * @LastEditors: ouchao
- * @LastEditTime: 2025-12-13 18:22:33
+ * @LastEditTime: 2025-12-13 20:30:53
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -43,17 +43,17 @@ const LeaguesPage: React.FC<{ toggleTheme: () => void; darkMode: boolean }> = ({
                 // But App.tsx doesn't seem to read query params for league selection yet. 
                 // I'll just make it a visual list for now, or link to Standings which is a dedicated page.
                 // Let's link to Standings as it's a solid page for a league.
-                className="group relative glass-card p-6 rounded-3xl border border-white/40 dark:border-white/5 hover:border-blue-500/30 dark:hover:border-blue-400/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col items-center justify-center text-center gap-4 bg-white/60 dark:bg-white/5"
+                className="group relative glass-card p-6 rounded-3xl border border-white/40 dark:border-white/5 hover:border-black/30 dark:hover:border-white/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col items-center justify-center text-center gap-4 bg-white/60 dark:bg-white/5"
               >
                 <div className="h-20 w-20 flex items-center justify-center p-4 bg-white dark:bg-white/10 rounded-full shadow-sm group-hover:scale-110 transition-transform duration-300">
                   {typeof league.logo === 'string' ? (
                     <img src={league.logo} alt={league.name} className="w-full h-full object-contain" />
                   ) : (
-                    <div className="text-blue-500">{league.logo}</div>
+                    <div className="text-black dark:text-white">{league.logo}</div>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-black dark:group-hover:text-white transition-colors">
                     {league.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -62,10 +62,13 @@ const LeaguesPage: React.FC<{ toggleTheme: () => void; darkMode: boolean }> = ({
                 </div>
                 
                 <div className="mt-4 w-full grid grid-cols-2 gap-2">
-                    <span className="text-xs font-semibold py-1.5 px-3 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <Link 
+                        to={`/standings/${league.id}`}
+                        className="text-xs font-semibold py-1.5 px-3 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 hover:text-black dark:hover:text-white transition-colors block text-center"
+                    >
                         Standings
-                    </span>
-                     <span className="text-xs font-semibold py-1.5 px-3 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    </Link>
+                     <span className="text-xs font-semibold py-1.5 px-3 rounded-xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20 hover:text-black dark:hover:text-white transition-colors">
                         News
                     </span>
                 </div>

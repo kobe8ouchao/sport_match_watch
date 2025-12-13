@@ -64,37 +64,37 @@ const Footer: React.FC = () => {
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Partners</h3>
             <ul className="space-y-2.5">
               <li>
-                <a href="https://www.nba.com" target="_blank" rel="noopener noreferrer" title="Visit NBA Official Site" className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1">
+                <a href="https://www.nba.com" target="_blank" rel="noopener noreferrer" title="Visit NBA Official Site" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   NBA Official
                 </a>
               </li>
               <li>
-                <a href="https://www.espn.com" target="_blank" rel="noopener noreferrer" title="Visit ESPN Sports News" className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors flex items-center gap-1">
+                <a href="https://www.espn.com" target="_blank" rel="noopener noreferrer" title="Visit ESPN Sports News" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   ESPN
                 </a>
               </li>
                <li>
-                <a href="https://www.premierleague.com" target="_blank" rel="noopener noreferrer" title="Visit Premier League Official Site" className="text-xs text-gray-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1">
+                <a href="https://www.premierleague.com" target="_blank" rel="noopener noreferrer" title="Visit Premier League Official Site" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   Premier League
                 </a>
               </li>
               <li>
-                <a href="https://www.uefa.com/uefachampionsleague/" target="_blank" rel="noopener noreferrer" title="Visit UEFA Champions League" className="text-xs text-gray-500 dark:text-gray-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors flex items-center gap-1">
+                <a href="https://www.uefa.com/uefachampionsleague/" target="_blank" rel="noopener noreferrer" title="Visit UEFA Champions League" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   Champions League
                 </a>
               </li>
               <li>
-                <a href="https://www.bbc.com/sport" target="_blank" rel="noopener noreferrer" title="Visit BBC Sport" className="text-xs text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-1">
+                <a href="https://www.bbc.com/sport" target="_blank" rel="noopener noreferrer" title="Visit BBC Sport" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   BBC Sport
                 </a>
               </li>
               <li>
-                <a href="https://www.skysports.com/" target="_blank" rel="noopener noreferrer" title="Visit Sky Sports" className="text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1">
+                <a href="https://www.skysports.com/" target="_blank" rel="noopener noreferrer" title="Visit Sky Sports" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   Sky Sports
                 </a>
               </li>
               <li>
-                <a href="https://sports.yahoo.com/" target="_blank" rel="noopener noreferrer" title="Visit Yahoo Sports" className="text-xs text-gray-500 dark:text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors flex items-center gap-1">
+                <a href="https://sports.yahoo.com/" target="_blank" rel="noopener noreferrer" title="Visit Yahoo Sports" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   Yahoo Sports
                 </a>
               </li>

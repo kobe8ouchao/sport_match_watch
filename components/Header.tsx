@@ -5,10 +5,11 @@
  * @version: 1.0
  * @Date: 2025-12-13 16:35:41
  * @LastEditors: ouchao
- * @LastEditTime: 2025-12-13 20:15:44
+ * @LastEditTime: 2025-12-13 20:37:05
  */
 import React from 'react';
 import { Moon, Sun, CalendarDays } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   darkMode: boolean;
@@ -21,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
   return (
     <div className="flex items-center justify-between py-5 mb-2">
       {/* Logo Area */}
-      <div className="flex items-center space-x-3 group cursor-pointer">
+      <Link to="/" className="flex items-center space-x-3 group cursor-pointer">
           <img 
             src="/logo.png" 
             alt="SportsLive Logo" 
@@ -33,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
             </span>
             
           </div>
-      </div>
+      </Link>
 
       {/* Actions */}
       <div className="flex items-center space-x-3">

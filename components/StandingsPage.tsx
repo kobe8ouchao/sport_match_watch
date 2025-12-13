@@ -103,25 +103,25 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                             <button
                                 onClick={() => setActiveTab('teams')}
                                 className={`pb-3 px-1 mr-8 font-medium text-lg transition-colors relative ${activeTab === 'teams'
-                                    ? 'text-blue-600 dark:text-blue-400'
+                                    ? 'text-gray-900 dark:text-white'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 Team Standings
                                 {activeTab === 'teams' && (
-                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black dark:bg-white rounded-t-full" />
                                 )}
                             </button>
                             <button
                                 onClick={() => setActiveTab('players')}
                                 className={`pb-3 px-1 mr-8 font-medium text-lg transition-colors relative ${activeTab === 'players'
-                                    ? 'text-blue-600 dark:text-blue-400'
+                                    ? 'text-gray-900 dark:text-white'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 Player Stats
                                 {activeTab === 'players' && (
-                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 dark:bg-blue-400 rounded-t-full" />
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black dark:bg-white rounded-t-full" />
                                 )}
                             </button>
                         </div>
@@ -137,7 +137,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                             {(activeTab === 'teams' || activeTab === 'both') && (
                                 <div className={`w-full ${activeTab === 'both' ? 'lg:w-3/4' : ''}`}>
                                     <h2 className="text-xl font-bold mb-4 flex items-center">
-                                        <span className="bg-blue-600 w-1 h-6 rounded-full mr-3"></span>
+                                        <span className="bg-black dark:bg-white w-1 h-6 rounded-full mr-3"></span>
                                         Team Standings
                                     </h2>
                                     
@@ -271,7 +271,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                                     <img src={player.teamLogo} alt="" className="w-3 h-3 absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 border shadow-sm" />
                                                                 </div>
                                                                 <div className="min-w-0">
-                                                                    <div className="font-semibold text-sm text-gray-900 dark:text-white truncate group-hover:text-blue-600 transition-colors">
+                                                                    <div className="font-semibold text-sm text-gray-900 dark:text-white truncate group-hover:text-black dark:group-hover:text-white transition-colors">
                                                                         {player.name}
                                                                     </div>
                                                                     <div className="text-xs text-gray-500 truncate">
