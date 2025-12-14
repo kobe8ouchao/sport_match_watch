@@ -107,3 +107,11 @@ export interface PlayerStatCategory {
   displayName: string; // e.g. "Goals"
   leaders: PlayerLeader[];
 }
+
+export interface Article {
+  headline: string;
+  description: string;
+  published: string;
+  link: string;
+  images: { url: string }[];
+}

@@ -13,11 +13,14 @@ export const LEAGUES: League[] = [
   { id: 'top', name: 'Top', logo: <Star size={16} /> }, 
   { id: 'nba', name: 'NBA', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png' },
   { id: 'uefa.champions', name: 'UEFA', logo: UCL_LOGO },
+  
   { id: 'eng.1', name: 'Premier', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/23.png' },
   { id: 'esp.1', name: 'La Liga', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/15.png' },
   { id: 'ita.1', name: 'Serie A', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/12.png' },
   { id: 'ger.1', name: 'Bundesliga', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/10.png' },
   { id: 'fra.1', name: 'Ligue 1', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/9.png' },
+{ id: 'uefa.europa', name: 'Europa', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/2310.png' },
+  { id: 'uefa.europa.conf', name: 'Conference', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/20296.png' },
 ];
 
 // Fallback Mock data in case API fails or for initial render

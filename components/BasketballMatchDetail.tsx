@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MatchDetailData } from '../types';
 import { Calendar, MapPin } from 'lucide-react';
+import NewsSection from './NewsSection';
 
 interface BasketballMatchDetailProps {
     match: MatchDetailData;
@@ -8,7 +9,7 @@ interface BasketballMatchDetailProps {
 }
 
 const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, onBack }) => {
-    const [activeTab, setActiveTab] = useState<'stats' | 'players'>('stats');
+    const [activeTab, setActiveTab] = useState<'stats' | 'players' | 'news'>('stats');
 
     const renderPlayerStats = (players: any[], title: string, teamName: string, teamLogo: string) => (
         <div className="mb-6">
@@ -186,6 +187,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                         {[
                             { key: 'stats', label: 'Team Stats' },
                             { key: 'players', label: 'Player Stats' },
+                            { key: 'news', label: 'News' },
                         ].map((t) => {
                             const isActive = activeTab === t.key;
                             return (
@@ -253,6 +255,24 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                 <div style={{ display: activeTab === 'players' ? 'block' : 'none' }}>
                     {renderTeamBoxscore(match.homeTeam.shortName, match.homePlayers, match.homeTeam.logo)}
                     {renderTeamBoxscore(match.awayTeam.shortName, match.awayPlayers, match.awayTeam.logo)}
+                </div>
+
+                {/* News Tab */}
+                <div style={{ display: activeTab === 'news' ? 'block' : 'none' }}>
+                     <div className="glass-card bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
+                          <span className="w-1 h-6 bg-green-500 rounded-full mr-3"></span>
+                          Match News
+                        </h3>
+                        {activeTab === 'news' && (
+                            <NewsSection 
+                                leagueId={match.leagueId} 
+                                matchId={match.id} 
+                                hideHeader 
+                                className="!p-0 !bg-transparent !shadow-none !border-none"
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

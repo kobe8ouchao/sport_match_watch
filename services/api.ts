@@ -1,4 +1,4 @@
-import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory } from '../types';
+import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory, Article } from '../types';
 import { formatDateForApi, isSameDay } from '../utils';
 import { MatchWithHot } from '../constants';
 
@@ -112,7 +112,9 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
       'ita.1', // Serie A
       'ger.1', // Bundesliga
       'fra.1', // Ligue 1
-      'uefa.champions' // UCL
+      'uefa.champions', // UCL
+      'uefa.europa', // Europa League
+      'uefa.europa.conf' // Conference League
     ];
 
     try {
@@ -665,6 +667,41 @@ export const fetchPlayerStats = async (leagueId: string): Promise<PlayerStatCate
 
   } catch (error) {
     console.error(`Error fetching player stats for ${leagueId}:`, error);
+    return [];
+  }
+};
+
+export const fetchNews = async (leagueId: string, matchId?: string): Promise<Article[]> => {
+  let endpoint = '';
+  if (leagueId === 'nba') {
+    endpoint = 'basketball/nba';
+  } else if (leagueId === 'top') {
+    endpoint = 'soccer/eng.1'; // Default to Premier League for Top
+  } else {
+    endpoint = `soccer/${leagueId}`;
+  }
+  
+  let url = `https://site.api.espn.com/apis/site/v2/sports/${endpoint}/news`;
+  
+  if (matchId) {
+    url += `?event=${matchId}`;
+  }
+
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Failed to fetch news');
+    const data = await resp.json();
+    const articles = Array.isArray(data?.articles) ? data.articles : [];
+    
+    return articles.map((a: any) => ({
+        headline: a.headline,
+        description: a.description,
+        published: a.published,
+        link: a.links?.web?.href || a.links?.web?.self?.href || a.links?.api?.self?.href,
+        images: a.images?.map((i: any) => ({ url: i.url })) || []
+    }));
+  } catch (error) {
+    console.error(`Error fetching news for ${leagueId} ${matchId ? 'event ' + matchId : ''}:`, error);
     return [];
   }
 };
