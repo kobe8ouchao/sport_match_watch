@@ -1,4 +1,6 @@
-![logo](https://github.com/user-attachments/assets/357503dc-5671-40b9-8a66-f816eb4ea684)
+<div align="center">
+  <a href="https://sportlive.win/" target="_blank"><img width="360" height="360" alt="t_logo" src="https://github.com/user-attachments/assets/357503dc-5671-40b9-8a66-f816eb4ea684" /></a>
+</div>
 
 # Sport Match Watch ⚽🏀  
 A lightweight sports live score & match tracking web app built with Next.js
