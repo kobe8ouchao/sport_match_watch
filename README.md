@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://sportlive.win/" target="_blank"><img width="360" height="360" alt="t_logo" src="https://github.com/user-attachments/assets/357503dc-5671-40b9-8a66-f816eb4ea684" /></a>
+  <a href="https://sportlive.win/" target="_blank"><img width="260" height="260" alt="t_logo" src="https://github.com/user-attachments/assets/357503dc-5671-40b9-8a66-f816eb4ea684" /></a>
 </div>
 
 # Sport Match Watch ⚽🏀  
@@ -9,7 +9,10 @@ A lightweight sports live score & match tracking web app built with Next.js
 It is designed as a weekend indie project with an emphasis on simplicity, performance, and clean UI.
 
 🌐 Live Demo: https://sportlive.win
-<img width="1001" height="694" alt="image" src="https://github.com/user-attachments/assets/24196e5e-8a73-4c99-9cce-57467ca2d7c6" />
+
+---
+
+<img width="500" height="342" alt="image" src="https://github.com/user-attachments/assets/24196e5e-8a73-4c99-9cce-57467ca2d7c6" />
 
 ---
 
