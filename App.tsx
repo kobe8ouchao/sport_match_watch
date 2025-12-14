@@ -446,6 +446,8 @@ import LeaguesPage from './components/LeaguesPage';
 import NewsPage from './components/NewsPage';
 import SchedulePage from './components/SchedulePage';
 import SitemapPage from './components/SitemapPage';
+import SEO from './components/SEO';
+import LeagueLandingPage from './components/LeagueLandingPage';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -460,16 +462,120 @@ const App: React.FC = () => {
     }
   }, [darkMode]);
 
+  const toggleTheme = () => setDarkMode(!darkMode);
+
   return (
     <Router>
+      <SEO />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/match/:leagueId/:matchId" element={<MatchDetailPageWrapper />} />
-        <Route path="/standings/:leagueId" element={<StandingsPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
-        <Route path="/leagues" element={<LeaguesPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
-        <Route path="/news" element={<NewsPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
-        <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
-        <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route path="/standings/:leagueId" element={<StandingsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/leagues" element={<LeaguesPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/news" element={<NewsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+
+        {/* SEO Landing Pages */}
+        <Route 
+          path="/nba-live-scores" 
+          element={
+            <LeagueLandingPage 
+              leagueId="nba"
+              title="NBA Live Scores, Standings & Schedule 2025"
+              description="Get real-time NBA scores, live updates, standings, and schedule for the 2025-26 season. Follow your favorite teams with instant match statistics."
+              keywords="NBA Scores, NBA Standings, NBA Schedule, Live Basketball Scores, NBA Results 2025"
+              heroColor="bg-orange-600"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/champions-league-results" 
+          element={
+            <LeagueLandingPage 
+              leagueId="uefa.champions"
+              title="UEFA Champions League Results & Fixtures"
+              description="Follow the UEFA Champions League with live scores, match results, group tables, and knockout stage fixtures. The ultimate European football coverage."
+              keywords="Champions League Scores, UCL Results, UEFA Fixtures, Live Football Scores, European Football"
+              heroColor="bg-blue-800"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/premier-league-fixtures" 
+          element={
+            <LeagueLandingPage 
+              leagueId="eng.1"
+              title="Premier League Live Scores, Table & News"
+              description="Experience the English Premier League like never before. Live scores, up-to-the-minute table standings, and fixtures for all 20 EPL clubs."
+              keywords="Premier League Scores, EPL Table, Premier League Fixtures, Live Football, England Football Results"
+              heroColor="bg-purple-700"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/la-liga-standings" 
+          element={
+            <LeagueLandingPage 
+              leagueId="esp.1"
+              title="La Liga Match Results & Standings"
+              description="Real-time Spanish La Liga football scores and standings. Follow Real Madrid, Barcelona, and Atletico Madrid with live match statistics."
+              keywords="La Liga Scores, Spanish Football, La Liga Table, El Clasico, Live Soccer Results"
+              heroColor="bg-red-600"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/bundesliga-scores" 
+          element={
+            <LeagueLandingPage 
+              leagueId="ger.1"
+              title="Bundesliga Scores & Fixtures"
+              description="Track every German Bundesliga match with live scores, team lineups, and comprehensive stats. The home of German top-flight football."
+              keywords="Bundesliga Scores, German Football, Bundesliga Table, Bayern Munich, Dortmund, Live Results"
+              heroColor="bg-red-700"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/ligue-1-match-stats" 
+          element={
+            <LeagueLandingPage 
+              leagueId="fra.1"
+              title="Ligue 1 Live Stats & Results"
+              description="Your source for French Ligue 1 live scores and match statistics. Follow PSG, Marseille, and Lyon with instant goal updates."
+              keywords="Ligue 1 Scores, French Football, Ligue 1 Standings, PSG Live, Soccer Stats"
+              heroColor="bg-blue-600"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/serie-a-live-football" 
+          element={
+            <LeagueLandingPage 
+              leagueId="ita.1"
+              title="Serie A Match Schedule & Standings"
+              description="Live Italian Serie A football scores, schedule, and league table. Keep up with Juventus, AC Milan, and Inter Milan match results."
+              keywords="Serie A Scores, Italian Football, Serie A Table, Calcio, Live Matches"
+              heroColor="bg-blue-500"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+
       </Routes>
     </Router>
   );

@@ -1,3 +1,12 @@
+/*
+ * @Descripttion: 
+ * @Author: ouchao
+ * @Email: ouchao@sendpalm.com
+ * @version: 1.0
+ * @Date: 2025-12-13 16:35:41
+ * @LastEditors: ouchao
+ * @LastEditTime: 2025-12-13 21:27:57
+ */
 import React, { useEffect, useState } from 'react';
 import { fetchMatchDetails } from '../services/api';
 import { MatchDetailData } from '../types';
@@ -21,6 +30,14 @@ const MatchDetail: React.FC<MatchDetailProps> = ({ matchId, leagueId, onBack }) 
       const data = await fetchMatchDetails(matchId, leagueId);
       setMatchData(data);
       setLoading(false);
+      
+      // Update SEO Title
+      if (data) {
+        const home = data.homeTeam.name;
+        const away = data.awayTeam.name;
+        const date = data.startTime.toLocaleDateString();
+        document.title = `${home} vs ${away} Live Score & Match Status - ${date} - Sports Match`;
+      }
     };
     loadData();
   }, [matchId, leagueId]);
