@@ -1,3 +1,5 @@
+![logo](https://github.com/user-attachments/assets/357503dc-5671-40b9-8a66-f816eb4ea684)
+
 # Sport Match Watch ⚽🏀  
 A lightweight sports live score & match tracking web app built with Next.js
 
@@ -56,4 +58,69 @@ Next.js App
  ├── API Routes (Serverless)
  ├── Sports Data APIs
  └── Client-side Polling & Caching
+```
+##📦 Getting Started
+1. Clone the repository
+```bash
+git clone https://github.com/kobe8ouchao/sport_match_watch.git
+cd sport_match_watch
+```
+##2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+##3. Run locally
+```bash
+npm run dev
+```
+##Open http://localhost:3000 in your browser.
+
+##📈 SEO & Use Cases
+
+This project is useful as:
+
+A sports live score website
+
+A Next.js real-time data dashboard example
+
+A weekend indie hacker project
+
+A minimal sports match tracking app
+
+A learning reference for polling-based real-time UIs
+
+Common search keywords:
+
+sports live score website, next.js sports app, real-time match tracker, football live scores, basketball live scores, indie hacker project, weekend side project, sports dashboard
+
+##🧪 Status & Roadmap
+
+This is an experimental indie project. Possible future ideas:
+
+Improved caching strategy
+
+Match notifications
+
+Sport/category filters
+
+Better data refresh optimization
+
+No guarantees — shipping and learning come first.
+
+##🤝 Contributing
+
+- Contributions, ideas, and feedback are welcome.
+Feel free to open an issue or submit a pull request.
+
+##📄 License
+
+-MIT License
+
+##👋 Author
+
+Built by an indie developer as a weekend vibe project.
+If you’re also hacking on side projects, feel free to share what you’re building!
+
 
