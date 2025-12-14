@@ -9,6 +9,7 @@ A lightweight sports live score & match tracking web app built with Next.js
 It is designed as a weekend indie project with an emphasis on simplicity, performance, and clean UI.
 
 🌐 Live Demo: https://sportlive.win
+<img width="1001" height="694" alt="image" src="https://github.com/user-attachments/assets/24196e5e-8a73-4c99-9cce-57467ca2d7c6" />
 
 ---
 
@@ -116,11 +117,11 @@ No guarantees — shipping and learning come first.
 - Contributions, ideas, and feedback are welcome.
 Feel free to open an issue or submit a pull request.
 
-##📄 License
+## 📄 License
 
 -MIT License
 
-##👋 Author
+## 👋 Author
 
 Built by an indie developer as a weekend vibe project.
 If you’re also hacking on side projects, feel free to share what you’re building!
