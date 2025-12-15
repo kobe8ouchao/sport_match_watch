@@ -34,9 +34,20 @@ const NewsPage: React.FC<{ toggleTheme: () => void; darkMode: boolean }> = ({ to
                 </div>
                 <NewsSection leagueId="top" />
             </section>
+            
+            {/* NBA News */}
+            <section className="pt-8 border-t border-gray-200/50 dark:border-white/5">
+                <div className="flex items-center space-x-3 mb-6">
+                    <div className="h-8 w-8 flex items-center justify-center">
+                        <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="w-full h-full object-contain" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">NBA News</h2>
+                </div>
+                <NewsSection leagueId="nba" />
+            </section>
 
             {/* Iterate over leagues */}
-            {LEAGUES.filter(l => l.id !== 'top').map((league) => (
+            {LEAGUES.filter(l => l.id !== 'top' && l.id !== 'nba').map((league) => (
                 <section key={league.id} className="pt-8 border-t border-gray-200/50 dark:border-white/5">
                     <div className="flex items-center space-x-3 mb-6">
                          <div className="h-8 w-8 flex items-center justify-center">

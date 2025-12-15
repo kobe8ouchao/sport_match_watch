@@ -327,7 +327,16 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Home Team Lineup - Vertical Soccer Field */}
                 <div>
-                  <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 text-center">{match.homeTeam.name}</h4>
+                  <div className="flex flex-col items-center mb-4">
+                    <div className="w-16 h-16 mb-2">
+                        {typeof match.homeTeam.logo === 'string' ? (
+                            <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-full h-full object-contain drop-shadow-md" />
+                        ) : (
+                            match.homeTeam.logo
+                        )}
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">{match.homeTeam.name}</h4>
+                  </div>
 
                   {/* Soccer Field - Home (Attacking Up -> GK at Bottom) */}
                   <div className="relative h-[600px] bg-[#2c8f2c] rounded-3xl overflow-hidden shadow-2xl mb-6 select-none">
@@ -505,7 +514,16 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
                 {/* Away Team Lineup - Vertical Soccer Field */}
                 <div>
-                  <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 text-center">{match.awayTeam.name}</h4>
+                  <div className="flex flex-col items-center mb-4">
+                    <div className="w-16 h-16 mb-2">
+                        {typeof match.awayTeam.logo === 'string' ? (
+                            <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-full h-full object-contain drop-shadow-md" />
+                        ) : (
+                            match.awayTeam.logo
+                        )}
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">{match.awayTeam.name}</h4>
+                  </div>
 
                   {/* Soccer Field - Away (Attacking Down -> GK at Top) */}
                   <div className="relative h-[600px] bg-[#2c8f2c] rounded-3xl overflow-hidden shadow-2xl mb-6 select-none">

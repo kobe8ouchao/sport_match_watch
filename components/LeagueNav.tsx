@@ -44,7 +44,7 @@ const LeagueNav: React.FC<LeagueNavProps> = ({ leagues, selectedLeagueId, onSele
     <div className="relative w-full group">
        {/* Left Fade & Button */}
        <div 
-        className={`absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#F2F4F7] via-[#F2F4F7]/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/90 pointer-events-none flex items-center justify-start pl-2 transition-opacity duration-300 z-20 ${showLeftArrow ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#F0EEE9] via-[#F0EEE9]/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/90 pointer-events-none flex items-center justify-start pl-2 transition-opacity duration-300 z-20 ${showLeftArrow ? 'opacity-100' : 'opacity-0'}`}
       >
         <button
           onClick={scrollLeft}
@@ -108,7 +108,7 @@ const LeagueNav: React.FC<LeagueNavProps> = ({ leagues, selectedLeagueId, onSele
 
       {/* Right Fade & Button */}
       <div 
-        className={`absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#F2F4F7] via-[#F2F4F7]/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/90 pointer-events-none flex items-center justify-end pr-2 transition-opacity duration-300 ${showRightArrow ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#F0EEE9] via-[#F0EEE9]/90 to-transparent dark:from-zinc-950 dark:via-zinc-950/90 pointer-events-none flex items-center justify-end pr-2 transition-opacity duration-300 ${showRightArrow ? 'opacity-100' : 'opacity-0'}`}
       >
         <button
           onClick={scrollRight}

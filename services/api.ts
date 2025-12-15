@@ -57,11 +57,11 @@ const transformEspnEvent = (event: any, leagueId: string): MatchWithHot => {
 
 const leagueBanner: Record<string, string> = {
   nba: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=1600&auto=format&fit=crop',
-  'eng.1': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=1600&auto=format&fit=crop',
+  'eng.1': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
   'esp.1': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
   'ita.1': 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1600&auto=format&fit=crop',
   'ger.1': 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1600&auto=format&fit=crop',
-  'fra.1': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=1600&auto=format&fit=crop',
+  'fra.1': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
 };
 
 const attachBanner = (matches: MatchWithHot[]): MatchWithHot[] => {
@@ -683,7 +683,7 @@ export const fetchNews = async (leagueId: string, matchId?: string): Promise<Art
   
   let url = `https://site.api.espn.com/apis/site/v2/sports/${endpoint}/news`;
   
-  if (matchId) {
+  if (leagueId != 'nba' && matchId) {
     url += `?event=${matchId}`;
   }
 

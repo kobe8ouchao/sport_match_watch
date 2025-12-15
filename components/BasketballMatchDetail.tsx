@@ -9,7 +9,10 @@ interface BasketballMatchDetailProps {
 }
 
 const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, onBack }) => {
-    const [activeTab, setActiveTab] = useState<'stats' | 'players' | 'news'>('stats');
+    const [activeTab, setActiveTab] = useState<'stats' | 'players' | 'news'>(() => {
+        if (match.status === 'SCHEDULED') return 'news';
+        return 'players';
+    });
 
     const renderPlayerStats = (players: any[], title: string, teamName: string, teamLogo: string) => (
         <div className="mb-6">
@@ -127,7 +130,9 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                                             <tr className="text-white/40 text-xs border-b border-white/10">
                                                 <th className="px-2 pb-2"></th>
                                                 {match.homeTeam.linescores.map((_, i) => (
-                                                    <th key={i} className="px-2 pb-2 w-8">Q{i + 1}</th>
+                                                    <th key={i} className="px-2 pb-2 w-8">
+                                                        {i < 4 ? `Q${i + 1}` : `OT${i - 3}`}
+                                                    </th>
                                                 ))}
                                                 <th className="px-2 pb-2 font-bold text-white">T</th>
                                             </tr>
@@ -169,7 +174,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                     <div className="mt-8 flex items-center gap-6 text-sm text-white/60 font-medium">
                         <div className="flex items-center gap-2">
                             <Calendar size={16} className="text-orange-400" />
-                            <span>{match.startTime.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                            <span>{match.startTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                         </div>
                         <div className="w-1 h-1 bg-white/20 rounded-full"></div>
                         <div className="flex items-center gap-2">
@@ -239,13 +244,21 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                         </div>
 
                         <div className="space-y-4">
-                            {match.stats.map((stat, idx) => (
+                            {match.stats.map((stat, idx) => {
+                                const isPercentage = stat.name.toLowerCase().includes('pct') || 
+                                                   stat.name.toLowerCase().includes('%') || 
+                                                   stat.name.toLowerCase().includes('percentage');
+                                return (
                                 <div key={idx} className="flex justify-between items-center border-b border-gray-100 dark:border-white/5 py-3 last:border-0">
-                                    <span className="font-bold w-16 text-center text-lg">{stat.homeValue}</span>
+                                    <span className="font-bold w-16 text-center text-lg">
+                                        {stat.homeValue}{isPercentage ? '%' : ''}
+                                    </span>
                                     <span className="text-xs text-gray-500 uppercase tracking-wider flex-1 text-center font-medium whitespace-nowrap px-2">{stat.name}</span>
-                                    <span className="font-bold w-16 text-center text-lg">{stat.awayValue}</span>
+                                    <span className="font-bold w-16 text-center text-lg">
+                                        {stat.awayValue}{isPercentage ? '%' : ''}
+                                    </span>
                                 </div>
-                            ))}
+                            )})}
                             {match.stats.length === 0 && <p className="text-center text-gray-500">No stats available</p>}
                         </div>
                     </div>
