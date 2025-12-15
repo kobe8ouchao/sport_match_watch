@@ -10,7 +10,7 @@ import Footer from './components/Footer';
 import { LEAGUES, MOCK_MATCHES, MatchWithHot } from './constants';
 import { fetchMatches } from './services/api';
 import { isSameDay } from './utils';
-import { Loader2, ArrowUp } from 'lucide-react';
+import { Loader2, ArrowUp, CalendarDays } from 'lucide-react';
 import MatchDetail from './components/MatchDetail';
 import NewsSection from './components/NewsSection';
 import StandingsWidget from './components/StandingsWidget';
@@ -254,15 +254,6 @@ const Dashboard: React.FC = () => {
               onSelectLeague={handleSelectLeague}
             />
           </div>
-          
-          <button 
-            onClick={() => setIsCalendarOpen(true)}
-            className="flex-shrink-0 p-2.5 rounded-2xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/20 text-gray-700 dark:text-white transition-all shadow-sm hover:shadow-md active:scale-95"
-            title="Select Date"
-          >
-            <span className="sr-only">Select Date</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-8 min-h-[400px]">
@@ -341,8 +332,15 @@ const Dashboard: React.FC = () => {
             
             {/* Banner / Featured Carousel */}
             <div className="w-full">
-               <div className="flex items-center space-x-2 h-8 mb-6">
+               <div className="flex items-center justify-between h-8 mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Show & Standings</h3>
+                <button
+                  onClick={() => setIsCalendarOpen(true)}
+                  className="p-2 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/20 text-gray-700 dark:text-white transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center"
+                  title="Select Date"
+                >
+                  <CalendarDays size={18} />
+                </button>
                </div>
               <FeaturedCarousel
                 matches={hotMatches}
