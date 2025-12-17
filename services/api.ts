@@ -216,6 +216,23 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
   }
 };
 
+const fetchNbaTeamRecord = async (teamId: string): Promise<string> => {
+  try {
+    const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${teamId}`);
+    if (!response.ok) return '';
+    const data = await response.json();
+    
+    if (data.team?.record?.items && Array.isArray(data.team.record.items)) {
+         const overall = data.team.record.items.find((r: any) => r.type === 'total' || r.description === 'Overall Record');
+         return overall?.summary || '';
+    }
+    return '';
+  } catch (error) {
+    console.error(`Error fetching team record for ${teamId}:`, error);
+    return '';
+  }
+};
+
 export const fetchMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
   const sport = leagueId === 'nba' ? 'basketball' : 'soccer';
 
@@ -244,6 +261,23 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
     const home = competitors.find((c: any) => c.homeAway === 'home');
     const away = competitors.find((c: any) => c.homeAway === 'away');
 
+    const getRecord = (competitor: any) => {
+        if (competitor.record && typeof competitor.record === 'string') return competitor.record;
+        
+        if (competitor.record && typeof competitor.record === 'object' && Array.isArray(competitor.record.items)) {
+             const overall = competitor.record.items.find((r: any) => r.type === 'total' || r.description === 'Overall Record');
+             return overall?.summary || '';
+        }
+
+        if (competitor.standingSummary && typeof competitor.standingSummary === 'string') return competitor.standingSummary;
+
+        if (Array.isArray(competitor.records)) {
+            const overall = competitor.records.find((r: any) => r.type === 'total' || r.name === 'overall');
+            return overall?.summary || '';
+        }
+        return '';
+    };
+
     const baseMatch: MatchWithHot = {
       id: header.id,
       leagueId: leagueId,
@@ -253,6 +287,7 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
         shortName: home.team.abbreviation || home.team.shortDisplayName,
         logo: home.team.logos?.[0]?.href || home.team.logo || '',
         linescores: home.linescores,
+        record: getRecord(home),
       },
       awayTeam: {
         id: away.id,
@@ -260,6 +295,7 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
         shortName: away.team.abbreviation || away.team.shortDisplayName,
         logo: away.team.logos?.[0]?.href || away.team.logo || '',
         linescores: away.linescores,
+        record: getRecord(away),
       },
       homeScore: parseInt(home.score || '0'),
       awayScore: parseInt(away.score || '0'),
@@ -268,6 +304,20 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
       startTime: new Date(header.date || competition.date),
       stadium: data.gameInfo?.venue?.fullName || competition.venue?.fullName || 'Unknown Venue',
     };
+
+    // Fetch records if missing for NBA
+    if (leagueId === 'nba') {
+        const promises = [];
+        if (!baseMatch.homeTeam.record) {
+            promises.push(fetchNbaTeamRecord(baseMatch.homeTeam.id).then(r => { if (r) baseMatch.homeTeam.record = r; }));
+        }
+        if (!baseMatch.awayTeam.record) {
+            promises.push(fetchNbaTeamRecord(baseMatch.awayTeam.id).then(r => { if (r) baseMatch.awayTeam.record = r; }));
+        }
+        if (promises.length > 0) {
+            await Promise.all(promises);
+        }
+    }
 
     // Extract Details (Events) - Primary source for Soccer Timeline
     // Use keyEvents first if available, otherwise details

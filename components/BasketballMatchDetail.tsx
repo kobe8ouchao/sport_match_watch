@@ -66,16 +66,21 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
         </div>
     );
 
-    const renderTeamBoxscore = (teamName: string, players: any[], teamLogo?: string) => {
+    const renderTeamBoxscore = (teamName: string, players: any[], teamLogo?: string, record?: string) => {
         const starters = players.filter(p => p.isStarter);
         const bench = players.filter(p => !p.isStarter && (p.stats.MIN && p.stats.MIN !== '0' && p.stats.MIN !== '--'));
 
         return (
             <div className="glass-card rounded-3xl overflow-hidden mb-8">
-                {/* <div className="bg-gray-50/50 dark:bg-white/5 px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center gap-3">
-                    {teamLogo && <img src={teamLogo} alt={teamName} className="w-8 h-8 object-contain" />}
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{teamName}</h3>
-                </div> */}
+                <div className="bg-gray-50/50 dark:bg-white/5 px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between gap-3">
+                   <div className="flex items-center gap-3">
+                        {teamLogo && <img src={teamLogo} alt={teamName} className="w-8 h-8 object-contain" />}
+                        <div className="flex flex-col">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{teamName}</h3>
+                            {record && <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{record}</span>}
+                        </div>
+                   </div>
+                </div>
                 <div className="p-6">
                     {renderPlayerStats(starters, 'Starters', teamName, teamLogo)}
                     {bench.length > 0 && renderPlayerStats(bench, 'Bench', teamName, teamLogo)}
@@ -83,12 +88,6 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                 </div>
             </div>
         );
-    };
-
-    const getTeamRecord = (team: any) => {
-        // Look for record in standingSummary if available, or try to construct from stats if possible
-        // The API often provides "record" or "standingSummary" in the team object
-        return team.record || team.standingSummary || '';
     };
 
     return (
@@ -110,12 +109,12 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                         <div className="flex flex-col items-center flex-1">
                             <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" />
                             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-center">{match.homeScore}</h2>
-                            <span className="text-lg font-bold text-orange-200 mt-2">{match.homeTeam.shortName}</span>
                             {match.leagueId === 'nba' && (
-                                <div className="text-xs text-white/60 mt-1 font-medium bg-white/10 px-2 py-0.5 rounded-full">
-                                    {getTeamRecord(match.homeTeam)}
+                                <div className="text-sm text-white/80 font-bold mt-1 mb-1">
+                                    {match.homeTeam.record || ''}
                                 </div>
                             )}
+                            <span className="text-lg font-bold text-orange-200">{match.homeTeam.shortName}</span>
                         </div>
 
                         {/* Center Info */}
@@ -162,12 +161,12 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                         <div className="flex flex-col items-center flex-1">
                             <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" />
                             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-center">{match.awayScore}</h2>
-                            <span className="text-lg font-bold text-white/80 mt-2">{match.awayTeam.shortName}</span>
                             {match.leagueId === 'nba' && (
-                                <div className="text-xs text-white/60 mt-1 font-medium bg-white/10 px-2 py-0.5 rounded-full">
-                                    {getTeamRecord(match.awayTeam)}
+                                <div className="text-sm text-white/80 font-bold mt-1 mb-1">
+                                    {match.awayTeam.record || ''}
                                 </div>
                             )}
+                            <span className="text-lg font-bold text-white/80">{match.awayTeam.shortName}</span>
                         </div>
                     </div>
 
@@ -266,8 +265,8 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
 
                 {/* Player Stats Tab */}
                 <div style={{ display: activeTab === 'players' ? 'block' : 'none' }}>
-                    {renderTeamBoxscore(match.homeTeam.shortName, match.homePlayers, match.homeTeam.logo)}
-                    {renderTeamBoxscore(match.awayTeam.shortName, match.awayPlayers, match.awayTeam.logo)}
+                    {renderTeamBoxscore(match.homeTeam.shortName, match.homePlayers, match.homeTeam.logo, match.homeTeam.record)}
+                    {renderTeamBoxscore(match.awayTeam.shortName, match.awayPlayers, match.awayTeam.logo, match.awayTeam.record)}
                 </div>
 
                 {/* News Tab */}

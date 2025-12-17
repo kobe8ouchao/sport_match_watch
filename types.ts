@@ -8,6 +8,7 @@ export interface Team {
   logo: string; // URL
   shortName: string;
   linescores?: { value: number; displayValue?: string }[];
+  record?: string;
 }
 
 export interface Match {
