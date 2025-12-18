@@ -398,11 +398,17 @@ const MatchDetailPageWrapper: React.FC = () => {
   const navigate = useNavigate();
 
   // Handle SEO-friendly URLs: extract matchId from slugAndId if present
-  let matchId = paramMatchId;
-  if (slugAndId) {
+  // Also handle case where matchId param catches the slug (if routing is ambiguous)
+  let matchId = slugAndId || paramMatchId;
+  
+  if (matchId && matchId.includes('-')) {
     // Expected format: "slug-matchId"
-    const parts = slugAndId.split('-');
-    matchId = parts[parts.length - 1];
+    const parts = matchId.split('-');
+    const lastPart = parts[parts.length - 1];
+    // Simple check: matchId is usually numeric for ESPN
+    if (/^\d+$/.test(lastPart)) {
+        matchId = lastPart;
+    }
   }
 
   const [darkMode, setDarkMode] = useState(false);
