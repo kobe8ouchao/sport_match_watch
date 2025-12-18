@@ -33,8 +33,8 @@ const MatchDetail: React.FC<MatchDetailProps> = ({ matchId, leagueId, onBack }) 
       
       // Update SEO Title
       if (data) {
-        const home = data.homeTeam.name;
-        const away = data.awayTeam.name;
+        const home = data.homeTeam.name || data.homeTeam.shortName || 'Home Team';
+        const away = data.awayTeam.name || data.awayTeam.shortName || 'Away Team';
         const date = data.startTime.toLocaleDateString();
         document.title = `${home} vs ${away} Live Score & Match Status - ${date} - Sports Match`;
       }

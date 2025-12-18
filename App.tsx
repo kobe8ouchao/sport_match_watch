@@ -394,8 +394,16 @@ const Dashboard: React.FC = () => {
 
 // Detail Page Component
 const MatchDetailPageWrapper: React.FC = () => {
-  const { leagueId, matchId } = useParams<{ leagueId: string; matchId: string }>();
+  const { leagueId, matchId: paramMatchId, slugAndId } = useParams<{ leagueId: string; matchId: string; slugAndId: string }>();
   const navigate = useNavigate();
+
+  // Handle SEO-friendly URLs: extract matchId from slugAndId if present
+  let matchId = paramMatchId;
+  if (slugAndId) {
+    // Expected format: "slug-matchId"
+    const parts = slugAndId.split('-');
+    matchId = parts[parts.length - 1];
+  }
 
   const [darkMode, setDarkMode] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -469,6 +477,8 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/match/:leagueId/:matchId" element={<MatchDetailPageWrapper />} />
+        {/* Support SEO-friendly URLs: /match/[leagueId]/[slug]-[matchId] */}
+        <Route path="/match/:leagueId/:slugAndId" element={<MatchDetailPageWrapper />} />
         <Route path="/standings/:leagueId" element={<StandingsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/leagues" element={<LeaguesPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/news" element={<NewsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
