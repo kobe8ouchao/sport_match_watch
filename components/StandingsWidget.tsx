@@ -3,7 +3,7 @@ import { fetchStandings } from '../services/api';
 import { StandingEntry } from '../types';
 import { Loader2, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { LEAGUES } from '../constants';
+import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
 
 interface StandingsWidgetProps {
     leagueId: string;
@@ -93,7 +93,12 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
                                     </td>
                                     <td className="py-2.5">
                                         <div className="flex items-center space-x-2">
-                                            <img src={entry.team.logo} alt={entry.team.shortName} className="w-6 h-6 object-contain" />
+                                            <img 
+                                                src={entry.team.logo || DEFAULT_TEAM_LOGO} 
+                                                alt={entry.team.shortName} 
+                                                className="w-6 h-6 object-contain" 
+                                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                            />
                                             <span className="font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[120px]">
                                                 {entry.team.shortName}
                                             </span>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MatchDetailData, MatchEvent, MatchStat } from '../types';
-import { LEAGUES } from '../constants';
+import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
 import { Clock, MapPin, ArrowUp, ArrowDown } from 'lucide-react';
 import NewsSection from './NewsSection';
 
@@ -78,7 +78,12 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
           <div className={`flex items-center w-full max-w-4xl ${hasGoals ? 'justify-between' : 'justify-center gap-16 md:gap-32'}`}>
             {/* Home Team */}
             <div className="flex flex-col items-center flex-1">
-              <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-2xl mb-4" />
+              <img 
+                src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                alt={match.homeTeam.name} 
+                className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-2xl mb-4" 
+                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+              />
               <h2 className="text-2xl md:text-4xl font-bold text-center tracking-tight">{match.homeTeam.name}</h2>
             </div>
 
@@ -103,15 +108,31 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
               )}
 
               {/* Status / Minute */}
-              <div className={`mt-4 px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase border ${isLive ? 'bg-red-500 border-red-400 animate-pulse' : 'bg-white/10 border-white/20'
-                }`}>
-                {match.status === 'LIVE' ? `LIVE • ${match.minute}'` : match.status}
-              </div>
+              {isLive ? (
+                <div className="mt-4 flex items-center gap-2 bg-red-500/20 px-4 py-1.5 rounded-full border border-red-500/30 backdrop-blur-md">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                  <span className="text-sm font-bold text-white tracking-widest uppercase">
+                    {match.status === 'LIVE' ? `LIVE • ${match.minute}'` : match.status}
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-4 px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase border bg-white/10 border-white/20">
+                  {match.status}
+                </div>
+              )}
             </div>
 
             {/* Away Team */}
             <div className="flex flex-col items-center flex-1">
-              <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-2xl mb-4" />
+              <img 
+                src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                alt={match.awayTeam.name} 
+                className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-2xl mb-4" 
+                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+              />
               <h2 className="text-2xl md:text-4xl font-bold text-center tracking-tight">{match.awayTeam.name}</h2>
             </div>
           </div>
@@ -221,15 +242,17 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       const isHome = event.teamId === match.homeTeam.id;
                       const t = String(event.type).toLowerCase();
                       const isSub = t.includes('substitution');
-                      const typeIcon = t.includes('yellow')
-                        ? <span className="inline-block w-4 h-5 bg-yellow-400 border border-yellow-600 rounded-sm" />
-                        : t.includes('red')
-                          ? <span className="inline-block w-4 h-5 bg-red-500 border border-red-700 rounded-sm" />
-                          : isSub ? null
-                            // ? <span className="inline-flex items-center gap-1"><ArrowUp size={16} strokeWidth={3} className="text-green-500" /><ArrowDown size={16} strokeWidth={3} className="text-yellow-500" /></span>
-                            : t.includes('goal')
-                              ? <span>⚽</span>
-                              : null;
+                      const hasYellow = t.includes('yellow');
+                      const hasRed = t.includes('red');
+                      const hasGoal = t.includes('goal');
+                      
+                      const typeIcon = (hasYellow || hasRed || hasGoal) ? (
+                        <div className="flex items-center gap-1">
+                          {hasYellow && <span className="inline-block w-4 h-5 bg-yellow-400 border border-yellow-600 rounded-sm" />}
+                          {hasRed && <span className="inline-block w-4 h-5 bg-red-500 border border-red-700 rounded-sm" />}
+                          {hasGoal && <span>⚽</span>}
+                        </div>
+                      ) : null;
                       return (
                         <div key={event.id} className={`flex items-center justify-between w-full ${isHome ? 'flex-row-reverse' : ''}`}>
                           <div className="w-5/12"></div>

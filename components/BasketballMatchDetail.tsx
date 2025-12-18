@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MatchDetailData } from '../types';
 import { Calendar, MapPin } from 'lucide-react';
+import { DEFAULT_TEAM_LOGO } from '../constants';
 import NewsSection from './NewsSection';
 
 interface BasketballMatchDetailProps {
@@ -21,7 +22,16 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                 <table className="w-full text-sm text-left">
                     <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-white/5">
                         <tr>
-                            <th className="px-3 py-2 rounded-l-xl"><span><img src={teamLogo} alt={teamName} className="w-8 h-8 object-contain" /> </span></th>
+                            <th className="px-3 py-2 rounded-l-xl">
+                                <span>
+                                    <img 
+                                        src={teamLogo || DEFAULT_TEAM_LOGO} 
+                                        alt={teamName} 
+                                        className="w-8 h-8 object-contain" 
+                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                    /> 
+                                </span>
+                            </th>
                             <th className="px-2 py-2 text-center">MIN</th>
                             <th className="px-2 py-2 text-center font-bold">PTS</th>
                             <th className="px-2 py-2 text-center">REB</th>
@@ -74,7 +84,12 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
             <div className="glass-card rounded-3xl overflow-hidden mb-8">
                 <div className="bg-gray-50/50 dark:bg-white/5 px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between gap-3">
                    <div className="flex items-center gap-3">
-                        {teamLogo && <img src={teamLogo} alt={teamName} className="w-8 h-8 object-contain" />}
+                        <img 
+                            src={teamLogo || DEFAULT_TEAM_LOGO} 
+                            alt={teamName} 
+                            className="w-8 h-8 object-contain" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
                         <div className="flex flex-col">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{teamName}</h3>
                             {record && <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{record}</span>}
@@ -82,8 +97,8 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                    </div>
                 </div>
                 <div className="p-6">
-                    {renderPlayerStats(starters, 'Starters', teamName, teamLogo)}
-                    {bench.length > 0 && renderPlayerStats(bench, 'Bench', teamName, teamLogo)}
+                    {renderPlayerStats(starters, 'Starters', teamName, teamLogo || DEFAULT_TEAM_LOGO)}
+                    {bench.length > 0 && renderPlayerStats(bench, 'Bench', teamName, teamLogo || DEFAULT_TEAM_LOGO)}
                     {players.length === 0 && <div className="text-center text-gray-400 py-4">No player data available.</div>}
                 </div>
             </div>
@@ -107,7 +122,12 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                     <div className="flex justify-between items-center w-full max-w-5xl">
                         {/* Home Team */}
                         <div className="flex flex-col items-center flex-1">
-                            <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" />
+                            <img 
+                                src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                                alt={match.homeTeam.name} 
+                                className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" 
+                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                            />
                             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-center">{match.homeScore}</h2>
                             {match.leagueId === 'nba' && (
                                 <div className="text-sm text-white/80 font-bold mt-1 mb-1">
@@ -119,7 +139,17 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
 
                         {/* Center Info */}
                         <div className="flex flex-col items-center px-8">
-                            <div className="text-sm font-bold text-white/60 mb-4 uppercase tracking-widest">{match.status}</div>
+                            {match.status !== 'SCHEDULED' && match.status !== 'FINISHED' ? (
+                                <div className="flex items-center gap-2 mb-4 bg-red-500/20 px-3 py-1 rounded-full border border-red-500/30 backdrop-blur-md">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                    </span>
+                                    <span className="text-sm font-bold text-white tracking-widest uppercase">{match.status}</span>
+                                </div>
+                            ) : (
+                                <div className="text-sm font-bold text-white/60 mb-4 uppercase tracking-widest">{match.status}</div>
+                            )}
 
                             {/* Quarter Scoreboard */}
                             {(match.homeTeam.linescores && match.awayTeam.linescores) && (
@@ -159,7 +189,12 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
 
                         {/* Away Team */}
                         <div className="flex flex-col items-center flex-1">
-                            <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" />
+                            <img 
+                                src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                                alt={match.awayTeam.name} 
+                                className="h-24 w-24 md:h-32 md:w-32 object-contain mb-4 drop-shadow-2xl" 
+                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                            />
                             <h2 className="text-2xl md:text-4xl font-black tracking-tight text-center">{match.awayScore}</h2>
                             {match.leagueId === 'nba' && (
                                 <div className="text-sm text-white/80 font-bold mt-1 mb-1">

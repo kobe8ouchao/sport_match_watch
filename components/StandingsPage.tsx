@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchStandings, fetchPlayerStats } from '../services/api';
 import { StandingEntry, PlayerStatCategory } from '../types';
-import { LEAGUES } from '../constants';
+import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
 import { Loader2, User } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
@@ -193,7 +193,12 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                                     </td>
                                                                     <td className="px-6 py-4">
                                                                         <div className="flex items-center space-x-3">
-                                                                            <img src={entry.team.logo} alt="" className="w-8 h-8 object-contain" />
+                                                                            <img 
+                                                                                src={entry.team.logo || DEFAULT_TEAM_LOGO} 
+                                                                                alt="" 
+                                                                                className="w-8 h-8 object-contain" 
+                                                                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                                            />
                                                                             <span className="font-semibold text-gray-900 dark:text-white text-base">
                                                                                 {entry.team.name}
                                                                             </span>
@@ -268,7 +273,12 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                                             <User size={18} />
                                                                         </div>
                                                                     )}
-                                                                    <img src={player.teamLogo} alt="" className="w-3 h-3 absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 border shadow-sm" />
+                                                                    <img 
+                                                                        src={player.teamLogo || DEFAULT_TEAM_LOGO} 
+                                                                        alt="" 
+                                                                        className="w-3 h-3 absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 border shadow-sm" 
+                                                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                                    />
                                                                 </div>
                                                                 <div className="min-w-0">
                                                                     <div className="font-semibold text-sm text-gray-900 dark:text-white truncate group-hover:text-black dark:group-hover:text-white transition-colors">

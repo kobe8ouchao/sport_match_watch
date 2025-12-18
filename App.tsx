@@ -446,6 +446,7 @@ import SchedulePage from './components/SchedulePage';
 import SitemapPage from './components/SitemapPage';
 import SEO from './components/SEO';
 import LeagueLandingPage from './components/LeagueLandingPage';
+import WorldCupPage from './components/WorldCupPage';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -471,6 +472,7 @@ const App: React.FC = () => {
         <Route path="/standings/:leagueId" element={<StandingsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/leagues" element={<LeaguesPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/news" element={<NewsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/world-cup-2026" element={<WorldCupPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
@@ -568,6 +570,48 @@ const App: React.FC = () => {
               description="Live Italian Serie A football scores, schedule, and league table. Keep up with Juventus, AC Milan, and Inter Milan match results."
               keywords="Serie A Scores, Italian Football, Serie A Table, Calcio, Live Matches"
               heroColor="bg-blue-500"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/copa-del-rey-scores" 
+          element={
+            <LeagueLandingPage 
+              leagueId="esp.copa_del_rey"
+              title="Copa del Rey Live Scores & Fixtures"
+              description="Follow the Spanish Copa del Rey with live scores, match results, and tournament fixtures. Real-time updates for Spain's premier cup competition."
+              keywords="Copa del Rey Scores, Spanish Cup, Copa del Rey Fixtures, Live Football Scores, Spain Soccer"
+              heroColor="bg-orange-600"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/coppa-italia-results" 
+          element={
+            <LeagueLandingPage 
+              leagueId="ita.coppa_italia"
+              title="Coppa Italia Match Results & Schedule"
+              description="Get real-time Coppa Italia scores, live updates, and tournament schedule. Follow Italy's top cup competition with instant match statistics."
+              keywords="Coppa Italia Scores, Italian Cup, Coppa Italia Fixtures, Live Soccer Results, Italy Football"
+              heroColor="bg-green-600"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/fa-cup-fixtures" 
+          element={
+            <LeagueLandingPage 
+              leagueId="eng.fa"
+              title="FA Cup Live Scores, Draw & News"
+              description="Experience the magic of the FA Cup. Live scores, tournament bracket updates, and fixtures for the world's oldest national football competition."
+              keywords="FA Cup Scores, FA Cup Draw, FA Cup Fixtures, Live Football, England Cup Results"
+              heroColor="bg-red-600"
               darkMode={darkMode}
               toggleTheme={toggleTheme}
             />

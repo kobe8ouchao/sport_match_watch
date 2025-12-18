@@ -62,6 +62,9 @@ const leagueBanner: Record<string, string> = {
   'ita.1': 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1600&auto=format&fit=crop',
   'ger.1': 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1600&auto=format&fit=crop',
   'fra.1': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
+  'esp.copa_del_rey': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
+  'ita.coppa_italia': 'https://a.espncdn.com/i/leaguelogos/soccer/500/2192.png',
+  'eng.fa': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
 };
 
 const attachBanner = (matches: MatchWithHot[]): MatchWithHot[] => {
@@ -79,6 +82,9 @@ const LEAGUE_TIMEZONES: Record<string, string> = {
   'ger.1': 'Europe/Berlin',
   'fra.1': 'Europe/Paris',
   'uefa.champions': 'Europe/Paris',
+  'esp.copa_del_rey': 'Europe/Madrid',
+  'ita.coppa_italia': 'Europe/Rome',
+  'eng.fa': 'Europe/London',
 };
 
 // Helper to format date for specific league timezone
@@ -114,7 +120,10 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
       'fra.1', // Ligue 1
       'uefa.champions', // UCL
       'uefa.europa', // Europa League
-      'uefa.europa.conf' // Conference League
+      'uefa.europa.conf', // Conference League
+      'esp.copa_del_rey', // Copa del Rey
+      'ita.coppa_italia', // Coppa Italia
+      'eng.fa' // FA Cup
     ];
 
     try {

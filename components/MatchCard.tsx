@@ -1,6 +1,6 @@
 import React from 'react';
 import { Match } from '../types';
-import { LEAGUES } from '../constants';
+import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
 import { MapPin, Clock } from 'lucide-react';
 
 interface MatchCardProps {
@@ -20,6 +20,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   return (
     <div
       onClick={onClick}
+      title={`${match.homeTeam.name} vs ${match.awayTeam.name}`}
+      aria-label={`${match.homeTeam.name} vs ${match.awayTeam.name}`}
       className="glass-card rounded-3xl p-4 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl bg-white/60 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 group flex flex-col justify-between min-h-[140px] border border-white/40 dark:border-white/5 hover:border-white/60 dark:hover:border-white/20 cursor-pointer"
     >
 
@@ -65,11 +67,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
         <div className="flex flex-col items-center flex-1 min-w-0 space-y-2 px-1">
           <div className="h-10 w-10 md:h-12 md:w-12 relative transition-transform duration-300 transform group-hover:scale-110 filter drop-shadow-sm">
             <img
-              src={match.homeTeam.logo}
+              src={match.homeTeam.logo || DEFAULT_TEAM_LOGO}
               alt={match.homeTeam.name}
               className="w-full h-full object-contain"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/50?text=?';
+                (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO;
               }}
             />
           </div>
@@ -111,11 +113,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
         <div className="flex flex-col items-center flex-1 min-w-0 space-y-2 px-1">
           <div className="h-10 w-10 md:h-12 md:w-12 relative transition-transform duration-300 transform group-hover:scale-110 filter drop-shadow-sm">
             <img
-              src={match.awayTeam.logo}
+              src={match.awayTeam.logo || DEFAULT_TEAM_LOGO}
               alt={match.awayTeam.name}
               className="w-full h-full object-contain"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/50?text=?';
+                (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO;
               }}
             />
           </div>

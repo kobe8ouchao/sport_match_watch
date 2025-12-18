@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MatchWithHot, LEAGUES } from '../constants';
+import { MatchWithHot, LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface FeaturedCarouselProps {
@@ -106,7 +106,12 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchCli
             <div className="flex flex-col items-center gap-2 text-center flex-1 justify-end min-w-0">
                 <span className="relative flex items-center justify-center filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110">
                   {typeof currentMatch.homeTeam.logo === 'string' ? (
-                    <img src={currentMatch.homeTeam.logo} alt={currentMatch.homeTeam.name} className="h-12 w-12 md:h-16 md:w-16 object-contain" />
+                    <img 
+                        src={currentMatch.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                        alt={currentMatch.homeTeam.name} 
+                        className="h-12 w-12 md:h-16 md:w-16 object-contain" 
+                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                    />
                   ) : currentMatch.homeTeam.logo}
                 </span>
                 <span className="text-sm md:text-base font-bold tracking-tight drop-shadow-sm truncate w-full px-2">
@@ -148,7 +153,12 @@ const FeaturedCarousel: React.FC<FeaturedCarouselProps> = ({ matches, onMatchCli
             <div className="flex flex-col items-center gap-2 text-center flex-1 justify-start min-w-0">
                 <span className="relative flex items-center justify-center filter drop-shadow-lg transition-transform duration-300 group-hover:scale-110">
                   {typeof currentMatch.awayTeam.logo === 'string' ? (
-                    <img src={currentMatch.awayTeam.logo} alt={currentMatch.awayTeam.name} className="h-12 w-12 md:h-16 md:w-16 object-contain" />
+                    <img 
+                        src={currentMatch.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                        alt={currentMatch.awayTeam.name} 
+                        className="h-12 w-12 md:h-16 md:w-16 object-contain" 
+                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                    />
                   ) : currentMatch.awayTeam.logo}
                 </span>
                 <span className="text-sm md:text-base font-bold tracking-tight drop-shadow-sm truncate w-full px-2">
