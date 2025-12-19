@@ -20,12 +20,14 @@ const STATIC_ROUTES = [
     { loc: '/schedule', changefreq: 'daily', priority: '0.9' },
     { loc: '/news', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/nba', changefreq: 'daily', priority: '0.8' },
+    { loc: '/standings/nfl', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/eng.1', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/esp.1', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/ita.1', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/ger.1', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/fra.1', changefreq: 'daily', priority: '0.8' },
     { loc: '/nba-live-scores', changefreq: 'daily', priority: '0.9' },
+    { loc: '/nfl-scores', changefreq: 'daily', priority: '0.9' },
     { loc: '/champions-league-results', changefreq: 'daily', priority: '0.9' },
     { loc: '/premier-league-fixtures', changefreq: 'daily', priority: '0.9' },
     { loc: '/la-liga-standings', changefreq: 'daily', priority: '0.9' },
@@ -38,6 +40,7 @@ const STATIC_ROUTES = [
 let KEYWORD_DATA = [];
 
 const NBA_TEAMS_URL = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams';
+const NFL_TEAMS_URL = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams';
 
 const fetchNBAKeywords = async () => {
     try {
@@ -68,6 +71,39 @@ const fetchNBAKeywords = async () => {
     } catch (error) {
         console.error('Failed to fetch NBA keywords:', error);
         // Fallback to empty or minimal list if fetch fails
+    }
+};
+
+const fetchNFLKeywords = async () => {
+    try {
+        console.log('Fetching NFL teams data for keywords...');
+        const data = await fetchJson(NFL_TEAMS_URL);
+        const teams = data.sports[0].leagues[0].teams.map(t => t.team);
+        
+        const nflKeywords = teams.map(team => {
+            const name = team.name.toLowerCase(); 
+            const displayName = team.displayName.toLowerCase();
+            const shortName = team.shortDisplayName.toLowerCase();
+
+            const keywords = [
+                `how to watch ${displayName} game`,
+                `where to watch ${displayName}`,
+                `what channel is the ${name} game on`,
+                `${displayName} live score`,
+                `${displayName} vs`,
+                `watch ${name} online free`,
+                `${name} schedule 2025`,
+                `live stream ${displayName}`,
+                `nfl scores ${name}`
+            ];
+
+            return { team: shortName, keywords };
+        });
+        
+        KEYWORD_DATA = [...KEYWORD_DATA, ...nflKeywords];
+        console.log(`Loaded keywords for ${nflKeywords.length} NFL teams.`);
+    } catch (error) {
+        console.error('Failed to fetch NFL keywords:', error);
     }
 };
 
@@ -157,6 +193,7 @@ const generatePages = async () => {
     
     // Fetch NBA keywords before generating pages
     await fetchNBAKeywords();
+    await fetchNFLKeywords();
 
     const generatedUrls = [];
 

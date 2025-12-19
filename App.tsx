@@ -508,7 +508,21 @@ const App: React.FC = () => {
           } 
         />
         <Route 
-          path="/champions-league-results" 
+          path="/nfl-scores" 
+          element={
+            <LeagueLandingPage 
+              leagueId="nfl"
+              title="NFL Live Scores, Standings & Schedule"
+              description="Get real-time NFL scores, live updates, standings, and schedule. Follow the road to the Super Bowl with instant match statistics."
+              keywords="NFL Scores, NFL Standings, NFL Schedule, Live Football Scores, Super Bowl"
+              heroColor="bg-blue-900"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/champions-league-results"  
           element={
             <LeagueLandingPage 
               leagueId="uefa.champions"

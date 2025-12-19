@@ -36,6 +36,7 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
 
     // Determine if we should show tabs (only for NBA)
     const isNba = leagueId === 'nba';
+    const isNfl = leagueId === 'nfl';
     const currentLeague = LEAGUES.find(l => l.id === leagueId);
 
     const renderTable = (data: StandingEntry[], title: string) => (
@@ -81,8 +82,8 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
                             <tr>
                                 <th className="pb-2 pl-1 w-8">#</th>
                                 <th className="pb-2">Team</th>
-                                <th className="pb-2 text-center">{isNba ? 'W' : 'P'}</th>
-                                <th className="pb-2 text-right">{isNba ? 'Pct' : 'Pts'}</th>
+                                <th className="pb-2 text-center">{isNba || isNfl ? 'W' : 'P'}</th>
+                                <th className="pb-2 text-right">{isNba ? 'Pct' : isNfl ? 'L' : 'Pts'}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50/50 dark:divide-white/5">
@@ -105,12 +106,14 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
                                         </div>
                                     </td>
                                     <td className="py-2.5 text-center text-gray-500">
-                                        {isNba ? entry.stats.wins : entry.stats.gamesPlayed}
+                                        {isNba || isNfl ? entry.stats.wins : entry.stats.gamesPlayed}
                                     </td>
                                     <td className="py-2.5 text-right font-bold text-gray-900 dark:text-white">
                                         {isNba
                                             ? entry.stats.winPct?.toFixed(3).replace(/^0+/, '')
-                                            : entry.stats.points
+                                            : isNfl
+                                                ? entry.stats.losses
+                                                : entry.stats.points
                                         }
                                     </td>
                                 </tr>

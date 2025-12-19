@@ -52,6 +52,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
   const league = LEAGUES.find(l => l.id === match.leagueId);
   const leagueName = league ? league.name : match.leagueId.toUpperCase();
+  const isNfl = match.leagueId === 'nfl';
   
   const hasGoals = match.events.some(e => e.type.toLowerCase().includes('goal'));
 
@@ -241,16 +242,29 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                     .map((event) => {
                       const isHome = event.teamId === match.homeTeam.id;
                       const t = String(event.type).toLowerCase();
+                      const d = String(event.text || '').toLowerCase();
                       const isSub = t.includes('substitution');
                       const hasYellow = t.includes('yellow');
                       const hasRed = t.includes('red');
                       const hasGoal = t.includes('goal');
                       
-                      const typeIcon = (hasYellow || hasRed || hasGoal) ? (
-                        <div className="flex items-center gap-1">
-                          {hasYellow && <span className="inline-block w-4 h-5 bg-yellow-400 border border-yellow-600 rounded-sm" />}
-                          {hasRed && <span className="inline-block w-4 h-5 bg-red-500 border border-red-700 rounded-sm" />}
-                          {hasGoal && <span>⚽</span>}
+                      const isOwnGoal = t.includes('own goal');
+                      
+                      // Penalty Goal: type includes 'goal' AND description/type indicates penalty
+                      const isPenaltyGoal = ( (d.includes('penalty goal') || d.includes('penalty - scored') || t.includes('penalty'))) && !isOwnGoal;
+                      
+                      // Missed Penalty: type indicates missed penalty
+                      const isMissedPenalty = t.includes('penalty - missed') || t.includes('penalty - saved') || 
+                                              (t.includes('penalty') && (t.includes('missed') || t.includes('saved')));
+
+                      const typeIcon = (hasYellow || hasRed || hasGoal || isMissedPenalty) ? (
+                        <div className="flex items-center gap-1.5 font-bold text-xs">
+                          {hasYellow && <span className="inline-block w-3 h-4 bg-yellow-400 border border-yellow-600 rounded-[1px] shadow-sm" title="Yellow Card" />}
+                          {hasRed && <span className="inline-block w-3 h-4 bg-red-500 border border-red-700 rounded-[1px] shadow-sm" title="Red Card" />}
+                          {hasGoal && !isPenaltyGoal && !isOwnGoal && <span className="flex items-center" title="Goal">⚽</span>}
+                          {isOwnGoal && <span className="flex items-center text-red-500" title="Own Goal">⚽<span className="text-[10px] ml-0.5">(OG)</span></span>}
+                          {isPenaltyGoal && <span className="flex items-center" title="Penalty Goal">⚽<span className="text-[10px] ml-0.5">(P)</span></span>}
+                          {isMissedPenalty && <span className="flex items-center text-red-500" title="Penalty Missed">❌<span className="text-[10px] ml-0.5">(P)</span></span>}
                         </div>
                       ) : null;
                       return (
@@ -513,9 +527,9 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                           <div key={`hsub-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/10 transition opacity-80 hover:opacity-100">
                             <span className="w-6 text-center font-bold text-gray-500 dark:text-gray-400 text-xs">{p.jersey}</span>
                             {p.headshot ? (
-                              <img src={p.headshot} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover grayscale" />
+                              <img src={p.headshot} alt={p.name} className={`w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover ${!isNfl ? 'grayscale' : ''}`} />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center grayscale">
+                              <div className={`w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center ${!isNfl ? 'grayscale' : ''}`}>
                                 <span className="text-xs">👤</span>
                               </div>
                             )}
@@ -700,9 +714,9 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                           <div key={`asub-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-2xl bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/10 transition opacity-80 hover:opacity-100">
                             <span className="w-6 text-center font-bold text-gray-500 dark:text-gray-400 text-xs">{p.jersey}</span>
                             {p.headshot ? (
-                              <img src={p.headshot} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover grayscale" />
+                              <img src={p.headshot} alt={p.name} className={`w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 object-cover ${!isNfl ? 'grayscale' : ''}`} />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center grayscale">
+                              <div className={`w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center ${!isNfl ? 'grayscale' : ''}`}>
                                 <span className="text-xs">👤</span>
                               </div>
                             )}

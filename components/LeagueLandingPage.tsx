@@ -81,6 +81,16 @@ const LEAGUE_SPECIFIC_CONTENT: Record<string, LeagueSEOData> = {
             { question: "When do the NBA Playoffs start?", answer: "The NBA Playoffs usually begin in April, following the conclusion of the regular season." }
         ]
     },
+    'nfl': {
+        intro: "The NFL is the pinnacle of American football, delivering hard-hitting action and strategic brilliance. From the regular season grind to the spectacle of the Super Bowl, every snap counts.",
+        popularTeams: ["Kansas City Chiefs", "San Francisco 49ers", "Dallas Cowboys", "Philadelphia Eagles", "Baltimore Ravens", "Buffalo Bills"],
+        searchKeywords: ["NFL Scores", "NFL Standings", "Super Bowl Odds", "Monday Night Football", "NFL Playoffs", "Fantasy Football Stats"],
+        narrative: "Experience the intensity of the gridiron. Follow the road to the Super Bowl, the battle for playoff spots, and the drama of overtime thrillers. Track your favorite teams and players with real-time stats and scores.",
+        faq: [
+            { question: "How many teams are in the NFL?", answer: "The NFL consists of 32 teams, divided equally between the National Football Conference (NFC) and the American Football Conference (AFC)." },
+            { question: "When is the Super Bowl played?", answer: "The Super Bowl is typically played on the second Sunday in February." }
+        ]
+    },
     'esp.copa_del_rey': {
         intro: "The Copa del Rey is Spain's oldest football competition, known for its thrilling knockout format where giant-killings are always on the cards. It offers a path to glory for clubs across all divisions of Spanish football.",
         popularTeams: ["Athletic Club", "Real Madrid", "FC Barcelona", "Real Betis", "Valencia", "Sevilla"],
@@ -178,7 +188,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
         {/* Hero Section */}
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
             <div className="flex flex-col lg:flex-row items-center gap-12">
-                <div className="lg:w-1/2 space-y-8">
+                <div className={`${leagueId === 'nfl' ? 'w-full lg:w-2/3 mx-auto text-center' : 'lg:w-1/2'} space-y-8`}>
                     <h1 className="text-4xl lg:text-6xl font-black tracking-tight leading-tight">
                         {title}
                     </h1>
@@ -186,7 +196,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
                         {content.intro}
                     </p>
                     
-                    <div className="flex flex-wrap gap-4 pt-4">
+                    <div className={`flex flex-wrap gap-4 pt-4 ${leagueId === 'nfl' ? 'justify-center' : ''}`}>
                         <Link 
                             to={`/?league=${leagueId}`}
                             className={`inline-flex items-center px-8 py-4 rounded-2xl text-white font-bold text-lg shadow-xl hover:scale-105 transition-transform duration-300 ${heroColor}`}
@@ -203,7 +213,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
                     </div>
 
                     {/* Features List */}
-                    <div className="grid grid-cols-3 gap-6 pt-8">
+                    <div className={`grid grid-cols-3 gap-6 pt-8 ${leagueId === 'nfl' ? 'max-w-2xl mx-auto' : ''}`}>
                         <div className="flex flex-col items-center text-center space-y-2">
                             <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                                 <Activity size={24} />
@@ -225,6 +235,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
                     </div>
                 </div>
 
+                {leagueId !== 'nfl' && (
                 <div className="lg:w-1/2 w-full">
                     <div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-white/40 dark:border-white/5 shadow-2xl">
                         <h2 className="text-2xl font-bold mb-6 flex items-center">
@@ -234,6 +245,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
                         <StandingsWidget leagueId={leagueId} />
                     </div>
                 </div>
+                )}
             </div>
         </div>
 

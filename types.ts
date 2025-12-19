@@ -27,6 +27,7 @@ export interface Match {
 export interface MatchEvent {
   id: string;
   type: string; // e.g., "Goal", "Yellow Card", "Substitution"
+  text?: string; // Detailed description
   minute: string; // clock.displayValue
   teamId: string;
   player: string; // athletesInvolved[0].shortName
@@ -54,6 +55,31 @@ export interface PlayerStat {
   subbedIn?: boolean;
   subbedOut?: boolean;
   headshot?: string;
+  category?: string; // e.g., "passing", "rushing" for NFL
+}
+
+export interface NFLDrive {
+  id: string;
+  description: string;
+  start: { yardLine?: number; teamId?: string; text: string; time?: string };
+  end: { yardLine?: number; teamId?: string; text: string; time?: string };
+  timeElapsed: string;
+  yards: number;
+  result: string;
+  plays: number;
+  team: { id: string; shortDisplayName: string; logo: string };
+}
+
+export interface NFLScoringPlay {
+  id: string;
+  type: { id: string; text: string; abbreviation?: string };
+  text: string;
+  scoreValue: number;
+  team: { id: string; logo?: string; uid?: string };
+  period: { number: number; displayValue: string };
+  clock: { displayValue: string };
+  awayScore: number;
+  homeScore: number;
 }
 
 export interface MatchDetailData extends Match {
@@ -61,6 +87,16 @@ export interface MatchDetailData extends Match {
   stats: MatchStat[];
   homePlayers: PlayerStat[];
   awayPlayers: PlayerStat[];
+  // NFL Specifics
+  drives?: NFLDrive[];
+  scoringPlays?: NFLScoringPlay[];
+  winProbability?: { homeWinPercentage: number; playId: string; tiePercentage: number; secondsLeft: number }[];
+  gameInfo?: {
+    weather?: { temperature?: number; conditionId?: string; displayValue?: string };
+    attendance?: number;
+    venue?: { fullName: string; address?: { city?: string; state?: string } };
+    odds?: { details?: string; overUnder?: number }[];
+  };
 }
 
 export interface League {
@@ -87,8 +123,12 @@ export interface StandingEntry {
     goalDiff?: number; // Soccer
     goalsFor?: number; // Soccer
     goalsAgainst?: number; // Soccer
-    winPct?: number; // NBA
+    winPct?: number; // NBA, NFL
     gamesBehind?: number; // NBA
+    streak?: string; // NFL
+    pf?: number; // NFL Points For
+    pa?: number; // NFL Points Against
+    diff?: number; // NFL Point Diff
   };
 }
 

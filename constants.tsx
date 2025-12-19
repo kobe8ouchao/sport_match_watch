@@ -15,6 +15,7 @@ export const DEFAULT_TEAM_LOGO = "https://a.espncdn.com/combiner/i?img=/i/teamlo
 export const LEAGUES: League[] = [
   { id: 'top', name: 'Top', logo: <Star size={16} /> }, 
   { id: 'nba', name: 'NBA', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png' },
+  { id: 'nfl', name: 'NFL', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png' },
   { id: 'uefa.champions', name: 'UEFA', logo: UCL_LOGO },
   
   { id: 'eng.1', name: 'Premier', logo: 'https://a.espncdn.com/i/leaguelogos/soccer/500/23.png' },

@@ -15,11 +15,12 @@ interface StandingsPageProps {
 const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) => {
     const { leagueId } = useParams<{ leagueId: string }>();
     const isNba = leagueId === 'nba';
+    const isNfl = leagueId === 'nfl';
     const currentLeague = LEAGUES.find(l => l.id === leagueId);
     
     // For NBA, we use tabs. For Soccer, we show side-by-side.
     // 'both' is a special state for side-by-side view (default for soccer)
-    const [activeTab, setActiveTab] = useState<'teams' | 'players' | 'both'>(isNba ? 'teams' : 'both');
+    const [activeTab, setActiveTab] = useState<'teams' | 'players' | 'both'>((isNba || isNfl) ? 'teams' : 'both');
     
     const [standings, setStandings] = useState<StandingEntry[]>([]);
     const [playerStats, setPlayerStats] = useState<PlayerStatCategory[]>([]);
@@ -28,7 +29,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
 
     useEffect(() => {
         // Reset tab when league changes
-        setActiveTab(leagueId === 'nba' ? 'teams' : 'both');
+        setActiveTab((leagueId === 'nba' || leagueId === 'nfl') ? 'teams' : 'both');
     }, [leagueId]);
 
     useEffect(() => {
@@ -169,11 +170,20 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                             <th className="px-6 py-4 text-center">Played</th>
                                                             <th className="px-6 py-4 text-center">Wins</th>
                                                             <th className="px-6 py-4 text-center">Losses</th>
-                                                            {!isNba ? (
+                                                            {!isNba && !isNfl ? (
                                                                 <>
                                                                     <th className="px-6 py-4 text-center">Draws</th>
                                                                     <th className="px-6 py-4 text-center">GD</th>
                                                                     <th className="px-6 py-4 text-center font-bold">Points</th>
+                                                                </>
+                                                            ) : isNfl ? (
+                                                                <>
+                                                                    <th className="px-4 py-4 text-center">Ties</th>
+                                                                    <th className="px-4 py-4 text-center">Pct</th>
+                                                                    <th className="px-4 py-4 text-center">PF</th>
+                                                                    <th className="px-4 py-4 text-center">PA</th>
+                                                                    <th className="px-4 py-4 text-center">Diff</th>
+                                                                    <th className="px-4 py-4 text-center">Strk</th>
                                                                 </>
                                                             ) : (
                                                                 <>
@@ -213,7 +223,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                                     <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-400">
                                                                         {entry.stats.losses}
                                                                     </td>
-                                                                    {!isNba ? (
+                                                                    {!isNba && !isNfl ? (
                                                                         <>
                                                                             <td className="px-6 py-4 text-center text-gray-600 dark:text-gray-400">
                                                                                 {entry.stats.draws}
@@ -223,6 +233,27 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                                                                             </td>
                                                                             <td className="px-6 py-4 text-center font-bold text-gray-900 dark:text-white text-lg">
                                                                                 {entry.stats.points}
+                                                                            </td>
+                                                                        </>
+                                                                    ) : isNfl ? (
+                                                                        <>
+                                                                            <td className="px-4 py-4 text-center text-gray-600 dark:text-gray-400">
+                                                                                {entry.stats.draws}
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-center text-gray-600 dark:text-gray-400">
+                                                                                {entry.stats.winPct?.toFixed(2)}
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-center text-gray-600 dark:text-gray-400">
+                                                                                {entry.stats.pf}
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-center text-gray-600 dark:text-gray-400">
+                                                                                {entry.stats.pa}
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-center text-gray-600 dark:text-gray-400">
+                                                                                {entry.stats.diff}
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-center text-gray-600 dark:text-gray-400">
+                                                                                {entry.stats.streak}
                                                                             </td>
                                                                         </>
                                                                     ) : (

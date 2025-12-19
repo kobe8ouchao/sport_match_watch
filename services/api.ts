@@ -57,6 +57,7 @@ const transformEspnEvent = (event: any, leagueId: string): MatchWithHot => {
 
 const leagueBanner: Record<string, string> = {
   nba: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=1600&auto=format&fit=crop',
+  nfl: 'https://images.unsplash.com/photo-1597481929652-9bdc374e8f81?q=80&w=1931&auto=format&fit=crop',
   'eng.1': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
   'esp.1': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
   'ita.1': 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?q=80&w=1600&auto=format&fit=crop',
@@ -76,6 +77,7 @@ const attachBanner = (matches: MatchWithHot[]): MatchWithHot[] => {
 
 const LEAGUE_TIMEZONES: Record<string, string> = {
   'nba': 'America/New_York',
+  'nfl': 'America/New_York',
   'eng.1': 'Europe/London',
   'esp.1': 'Europe/Madrid',
   'ita.1': 'Europe/Rome',
@@ -113,6 +115,7 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
   if (leagueId === 'top') {
     const leaguesToFetch = [
       'nba',
+      'nfl',
       'eng.1', // Premier League
       'esp.1', // La Liga
       'ita.1', // Serie A
@@ -166,6 +169,8 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
 
     if (queryId === 'nba') {
       url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
+    } else if (queryId === 'nfl') {
+      url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${queryDateStr}`;
     } else {
       url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
     }
@@ -182,7 +187,7 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
         Array.isArray(data?.leagues?.[0]?.calendar)
           ? data.leagues[0].calendar.map((c: string) => ({
             date: new Date(c),
-            sport: leagueId === 'nba' ? 'basketball' : 'soccer',
+            sport: leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : 'soccer'),
             leagueId,
           }))
           : [];
@@ -243,11 +248,13 @@ const fetchNbaTeamRecord = async (teamId: string): Promise<string> => {
 };
 
 export const fetchMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
-  const sport = leagueId === 'nba' ? 'basketball' : 'soccer';
+  const sport = leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : 'soccer');
 
   let url = '';
   if (sport === 'basketball') {
     url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${matchId}`;
+  } else if (sport === 'football') {
+    url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${matchId}`;
   } else {
     url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueId}/summary?event=${matchId}`;
   }
@@ -352,6 +359,7 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
       return {
         id: d.id || `event-${index}`,
         type: typeText,
+        text: d.text || d.shortText || '',
         minute: d.clock?.displayValue || d.time?.displayValue || '',
         teamId: d.team?.id || '',
         player: participants[0]?.name || '',
@@ -359,6 +367,54 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
         participants
       };
     });
+
+    // Extract NFL Specifics
+    const drives = data.drives?.previous?.map((d: any) => ({
+      id: d.id,
+      description: d.description,
+      start: {
+        yardLine: d.start?.yardLine,
+        teamId: d.start?.team?.id,
+        text: d.start?.text,
+        time: d.start?.clock?.displayValue
+      },
+      end: {
+        yardLine: d.end?.yardLine,
+        teamId: d.end?.team?.id,
+        text: d.end?.text,
+        time: d.end?.clock?.displayValue
+      },
+      timeElapsed: d.timeElapsed?.displayValue,
+      yards: d.yards,
+      result: d.result,
+      plays: d.offensivePlays,
+      team: {
+        id: d.team?.id,
+        shortDisplayName: d.team?.shortDisplayName || d.team?.displayName,
+        logo: d.team?.logos?.[0]?.href
+      }
+    })) || [];
+
+    const scoringPlays = data.scoringPlays?.map((p: any) => ({
+      id: p.id,
+      type: p.type,
+      text: p.text,
+      scoreValue: p.scoreValue,
+      team: p.team,
+      period: p.period,
+      clock: p.clock,
+      awayScore: p.awayScore,
+      homeScore: p.homeScore
+    })) || [];
+
+    const winProbability = data.winProbability?.map((w: any) => ({
+      homeWinPercentage: w.homeWinPercentage,
+      playId: w.playId,
+      tiePercentage: w.tiePercentage,
+      secondsLeft: w.secondsLeft
+    })) || [];
+
+    const gameInfo = data.gameInfo;
 
     // Extract Statistics
     // data.boxscore.teams contains statistical comparison
@@ -421,7 +477,8 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
               jersey: athlete.jersey || '',
               stats: statObj,
               isStarter: typeof athleteEntry.starter === 'boolean' ? athleteEntry.starter : (group.name === 'starters' || group.name === 'starter'),
-              headshot: athlete.headshot?.href
+              headshot: athlete.headshot?.href,
+              category: group.name
             });
           });
         });
@@ -473,7 +530,11 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
       events,
       stats,
       homePlayers,
-      awayPlayers
+      awayPlayers,
+      drives,
+      scoringPlays,
+      winProbability,
+      gameInfo
     };
 
   } catch (error) {
@@ -485,9 +546,12 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
 export const fetchStandings = async (leagueId: string): Promise<StandingEntry[]> => {
   let url = '';
   const isNba = leagueId === 'nba';
+  const isNfl = leagueId === 'nfl';
 
   if (isNba) {
     url = `https://site.api.espn.com/apis/v2/sports/basketball/nba/standings`;
+  } else if (isNfl) {
+    url = `https://site.api.espn.com/apis/v2/sports/football/nfl/standings`;
   } else {
     url = `https://site.api.espn.com/apis/v2/sports/soccer/${leagueId}/standings`;
   }
@@ -535,6 +599,13 @@ export const fetchStandings = async (leagueId: string): Promise<StandingEntry[]>
         if (isNba) {
           statsObj.winPct = parseFloat(getStat('winPercent') || '0');
           statsObj.gamesBehind = parseFloat(getStat('gamesBehind') || '0');
+        } else if (isNfl) {
+          statsObj.winPct = parseFloat(getStat('winPercent') || '0');
+          statsObj.draws = parseInt(getStat('ties') || '0');
+          statsObj.streak = getStat('streak') || '';
+          statsObj.pf = parseInt(getStat('pointsFor') || '0');
+          statsObj.pa = parseInt(getStat('pointsAgainst') || '0');
+          statsObj.diff = parseInt(getStat('pointDifferential') || '0');
         } else {
           statsObj.draws = parseInt(getStat('ties') || '0');
           statsObj.points = parseInt(getStat('points') || '0');
@@ -734,6 +805,8 @@ export const fetchNews = async (leagueId: string, matchId?: string): Promise<Art
   let endpoint = '';
   if (leagueId === 'nba') {
     endpoint = 'basketball/nba';
+  } else if (leagueId === 'nfl') {
+    endpoint = 'football/nfl';
   } else if (leagueId === 'top') {
     endpoint = 'soccer/eng.1'; // Default to Premier League for Top
   } else {
@@ -742,7 +815,7 @@ export const fetchNews = async (leagueId: string, matchId?: string): Promise<Art
   
   let url = `https://site.api.espn.com/apis/site/v2/sports/${endpoint}/news`;
   
-  if (leagueId != 'nba' && matchId) {
+  if (leagueId != 'nba' && leagueId != 'nfl' && matchId) {
     url += `?event=${matchId}`;
   }
 
