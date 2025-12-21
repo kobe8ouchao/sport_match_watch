@@ -255,45 +255,232 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
             </div>
 
             {/* Content Area */}
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 {/* Team Stats Tab */}
                 <div style={{ display: activeTab === 'stats' ? 'block' : 'none' }}>
-                    <div className="glass-card p-6 rounded-3xl">
-                        <h3 className="text-lg font-bold mb-6 flex items-center">
-                            <span className="w-1 h-5 bg-orange-500 rounded-full mr-3"></span>
-                            Team Stats
-                        </h3>
+                    
+                    {/* Game Leaders Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        {/* Game Leaders Section */}
+                        <div className="glass-card p-6 rounded-3xl h-full">
+                            <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-white/10 pb-4">
+                                <div className="flex items-center gap-2">
+                                    <img 
+                                        src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                                        alt={match.homeTeam.name} 
+                                        className="w-8 h-8 object-contain" 
+                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                    />
+                                    <span className="text-sm font-bold text-gray-900 dark:text-white">{match.homeTeam.shortName}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold text-gray-900 dark:text-white">{match.awayTeam.shortName}</span>
+                                    <img 
+                                        src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                                        alt={match.awayTeam.name} 
+                                        className="w-8 h-8 object-contain" 
+                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Leaders Logic */}
+                            {(() => {
+                                const getLeader = (players: any[], key: string) => {
+                                    if (!players || players.length === 0) return null;
+                                    return players.reduce((prev, current) => {
+                                        const prevVal = parseFloat(prev.stats[key] || '0');
+                                        const currVal = parseFloat(current.stats[key] || '0');
+                                        return (currVal > prevVal) ? current : prev;
+                                    }, players[0]);
+                                };
 
-                        {/* Team Header Row */}
-                        <div className="flex justify-between items-center mb-6 px-2">
-                            <div className="flex flex-col items-center w-16">
-                                <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-10 h-10 object-contain mb-2" />
-                                <span className="text-xs font-bold text-center leading-tight">{match.homeTeam.shortName}</span>
-                            </div>
-                            <span className="text-sm font-bold text-gray-400">VS</span>
-                            <div className="flex flex-col items-center w-16">
-                                <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-10 h-10 object-contain mb-2" />
-                                <span className="text-xs font-bold text-center leading-tight">{match.awayTeam.shortName}</span>
-                            </div>
+                                const categories = [
+                                    { key: 'PTS', label: 'Points' }, 
+                                    { key: 'REB', label: 'Rebounds' },
+                                    { key: 'AST', label: 'Assists' },
+                                    { key: '3PM', label: '3-Pointers' },
+                                    { key: 'STL', label: 'Steals' },
+                                    { key: 'BLK', label: 'Blocks' }
+                                ];
+
+                                return categories.map(cat => {
+                                    const homeLeader = getLeader(match.homePlayers, cat.key);
+                                    const awayLeader = getLeader(match.awayPlayers, cat.key);
+                                    
+                                    if (!homeLeader || !awayLeader) return null;
+
+                                    return (
+                                        <div key={cat.key} className="flex items-center justify-between mb-8 last:mb-0">
+                                            {/* Home Player */}
+                                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                                                <div className="relative flex-shrink-0">
+                                                    <img 
+                                                        src={homeLeader.headshot || DEFAULT_TEAM_LOGO} 
+                                                        alt={homeLeader.name} 
+                                                        className="w-12 h-12 rounded-full object-cover border-2 border-white/10 shadow-lg bg-gray-100 dark:bg-white/5"
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                    />
+                                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm border border-gray-100 dark:border-white/5">
+                                                        #{homeLeader.jersey}
+                                                    </div>
+                                                    <img 
+                                                        src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                                                        alt="Team" 
+                                                        className="absolute -top-1 -left-1 w-5 h-5 rounded-full border border-white dark:border-zinc-900 bg-white dark:bg-zinc-900 object-contain p-0.5 shadow-sm"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-xl font-black text-gray-900 dark:text-white leading-none mb-1">{homeLeader.stats[cat.key]}</span>
+                                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{homeLeader.name}</span>
+                                                    
+                                                    {/* Additional Stats */}
+                                                    {cat.key === 'PTS' && (
+                                                        <div className="flex gap-2 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                                            <span>FG: {homeLeader.stats.FG || '--'}</span>
+                                                            <span>FT: {homeLeader.stats.FT || '--'}</span>
+                                                        </div>
+                                                    )}
+                                                    {cat.key === 'REB' && (
+                                                        <div className="flex gap-2 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                                            <span>Def: {homeLeader.stats.DREB || '--'}</span>
+                                                            <span>Off: {homeLeader.stats.OREB || '--'}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Category Label */}
+                                            <div className="px-2 flex flex-col items-center justify-center w-16">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">{cat.label}</span>
+                                            </div>
+
+                                            {/* Away Player */}
+                                            <div className="flex items-center gap-3 flex-1 justify-end text-right overflow-hidden">
+                                                <div className="flex flex-col items-end min-w-0">
+                                                    <span className="text-xl font-black text-gray-900 dark:text-white leading-none mb-1">{awayLeader.stats[cat.key]}</span>
+                                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{awayLeader.name}</span>
+                                                    
+                                                    {/* Additional Stats */}
+                                                    {cat.key === 'PTS' && (
+                                                        <div className="flex gap-2 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 justify-end">
+                                                            <span>FG: {awayLeader.stats.FG || '--'}</span>
+                                                            <span>FT: {awayLeader.stats.FT || '--'}</span>
+                                                        </div>
+                                                    )}
+                                                    {cat.key === 'REB' && (
+                                                        <div className="flex gap-2 text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 justify-end">
+                                                            <span>Def: {awayLeader.stats.DREB || '--'}</span>
+                                                            <span>Off: {awayLeader.stats.OREB || '--'}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="relative flex-shrink-0">
+                                                    <img 
+                                                        src={awayLeader.headshot || DEFAULT_TEAM_LOGO} 
+                                                        alt={awayLeader.name} 
+                                                        className="w-12 h-12 rounded-full object-cover border-2 border-white/10 shadow-lg bg-gray-100 dark:bg-white/5"
+                                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                    />
+                                                    <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-white dark:bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm border border-gray-100 dark:border-white/5">
+                                                        #{awayLeader.jersey}
+                                                    </div>
+                                                    <img 
+                                                        src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                                                        alt="Team" 
+                                                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full border border-white dark:border-zinc-900 bg-white dark:bg-zinc-900 object-contain p-0.5 shadow-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                });
+                            })()}
                         </div>
 
-                        <div className="space-y-4">
-                            {match.stats.map((stat, idx) => {
-                                const isPercentage = stat.name.toLowerCase().includes('pct') || 
-                                                   stat.name.toLowerCase().includes('%') || 
-                                                   stat.name.toLowerCase().includes('percentage');
-                                return (
-                                <div key={idx} className="flex justify-between items-center border-b border-gray-100 dark:border-white/5 py-3 last:border-0">
-                                    <span className="font-bold w-16 text-center text-lg">
-                                        {stat.homeValue}{isPercentage ? '%' : ''}
-                                    </span>
-                                    <span className="text-xs text-gray-500 uppercase tracking-wider flex-1 text-center font-medium whitespace-nowrap px-2">{stat.name}</span>
-                                    <span className="font-bold w-16 text-center text-lg">
-                                        {stat.awayValue}{isPercentage ? '%' : ''}
-                                    </span>
+                        {/* Team Stats Section */}
+                        <div className="glass-card p-6 rounded-3xl h-full">
+                            {/* Team Header Row */}
+                            <div className="flex justify-between items-center mb-8 px-2">
+                                <div className="flex items-center gap-2">
+                                    <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-8 h-8 object-contain" />
+                                    <span className="text-sm font-bold">{match.homeTeam.shortName}</span>
                                 </div>
-                            )})}
-                            {match.stats.length === 0 && <p className="text-center text-gray-500">No stats available</p>}
+                                
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-bold">{match.awayTeam.shortName}</span>
+                                    <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-8 h-8 object-contain" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-8">
+                                {[
+                                    'Field Goal %',
+                                    'Three Point %',
+                                    'Free Throw %',
+                                    'Rebounds',
+                                    'Turnovers',
+                                    'Percent Led',
+                                    'Largest Lead'
+                                ].map((statName, idx) => {
+                                    const stat = match.stats.find(s => s.name.toLowerCase() === statName.toLowerCase()) || 
+                                                match.stats.find(s => s.name.toLowerCase().includes(statName.toLowerCase()));
+                                    
+                                    if (!stat) return null;
+
+                                    const isPercentage = statName.includes('%') || statName === 'Percent Led';
+                                    const homeVal = parseFloat(String(stat.homeValue).replace('%', ''));
+                                    const awayVal = parseFloat(String(stat.awayValue).replace('%', ''));
+                                    
+                                    let homePercent = 0;
+                                    let awayPercent = 0;
+
+                                    if (isPercentage) {
+                                        homePercent = homeVal;
+                                        awayPercent = awayVal;
+                                    } else {
+                                        const max = Math.max(homeVal, awayVal);
+                                        if (max > 0) {
+                                            homePercent = (homeVal / max) * 100;
+                                            awayPercent = (awayVal / max) * 100;
+                                        }
+                                    }
+
+                                    return (
+                                        <div key={idx} className="flex flex-col gap-2">
+                                            <div className="flex justify-between items-end mb-1">
+                                                <span className="text-xl font-black text-gray-900 dark:text-white">
+                                                    {stat.homeValue}{isPercentage && !String(stat.homeValue).includes('%') ? '%' : ''}
+                                                </span>
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{statName}</span>
+                                                <span className="text-xl font-black text-gray-900 dark:text-white">
+                                                    {stat.awayValue}{isPercentage && !String(stat.awayValue).includes('%') ? '%' : ''}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Comparative Bars */}
+                                            <div className="flex items-center gap-2 w-full h-2.5">
+                                                {/* Home Track (Right Aligned) */}
+                                                <div className="flex-1 h-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden flex justify-end">
+                                                    <div 
+                                                        className="h-full bg-orange-500 rounded-full" 
+                                                        style={{ width: `${homePercent}%` }}
+                                                    />
+                                                </div>
+
+                                                {/* Away Track (Left Aligned) */}
+                                                <div className="flex-1 h-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden flex justify-start">
+                                                    <div 
+                                                        className="h-full bg-blue-600 rounded-full" 
+                                                        style={{ width: `${awayPercent}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {match.stats.length === 0 && <p className="text-center text-gray-500">No stats available</p>}
+                            </div>
                         </div>
                     </div>
                 </div>
