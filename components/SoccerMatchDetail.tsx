@@ -361,140 +361,258 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                 <span className="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
                 Starting Lineups
               </h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Home Team Lineup - Vertical Soccer Field */}
-                <div>
-                  <div className="flex flex-col items-center mb-4">
-                    <div className="w-16 h-16 mb-2">
-                        {typeof match.homeTeam.logo === 'string' ? (
-                            <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="w-full h-full object-contain drop-shadow-md" />
-                        ) : (
-                            match.homeTeam.logo
-                        )}
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">{match.homeTeam.name}</h4>
-                  </div>
-
-                  {/* Soccer Field - Home (Attacking Up -> GK at Bottom) */}
-                  <div className="relative h-[600px] bg-[#2c8f2c] rounded-3xl overflow-hidden shadow-2xl mb-6 select-none">
-                    {/* Field Texture (Stripes) */}
-                    <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_49px,#000000_50px)]"></div>
-
-                    {/* Field Markings */}
-                    <div className="absolute inset-4 border-2 border-white/40 rounded-sm"></div> {/* Touchline */}
-
-                    {/* Center Circle (Halfway) */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/40 rounded-full"></div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white/40 rounded-full"></div>
-                    <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-white/40"></div> {/* Halfway Line */}
-
-                    {/* Top Penalty Area (Attacking End) */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 w-64 h-32 border-b-2 border-x-2 border-white/40"></div>
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-12 border-b-2 border-x-2 border-white/40"></div>
-                    <div className="absolute top-28 left-1/2 -translate-x-1/2 w-2 h-2 bg-white/40 rounded-full"></div> {/* Penalty Spot */}
-                    <div className="absolute top-32 left-1/2 -translate-x-1/2 w-16 h-8 border-b-2 border-white/40 rounded-b-full opacity-50"></div> {/* D-Arc */}
-
-                    {/* Bottom Penalty Area (Defending End - GK) */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-64 h-32 border-t-2 border-x-2 border-white/40"></div>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-12 border-t-2 border-x-2 border-white/40"></div>
-                    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 w-2 h-2 bg-white/40 rounded-full"></div> {/* Penalty Spot */}
-                    <div className="absolute bottom-32 left-1/2 -translate-x-1/2 w-16 h-8 border-t-2 border-white/40 rounded-t-full opacity-50"></div> {/* D-Arc */}
-
-                    {/* Corner Arcs */}
-                    <div className="absolute top-4 left-4 w-6 h-6 border-b-2 border-r-2 border-white/40 rounded-br-full"></div>
-                    <div className="absolute top-4 right-4 w-6 h-6 border-b-2 border-l-2 border-white/40 rounded-bl-full"></div>
-                    <div className="absolute bottom-4 left-4 w-6 h-6 border-t-2 border-r-2 border-white/40 rounded-tr-full"></div>
-                    <div className="absolute bottom-4 right-4 w-6 h-6 border-t-2 border-l-2 border-white/40 rounded-tl-full"></div>
-
-                    <div className="absolute inset-0 flex flex-col justify-between py-8">
-                      {/* Forwards (Top) */}
-                      <div className="flex justify-center items-center gap-6 flex-1 pt-4">
-                        {homeByPos.F.map(p => (
-                          <div key={`hfor-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-9 h-9 rounded-full bg-blue-600 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
+              <div className="w-full">
+                {/* Horizontal Field Header */}
+                <div className="flex justify-between items-center mb-8 px-4 md:px-12">
+                    {/* Home Team */}
+                    <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-4 mb-2">
+                            <div className="w-12 h-12 md:w-16 md:h-16 relative group">
+                                {typeof match.homeTeam.logo === 'string' ? (
+                                    <img src={match.homeTeam.logo} alt={match.homeTeam.name} className="relative w-full h-full object-contain drop-shadow-2xl transform transition-transform group-hover:scale-110 duration-500" />
                                 ) : (
-                                  <span>{p.jersey}</span>
+                                    match.homeTeam.logo
                                 )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Midfielders */}
-                      <div className="flex justify-center items-center gap-6 flex-1">
-                        {homeByPos.M.map(p => (
-                          <div key={`hmid-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-9 h-9 rounded-full bg-blue-600 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Defenders */}
-                      <div className="flex justify-center items-center gap-6 flex-1">
-                        {homeByPos.D.map(p => (
-                          <div key={`hdef-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-9 h-9 rounded-full bg-blue-600 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Goalkeeper (Bottom) */}
-                      <div className="flex justify-center items-center flex-1 pb-4">
-                        {homeByPos.G.map(p => (
-                          <div key={`hgk-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-10 h-10 rounded-full bg-yellow-500 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
+                            </div>
+                            <h4 className="text-xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">{match.homeTeam.name}</h4>
+                        </div>
+                        <div className="text-sm font-bold text-gray-500 dark:text-gray-400 tracking-[0.2em]">
+                            {`${homeByPos.D.length} - ${homeByPos.M.length} - ${homeByPos.F.length}`}
+                        </div>
                     </div>
 
-                    {/* Formation Indicator */}
-                    <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white/90 border border-white/10">
-                      {`${homeByPos.D.length}-${homeByPos.M.length}-${homeByPos.F.length}`}
+                    {/* VS Badge */}
+                    <div className="hidden md:flex flex-col items-center px-6">
+                        <div className="text-5xl font-black text-gray-200 dark:text-white/10 italic tracking-widest">VS</div>
                     </div>
-                  </div>
 
-                  {/* Squad List (Starters + Substitutes) */}
-                  <div className="mt-6 space-y-4">
+                    {/* Away Team */}
+                    <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-4 mb-2 flex-row-reverse">
+                            <div className="w-12 h-12 md:w-16 md:h-16 relative group">
+                                {typeof match.awayTeam.logo === 'string' ? (
+                                    <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="relative w-full h-full object-contain drop-shadow-2xl transform transition-transform group-hover:scale-110 duration-500" />
+                                ) : (
+                                    match.awayTeam.logo
+                                )}
+                            </div>
+                            <h4 className="text-xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-600">{match.awayTeam.name}</h4>
+                        </div>
+                        <div className="text-sm font-bold text-gray-500 dark:text-gray-400 tracking-[0.2em]">
+                            {`${awayByPos.D.length} - ${awayByPos.M.length} - ${awayByPos.F.length}`}
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3D Horizontal Field */}
+                <div className="group perspective-[1500px] h-[350px] md:h-[500px] mb-8 w-full overflow-hidden">
+                    <div className="relative w-full h-full bg-[#38a038] rounded-3xl shadow-2xl transform-style-3d rotate-x-[25deg] scale-[0.95] origin-center border-[4px] border-[#328c32] overflow-visible">
+                        
+                        {/* Field Texture */}
+                        <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_49px,rgba(0,0,0,0.05)_50px)] rounded-xl opacity-30"></div>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)] rounded-xl"></div>
+
+                        {/* Field Markings */}
+                        <div className="absolute inset-4 border-2 border-white/60 rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div> 
+                        
+                        {/* Center Circle & Line */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-48 md:h-48 border-2 border-white/60 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.2)]"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
+                        <div className="absolute top-4 bottom-4 left-1/2 w-0.5 bg-white/60 shadow-[0_0_10px_rgba(255,255,255,0.2)]"></div>
+
+                        {/* Left Penalty Area (Home GK) */}
+                        <div className="absolute top-1/2 left-4 -translate-y-1/2 w-24 h-48 md:w-32 md:h-64 border-r-2 border-y-2 border-white/60 shadow-[0_0_5px_rgba(255,255,255,0.2)]"></div>
+                        <div className="absolute top-1/2 left-4 -translate-y-1/2 w-10 h-20 md:w-12 md:h-32 border-r-2 border-y-2 border-white/60"></div>
+                        <div className="absolute top-1/2 left-28 md:left-36 -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
+                        
+                        {/* Right Penalty Area (Away GK) */}
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 w-24 h-48 md:w-32 md:h-64 border-l-2 border-y-2 border-white/60 shadow-[0_0_5px_rgba(255,255,255,0.2)]"></div>
+                        <div className="absolute top-1/2 right-4 -translate-y-1/2 w-10 h-20 md:w-12 md:h-32 border-l-2 border-y-2 border-white/60"></div>
+                        <div className="absolute top-1/2 right-28 md:right-36 -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
+
+                        {/* Corner Arcs */}
+                        <div className="absolute top-4 left-4 w-6 h-6 border-b-2 border-r-2 border-white/60 rounded-br-full"></div>
+                        <div className="absolute top-4 right-4 w-6 h-6 border-b-2 border-l-2 border-white/60 rounded-bl-full"></div>
+                        <div className="absolute bottom-4 left-4 w-6 h-6 border-t-2 border-r-2 border-white/60 rounded-tr-full"></div>
+                        <div className="absolute bottom-4 right-4 w-6 h-6 border-t-2 border-l-2 border-white/60 rounded-tl-full"></div>
+
+                        {/* Players Layer */}
+                        <div className="absolute inset-0 transform-style-3d translate-z-[20px] py-4">
+                            
+                            {/* HOME TEAM (Left Side) */}
+                            {/* GK */}
+                            <div className="absolute top-1/2 left-[5%] -translate-y-1/2 flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                {homeByPos.G.map(p => (
+                                    <div key={`hgk-${p.id}`} className="flex flex-col items-center">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-yellow-400 fill-current drop-shadow-md"><path d="M12,12c2.2,0,4-1.8,4-4s-1.8-4-4-4S8,5.8,8,8S9.8,12,12,12z M12,14c-2.7,0-8,1.3-8,4v2h16v-2C20,15.3,14.7,14,12,14z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-yellow-400 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-black/80 font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {/* DEF */}
+                            <div className="absolute top-0 bottom-0 left-[15%] w-[10%] flex flex-col justify-center items-center gap-1 md:gap-4 max-h-[90%] my-auto">
+                                {homeByPos.D.map(p => (
+                                    <div key={`hdef-${p.id}`} className="flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-blue-600 fill-current drop-shadow-md"><path d="M16,4.9L16,4.9v-0.7C16,3.4,15.5,2.7,14.8,2.3C13.9,1.9,13,1.7,12,1.7c-1,0-1.9,0.2-2.8,0.7C8.5,2.7,8,3.4,8,4.2v0.7l0,0l-1.6,1L4.8,7.5c-0.4,0.3-0.5,0.8-0.2,1.2l0.9,1.3c0.3,0.4,0.8,0.5,1.2,0.2l1.3-0.9V18c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1V9.4l1.3,0.9c0.4,0.3,0.9,0.2,1.2-0.2l0.9-1.3c0.3-0.4,0.2-0.9-0.2-1.2L17.6,5.9L16,4.9z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-blue-600 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* MID */}
+                            <div className="absolute top-0 bottom-0 left-[26%] w-[10%] flex flex-col justify-center items-center gap-1 md:gap-4 max-h-[90%] my-auto">
+                                {homeByPos.M.map(p => (
+                                    <div key={`hmid-${p.id}`} className="flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-blue-600 fill-current drop-shadow-md"><path d="M16,4.9L16,4.9v-0.7C16,3.4,15.5,2.7,14.8,2.3C13.9,1.9,13,1.7,12,1.7c-1,0-1.9,0.2-2.8,0.7C8.5,2.7,8,3.4,8,4.2v0.7l0,0l-1.6,1L4.8,7.5c-0.4,0.3-0.5,0.8-0.2,1.2l0.9,1.3c0.3,0.4,0.8,0.5,1.2,0.2l1.3-0.9V18c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1V9.4l1.3,0.9c0.4,0.3,0.9,0.2,1.2-0.2l0.9-1.3c0.3-0.4,0.2-0.9-0.2-1.2L17.6,5.9L16,4.9z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-blue-600 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* FWD */}
+                            <div className="absolute top-0 bottom-0 left-[32%] w-[10%] flex flex-col justify-center items-center gap-1 md:gap-4 max-h-[90%] my-auto">
+                                {homeByPos.F.map(p => (
+                                    <div key={`hfor-${p.id}`} className="flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-blue-600 fill-current drop-shadow-md"><path d="M16,4.9L16,4.9v-0.7C16,3.4,15.5,2.7,14.8,2.3C13.9,1.9,13,1.7,12,1.7c-1,0-1.9,0.2-2.8,0.7C8.5,2.7,8,3.4,8,4.2v0.7l0,0l-1.6,1L4.8,7.5c-0.4,0.3-0.5,0.8-0.2,1.2l0.9,1.3c0.3,0.4,0.8,0.5,1.2,0.2l1.3-0.9V18c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1V9.4l1.3,0.9c0.4,0.3,0.9,0.2,1.2-0.2l0.9-1.3c0.3-0.4,0.2-0.9-0.2-1.2L17.6,5.9L16,4.9z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-blue-600 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+
+                            {/* AWAY TEAM (Right Side) */}
+                            {/* FWD */}
+                            <div className="absolute top-0 bottom-0 right-[32%] w-[10%] flex flex-col justify-center items-center gap-1 md:gap-4 max-h-[90%] my-auto">
+                                {awayByPos.F.map(p => (
+                                    <div key={`afor-${p.id}`} className="flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-orange-500 fill-current drop-shadow-md"><path d="M16,4.9L16,4.9v-0.7C16,3.4,15.5,2.7,14.8,2.3C13.9,1.9,13,1.7,12,1.7c-1,0-1.9,0.2-2.8,0.7C8.5,2.7,8,3.4,8,4.2v0.7l0,0l-1.6,1L4.8,7.5c-0.4,0.3-0.5,0.8-0.2,1.2l0.9,1.3c0.3,0.4,0.8,0.5,1.2,0.2l1.3-0.9V18c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1V9.4l1.3,0.9c0.4,0.3,0.9,0.2,1.2-0.2l0.9-1.3c0.3-0.4,0.2-0.9-0.2-1.2L17.6,5.9L16,4.9z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-orange-500 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* MID */}
+                            <div className="absolute top-0 bottom-0 right-[26%] w-[10%] flex flex-col justify-center items-center gap-1 md:gap-4 max-h-[90%] my-auto">
+                                {awayByPos.M.map(p => (
+                                    <div key={`amid-${p.id}`} className="flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-orange-500 fill-current drop-shadow-md"><path d="M16,4.9L16,4.9v-0.7C16,3.4,15.5,2.7,14.8,2.3C13.9,1.9,13,1.7,12,1.7c-1,0-1.9,0.2-2.8,0.7C8.5,2.7,8,3.4,8,4.2v0.7l0,0l-1.6,1L4.8,7.5c-0.4,0.3-0.5,0.8-0.2,1.2l0.9,1.3c0.3,0.4,0.8,0.5,1.2,0.2l1.3-0.9V18c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1V9.4l1.3,0.9c0.4,0.3,0.9,0.2,1.2-0.2l0.9-1.3c0.3-0.4,0.2-0.9-0.2-1.2L17.6,5.9L16,4.9z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-orange-500 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* DEF */}
+                            <div className="absolute top-0 bottom-0 right-[15%] w-[10%] flex flex-col justify-center items-center gap-1 md:gap-4 max-h-[90%] my-auto">
+                                {awayByPos.D.map(p => (
+                                    <div key={`adef-${p.id}`} className="flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-orange-500 fill-current drop-shadow-md"><path d="M16,4.9L16,4.9v-0.7C16,3.4,15.5,2.7,14.8,2.3C13.9,1.9,13,1.7,12,1.7c-1,0-1.9,0.2-2.8,0.7C8.5,2.7,8,3.4,8,4.2v0.7l0,0l-1.6,1L4.8,7.5c-0.4,0.3-0.5,0.8-0.2,1.2l0.9,1.3c0.3,0.4,0.8,0.5,1.2,0.2l1.3-0.9V18c0,0.6,0.4,1,1,1h6c0.6,0,1-0.4,1-1V9.4l1.3,0.9c0.4,0.3,0.9,0.2,1.2-0.2l0.9-1.3c0.3-0.4,0.2-0.9-0.2-1.2L17.6,5.9L16,4.9z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-orange-500 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* GK */}
+                            <div className="absolute top-1/2 right-[5%] -translate-y-1/2 flex flex-col items-center transform -rotate-x-[25deg] hover:scale-110 hover:-translate-y-2 z-20 cursor-pointer group/player transition-transform duration-300">
+                                {awayByPos.G.map(p => (
+                                    <div key={`agk-${p.id}`} className="flex flex-col items-center">
+                                        <div className="relative transform-style-3d transition-transform duration-500 group-hover/player:rotate-y-[180deg]">
+                                            <div className="backface-hidden">
+                                                <svg viewBox="0 0 24 24" className="w-5 h-5 md:w-7 md:h-7 text-yellow-500 fill-current drop-shadow-md"><path d="M12,12c2.2,0,4-1.8,4-4s-1.8-4-4-4S8,5.8,8,8S9.8,12,12,12z M12,14c-2.7,0-8,1.3-8,4v2h16v-2C20,15.3,14.7,14,12,14z"/></svg>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 flex items-center justify-center bg-yellow-500 rounded-full w-4 h-4 md:w-6 md:h-6 border-2 border-white shadow-md mx-auto mt-0.5">
+                                                <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                            {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
+                                            {p.name.split(' ').pop()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {/* Squad Lists Side-by-Side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Home Squad List */}
+                  <div>
                     {/* Starters */}
                     <div>
-                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Starters</h5>
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Home Starters</h5>
                       <div className="space-y-1">
                         {match.homePlayers.filter(p => p.isStarter).map(p => (
                           <div key={`hstart-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition">
@@ -520,8 +638,8 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                     </div>
 
                     {/* Substitutes */}
-                    <div>
-                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Substitutes</h5>
+                    <div className="mt-4">
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Home Substitutes</h5>
                       <div className="space-y-1">
                         {match.homePlayers.filter(p => !p.isStarter).map(p => (
                           <div key={`hsub-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/10 transition opacity-80 hover:opacity-100">
@@ -547,141 +665,12 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Away Team Lineup - Vertical Soccer Field */}
-                <div>
-                  <div className="flex flex-col items-center mb-4">
-                    <div className="w-16 h-16 mb-2">
-                        {typeof match.awayTeam.logo === 'string' ? (
-                            <img src={match.awayTeam.logo} alt={match.awayTeam.name} className="w-full h-full object-contain drop-shadow-md" />
-                        ) : (
-                            match.awayTeam.logo
-                        )}
-                    </div>
-                    <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">{match.awayTeam.name}</h4>
-                  </div>
-
-                  {/* Soccer Field - Away (Attacking Down -> GK at Top) */}
-                  <div className="relative h-[600px] bg-[#2c8f2c] rounded-3xl overflow-hidden shadow-2xl mb-6 select-none">
-                    {/* Field Texture (Stripes) */}
-                    <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(90deg,transparent,transparent_49px,#000000_50px)]"></div>
-
-                    {/* Field Markings */}
-                    <div className="absolute inset-4 border-2 border-white/40 rounded-sm"></div> {/* Touchline */}
-
-                    {/* Center Circle (Halfway) */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/40 rounded-full"></div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white/40 rounded-full"></div>
-                    <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-white/40"></div> {/* Halfway Line */}
-
-                    {/* Top Penalty Area (Defending End - GK) */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 w-64 h-32 border-b-2 border-x-2 border-white/40"></div>
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-12 border-b-2 border-x-2 border-white/40"></div>
-                    <div className="absolute top-28 left-1/2 -translate-x-1/2 w-2 h-2 bg-white/40 rounded-full"></div> {/* Penalty Spot */}
-                    <div className="absolute top-32 left-1/2 -translate-x-1/2 w-16 h-8 border-b-2 border-white/40 rounded-b-full opacity-50"></div> {/* D-Arc */}
-
-                    {/* Bottom Penalty Area (Attacking End) */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-64 h-32 border-t-2 border-x-2 border-white/40"></div>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-24 h-12 border-t-2 border-x-2 border-white/40"></div>
-                    <div className="absolute bottom-28 left-1/2 -translate-x-1/2 w-2 h-2 bg-white/40 rounded-full"></div> {/* Penalty Spot */}
-                    <div className="absolute bottom-32 left-1/2 -translate-x-1/2 w-16 h-8 border-t-2 border-white/40 rounded-t-full opacity-50"></div> {/* D-Arc */}
-
-                    {/* Corner Arcs */}
-                    <div className="absolute top-4 left-4 w-6 h-6 border-b-2 border-r-2 border-white/40 rounded-br-full"></div>
-                    <div className="absolute top-4 right-4 w-6 h-6 border-b-2 border-l-2 border-white/40 rounded-bl-full"></div>
-                    <div className="absolute bottom-4 left-4 w-6 h-6 border-t-2 border-r-2 border-white/40 rounded-tr-full"></div>
-                    <div className="absolute bottom-4 right-4 w-6 h-6 border-t-2 border-l-2 border-white/40 rounded-tl-full"></div>
-
-                    <div className="absolute inset-0 flex flex-col justify-between py-8">
-                      {/* Goalkeeper (Top) */}
-                      <div className="flex justify-center items-center flex-1 pt-4">
-                        {awayByPos.G.map(p => (
-                          <div key={`agk-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-10 h-10 rounded-full bg-yellow-500 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Defenders */}
-                      <div className="flex justify-center items-center gap-6 flex-1">
-                        {awayByPos.D.map(p => (
-                          <div key={`adef-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-9 h-9 rounded-full bg-orange-500 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Midfielders */}
-                      <div className="flex justify-center items-center gap-6 flex-1">
-                        {awayByPos.M.map(p => (
-                          <div key={`amid-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-9 h-9 rounded-full bg-orange-500 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Forwards (Bottom) */}
-                      <div className="flex justify-center items-center gap-6 flex-1 pb-4">
-                        {awayByPos.F.map(p => (
-                          <div key={`afor-${p.id}`} className="flex flex-col items-center z-10">
-                            <a href={`https://www.espn.com/soccer/player/_/id/${p.id}`} target="_blank" rel="noreferrer" className="relative group">
-                              <div className="w-9 h-9 rounded-full bg-orange-500 border border-white/80 flex items-center justify-center text-white font-bold text-[10px] shadow-sm group-hover:scale-110 transition-transform">
-                                {p.headshot ? (
-                                  <img src={p.headshot} alt={p.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                  <span>{p.jersey}</span>
-                                )}
-                              </div>
-                              {p.subbedOut && <ArrowDown size={10} className="absolute -bottom-1 -right-1 bg-white rounded-full text-red-500 p-0.5" />}
-                            </a>
-                            <div className="text-[9px] text-white mt-0.5 font-bold bg-black/40 px-1.5 py-px rounded-full backdrop-blur-[2px] truncate max-w-[70px]">{p.name.split(' ').pop()}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Formation Indicator */}
-                    <div className="absolute top-6 left-6 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-bold text-white/90 border border-white/10">
-                      {`${awayByPos.D.length}-${awayByPos.M.length}-${awayByPos.F.length}`}
-                    </div>
-                  </div>
-
-                  {/* Squad List (Starters + Substitutes) */}
-                  <div className="mt-6 space-y-4">
+                  {/* Away Squad List */}
+                  <div>
                     {/* Starters */}
                     <div>
-                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Starters</h5>
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Away Starters</h5>
                       <div className="space-y-1">
                         {match.awayPlayers.filter(p => p.isStarter).map(p => (
                           <div key={`astart-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-white/10 transition">
@@ -707,8 +696,8 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                     </div>
 
                     {/* Substitutes */}
-                    <div>
-                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Substitutes</h5>
+                    <div className="mt-4">
+                      <h5 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2">Away Substitutes</h5>
                       <div className="space-y-1">
                         {match.awayPlayers.filter(p => !p.isStarter).map(p => (
                           <div key={`asub-${p.id}`} className="flex items-center gap-3 text-sm px-3 py-2 rounded-2xl bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/10 transition opacity-80 hover:opacity-100">
@@ -822,21 +811,21 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                 </h3>
 
                 <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <img 
                             src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                             alt={match.homeTeam.name} 
-                            className="w-6 h-6 object-contain" 
+                            className="w-10 h-10 object-contain" 
                             onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                         />
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.homeTeam.shortName}</span>
+                        <span className="text-sm font-bold text-gray-500 dark:text-gray-400">{match.homeTeam.shortName}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.awayTeam.shortName}</span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-gray-500 dark:text-gray-400">{match.awayTeam.shortName}</span>
                         <img 
                             src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
                             alt={match.awayTeam.name} 
-                            className="w-6 h-6 object-contain" 
+                            className="w-10 h-10 object-contain" 
                             onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                         />
                     </div>
@@ -932,21 +921,21 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                 </h3>
 
                 <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <img 
                             src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                             alt={match.homeTeam.name} 
-                            className="w-6 h-6 object-contain" 
+                            className="w-10 h-10 object-contain" 
                             onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                         />
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.homeTeam.shortName}</span>
+                        <span className="text-sm font-bold text-gray-500 dark:text-gray-400">{match.homeTeam.shortName}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.awayTeam.shortName}</span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm font-bold text-gray-500 dark:text-gray-400">{match.awayTeam.shortName}</span>
                         <img 
                             src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
                             alt={match.awayTeam.name} 
-                            className="w-6 h-6 object-contain" 
+                            className="w-10 h-10 object-contain" 
                             onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                         />
                     </div>
