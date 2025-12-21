@@ -742,60 +742,298 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
       </div >
 
       {/* Team Stats (Stacked below timeline) */}
-      <div style={{ display: activeTab === 'statics' ? 'block' : 'none' }} className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
-          <span className="w-1 h-6 bg-orange-500 rounded-full mr-3"></span>
-          Team Stats
-        </h3>
-        <div className="space-y-6">
-          {match.stats.length === 0 ? (
-            <div className="text-center text-gray-400 py-4">No statistics available.</div>
-          ) : (
-            match.stats.map((stat, idx) => {
-              const homeVal = parseFloat(String(stat.homeValue).replace('%', ''));
-              const awayVal = parseFloat(String(stat.awayValue).replace('%', ''));
-              const total = homeVal + awayVal;
-              const homePercent = total === 0 ? 50 : (homeVal / total) * 100;
-              const awayPercent = total === 0 ? 50 : (awayVal / total) * 100;
+      <div style={{ display: activeTab === 'statics' ? 'block' : 'none' }} className="space-y-6">
+        
+        {/* Possession Card */}
+        {(() => {
+            const possessionStat = match.stats.find(s => s.name.toLowerCase().includes('possession'));
+            if (!possessionStat) return null;
 
-              const homePct = Math.max(0, Math.min(100, stat.isPercentage ? homeVal : homePercent));
-              const awayPct = Math.max(0, Math.min(100, stat.isPercentage ? awayVal : awayPercent));
+            const homeVal = parseFloat(String(possessionStat.homeValue).replace('%', ''));
+            const awayVal = parseFloat(String(possessionStat.awayValue).replace('%', ''));
+            const total = homeVal + awayVal;
+            const homePercent = total === 0 ? 50 : (homeVal / total) * 100;
 
-              return (
-                <div key={idx} className="space-y-2">
-                  <div className="flex justify-between text-sm font-semibold text-gray-800 dark:text-gray-200">
-                    <span>{stat.isPercentage ? `${homeVal}%` : stat.homeValue}</span>
-                    <span className="text-gray-400 font-medium text-xs uppercase tracking-wide">{stat.name}</span>
-                    <span>{stat.isPercentage ? `${awayVal}%` : stat.awayValue}</span>
-                  </div>
-                  {stat.isPercentage ? (
-                    <div className="relative h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-white/5">
-                      <div
-                        className="absolute top-0 h-full bg-blue-500 transition-all duration-1000 ease-out"
-                        style={{ width: `${homePct}%`, right: '50%' }}
-                      />
-                      <div
-                        className="absolute top-0 h-full bg-orange-500 transition-all duration-1000 ease-out"
-                        style={{ width: `${awayPct}%`, left: '50%' }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-white/5">
-                      <div
-                        className="bg-blue-500 transition-all duration-1000 ease-out"
-                        style={{ width: `${homePct}%` }}
-                      />
-                      <div
-                        className="bg-orange-500 transition-all duration-1000 ease-out"
-                        style={{ width: `${awayPct}%` }}
-                      />
-                    </div>
-                  )}
+            const radius = 40;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (homePercent / 100) * circumference;
+
+            return (
+                <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-4 md:p-6 flex flex-col items-center">
+                     <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">Possession</h3>
+                     <div className="flex items-center justify-center gap-8 md:gap-12 w-full">
+                        <div className="text-center">
+                            <img 
+                                src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                                alt={match.homeTeam.name} 
+                                className="w-8 h-8 object-contain mx-auto mb-2" 
+                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                            />
+                            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{homeVal}%</div>
+                        </div>
+
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+                             <svg className="transform -rotate-90 w-full h-full drop-shadow-xl">
+                                {/* Background (Away) */}
+                                <circle 
+                                    cx="50%" cy="50%" r={radius} 
+                                    stroke="currentColor" 
+                                    strokeWidth="8" 
+                                    fill="transparent" 
+                                    className="text-orange-500" 
+                                />
+                                {/* Foreground (Home) */}
+                                <circle 
+                                    cx="50%" cy="50%" r={radius} 
+                                    stroke="currentColor" 
+                                    strokeWidth="8" 
+                                    fill="transparent" 
+                                    strokeDasharray={circumference} 
+                                    strokeDashoffset={offset} 
+                                    strokeLinecap="round"
+                                    className="text-blue-600 transition-all duration-1000 ease-out" 
+                                />
+                             </svg>
+                             <div className="absolute inset-0 flex items-center justify-center">
+                                 <span className="text-[10px] font-bold text-gray-400">VS</span>
+                             </div>
+                        </div>
+
+                        <div className="text-center">
+                            <img 
+                                src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                                alt={match.awayTeam.name} 
+                                className="w-8 h-8 object-contain mx-auto mb-2" 
+                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                            />
+                            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{awayVal}%</div>
+                        </div>
+                     </div>
                 </div>
-              );
-            })
-          )}
+            );
+        })()}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Key Stats Card */}
+            <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                  <span className="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
+                  Key Stats
+                </h3>
+
+                <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
+                    <div className="flex items-center gap-2">
+                        <img 
+                            src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                            alt={match.homeTeam.name} 
+                            className="w-6 h-6 object-contain" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.homeTeam.shortName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.awayTeam.shortName}</span>
+                        <img 
+                            src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                            alt={match.awayTeam.name} 
+                            className="w-6 h-6 object-contain" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                  {(() => {
+                    const getKeyStatOrder = (name: string) => {
+                        const n = name.toLowerCase();
+                        if (n.includes('expected goals') || n.includes('xg')) return 1;
+                        if (n.includes('big chances')) return 2;
+                        if (n === 'shots' || n === 'total shots') return 3;
+                        if (n.includes('saves')) return 4;
+                        if (n.includes('corner')) return 5;
+                        if (n.includes('foul')) return 6;
+                        if (n.includes('pass')) return 7;
+                        if (n.includes('free kick')) return 8;
+                        if (n.includes('tackle')) return 9;
+                        if (n.includes('yellow card')) return 10;
+                        if (n.includes('red card')) return 11;
+                        return 100;
+                    };
+
+                    const keyStats = match.stats
+                        .filter(s => getKeyStatOrder(s.name) < 100 && !s.name.toLowerCase().includes('possession'))
+                        .sort((a, b) => getKeyStatOrder(a.name) - getKeyStatOrder(b.name));
+                    
+                    if (keyStats.length === 0) return <div className="text-center text-gray-400 py-4">No key statistics available.</div>;
+
+                    return keyStats.map((stat, idx) => {
+                      const isPercentage = stat.isPercentage || stat.name.toLowerCase().includes('%') || stat.name.toLowerCase().includes('accuracy');
+                      let homeVal = parseFloat(String(stat.homeValue).replace('%', ''));
+                      let awayVal = parseFloat(String(stat.awayValue).replace('%', ''));
+
+                      // Decimal to Percentage conversion (e.g. 0.85 -> 85)
+                      if (isPercentage && homeVal <= 1 && homeVal > 0 && awayVal <= 1 && awayVal > 0) {
+                          homeVal = Math.round(homeVal * 100);
+                          awayVal = Math.round(awayVal * 100);
+                      }
+                      
+                      let homePercent = 0;
+                      let awayPercent = 0;
+
+                      if (isPercentage) {
+                          homePercent = homeVal;
+                          awayPercent = awayVal;
+                      } else {
+                          const max = Math.max(homeVal, awayVal);
+                          if (max > 0) {
+                              homePercent = (homeVal / max) * 100;
+                              awayPercent = (awayVal / max) * 100;
+                          }
+                      }
+
+                      return (
+                        <div key={idx} className="flex flex-col gap-2">
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                    {homeVal}{isPercentage && !String(homeVal).includes('%') ? '%' : ''}
+                                </span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.name}</span>
+                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                    {awayVal}{isPercentage && !String(awayVal).includes('%') ? '%' : ''}
+                                </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 w-full h-2">
+                                <div className="flex-1 h-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex justify-end">
+                                    <div 
+                                        className="h-full bg-blue-600 rounded-full" 
+                                        style={{ width: `${homePercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex-1 h-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex justify-start">
+                                    <div 
+                                        className="h-full bg-orange-500 rounded-full" 
+                                        style={{ width: `${awayPercent}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+            </div>
+
+            {/* Other Stats Card */}
+            <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                  <span className="w-1 h-6 bg-gray-400 rounded-full mr-3"></span>
+                  Other Stats
+                </h3>
+
+                <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-white/5 pb-4">
+                    <div className="flex items-center gap-2">
+                        <img 
+                            src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                            alt={match.homeTeam.name} 
+                            className="w-6 h-6 object-contain" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.homeTeam.shortName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{match.awayTeam.shortName}</span>
+                        <img 
+                            src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                            alt={match.awayTeam.name} 
+                            className="w-6 h-6 object-contain" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-6">
+                  {(() => {
+                    const getKeyStatOrder = (name: string) => {
+                        const n = name.toLowerCase();
+                        if (n.includes('expected goals') || n.includes('xg')) return 1;
+                        if (n.includes('big chances')) return 2;
+                        if (n === 'shots' || n === 'total shots') return 3;
+                        if (n.includes('saves')) return 4;
+                        if (n.includes('corner')) return 5;
+                        if (n.includes('foul')) return 6;
+                        if (n.includes('pass')) return 7;
+                        if (n.includes('free kick')) return 8;
+                        if (n.includes('tackle')) return 9;
+                        if (n.includes('yellow card')) return 10;
+                        if (n.includes('red card')) return 11;
+                        return 100;
+                    };
+
+                    const otherStats = match.stats
+                        .filter(s => getKeyStatOrder(s.name) === 100 && !s.name.toLowerCase().includes('possession'));
+                    
+                    if (otherStats.length === 0) return <div className="text-center text-gray-400 py-4">No other statistics available.</div>;
+
+                    return otherStats.map((stat, idx) => {
+                      const isPercentage = stat.isPercentage || stat.name.toLowerCase().includes('%') || stat.name.toLowerCase().includes('accuracy');
+                      let homeVal = parseFloat(String(stat.homeValue).replace('%', ''));
+                      let awayVal = parseFloat(String(stat.awayValue).replace('%', ''));
+
+                      // Decimal to Percentage conversion (e.g. 0.85 -> 85)
+                      if (isPercentage && homeVal <= 1 && homeVal > 0 && awayVal <= 1 && awayVal > 0) {
+                          homeVal = Math.round(homeVal * 100);
+                          awayVal = Math.round(awayVal * 100);
+                      }
+                      
+                      let homePercent = 0;
+                      let awayPercent = 0;
+
+                      if (isPercentage) {
+                          homePercent = homeVal;
+                          awayPercent = awayVal;
+                      } else {
+                          const max = Math.max(homeVal, awayVal);
+                          if (max > 0) {
+                              homePercent = (homeVal / max) * 100;
+                              awayPercent = (awayVal / max) * 100;
+                          }
+                      }
+
+                      return (
+                        <div key={idx} className="flex flex-col gap-2">
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                    {homeVal}{isPercentage && !String(homeVal).includes('%') ? '%' : ''}
+                                </span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.name}</span>
+                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                    {awayVal}{isPercentage && !String(awayVal).includes('%') ? '%' : ''}
+                                </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 w-full h-2">
+                                <div className="flex-1 h-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex justify-end">
+                                    <div 
+                                        className="h-full bg-blue-600 rounded-full" 
+                                        style={{ width: `${homePercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex-1 h-full bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden flex justify-start">
+                                    <div 
+                                        className="h-full bg-orange-500 rounded-full" 
+                                        style={{ width: `${awayPercent}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+            </div>
         </div>
+
       </div>
       <div style={{ display: activeTab === 'news' ? 'block' : 'none' }} className="glass-card bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
