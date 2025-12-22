@@ -335,12 +335,12 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       return (
                         <div key={event.id} className={`flex items-center justify-between w-full ${isHome ? 'flex-row-reverse' : ''}`}>
                           <div className="w-5/12"></div>
-                          <div className="z-10 w-12 h-7 rounded-lg bg-white dark:bg-zinc-800 border-2 border-gray-200 dark:border-white/10 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300 shadow-sm">
+                          <div className="z-10 w-8 h-6 md:w-12 md:h-7 rounded-lg bg-white dark:bg-zinc-800 border-2 border-gray-200 dark:border-white/10 flex items-center justify-center text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-300 shadow-sm">
                             {event.minute}'
                           </div>
                           <div className={`w-5/12 flex ${isHome ? 'justify-end' : 'justify-start'}`}>
                             <div className={`
-                                                  p-3 rounded-2xl border shadow-sm w-full max-w-[240px] transition-all hover:scale-105
+                                                  p-2 md:p-3 rounded-2xl border shadow-sm w-full max-w-[240px] transition-all hover:scale-105
                                                   ${isHome
                                 ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-500/20'
                                 : 'bg-orange-50/50 dark:bg-orange-900/10 border-orange-100 dark:border-orange-500/20'
@@ -348,50 +348,50 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                               `}>
                               <div className="flex items-center justify-between">
                                 {isHome ? (
-                                  <div className="flex-1 text-left">
-                                    <div className="font-bold text-gray-900 dark:text-white text-xs mb-0.5">{event.type}</div>
-                                    <div className="text-gray-600 dark:text-gray-300 text-[10px] font-medium">
+                                  <div className="flex-1 text-left min-w-0">
+                                    <div className="font-bold text-gray-900 dark:text-white text-[10px] md:text-xs mb-0.5 truncate">{event.type}</div>
+                                    <div className="text-gray-600 dark:text-gray-300 text-[9px] md:text-[10px] font-medium truncate">
                                       {event.participants && event.participants.length > 0 ? (
                                         <div className="space-y-0.5">
                                           {event.participants.map((p, i) => {
                                             const role = String(p.role || '').toLowerCase();
                                             const showArrow = isSub && (role.includes('in') || role.includes('out'));
                                             return (
-                                              <div key={i} className="truncate flex items-center gap-2 justify-between">
+                                              <div key={i} className="truncate flex items-center gap-1 md:gap-2 justify-between">
                                                 <span className="truncate">{p.name}{(!isSub && p.role) ? ` · ${p.role}` : ''}</span>
-                                                <span className="inline-flex items-center gap-1">
-                                                  {showArrow && role.includes('in') && <ArrowUp size={14} strokeWidth={3} className="text-green-500" />}
-                                                  {showArrow && role.includes('out') && <ArrowDown size={14} strokeWidth={3} className="text-yellow-500" />}
+                                                <span className="inline-flex items-center gap-1 shrink-0">
+                                                  {showArrow && role.includes('in') && <ArrowUp size={12} strokeWidth={3} className="text-green-500" />}
+                                                  {showArrow && role.includes('out') && <ArrowDown size={12} strokeWidth={3} className="text-yellow-500" />}
                                                 </span>
                                               </div>
                                             );
                                           })}
                                         </div>
                                       ) : (
-                                        <span className="truncate">{event.player}</span>
+                                        <span className="truncate block">{event.player}</span>
                                       )}
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="shrink-0 mr-2">{typeIcon}</div>
+                                  <div className="shrink-0 mr-1.5 md:mr-2">{typeIcon}</div>
                                 )}
 
                                 {isHome ? (
-                                  <div className="shrink-0 ml-2">{typeIcon}</div>
+                                  <div className="shrink-0 ml-1.5 md:ml-2">{typeIcon}</div>
                                 ) : (
-                                  <div className="flex-1 text-right">
-                                    <div className="font-bold text-gray-900 dark:text-white text-xs mb-0.5">{event.type}</div>
-                                    <div className="text-gray-600 dark:text-gray-300 text-[10px] font-medium">
+                                  <div className="flex-1 text-right min-w-0">
+                                    <div className="font-bold text-gray-900 dark:text-white text-[10px] md:text-xs mb-0.5 truncate">{event.type}</div>
+                                    <div className="text-gray-600 dark:text-gray-300 text-[9px] md:text-[10px] font-medium truncate">
                                       {event.participants && event.participants.length > 0 ? (
                                         <div className="space-y-0.5">
                                           {event.participants.map((p, i) => {
                                             const role = String(p.role || '').toLowerCase();
                                             const showArrow = isSub && (role.includes('in') || role.includes('out'));
                                             return (
-                                              <div key={i} className="truncate flex items-center gap-2 justify-between">
-                                                <span className="inline-flex items-center gap-1">
-                                                  {showArrow && role.includes('in') && <ArrowUp size={14} strokeWidth={3} className="text-green-500" />}
-                                                  {showArrow && role.includes('out') && <ArrowDown size={14} strokeWidth={3} className="text-yellow-500" />}
+                                              <div key={i} className="truncate flex items-center gap-1 md:gap-2 justify-between">
+                                                <span className="inline-flex items-center gap-1 shrink-0">
+                                                  {showArrow && role.includes('in') && <ArrowUp size={12} strokeWidth={3} className="text-green-500" />}
+                                                  {showArrow && role.includes('out') && <ArrowDown size={12} strokeWidth={3} className="text-yellow-500" />}
                                                 </span>
                                                 <span className="truncate">{p.name}{(!isSub && p.role) ? ` · ${p.role}` : ''}</span>
                                               </div>
@@ -399,7 +399,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                           })}
                                         </div>
                                       ) : (
-                                        <span className="truncate">{event.player}</span>
+                                        <span className="truncate block">{event.player}</span>
                                       )}
                                     </div>
                                   </div>
@@ -471,7 +471,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
                 {/* 3D Horizontal Field */}
                 <div className="group perspective-[1500px] h-[350px] md:h-[500px] mb-8 w-full overflow-hidden">
-                    <div className="relative w-full h-full bg-[#38a038] rounded-3xl shadow-2xl transform-style-3d rotate-x-[25deg] scale-[0.95] origin-center border-[4px] border-[#328c32] overflow-visible">
+                    <div className="relative w-full h-full bg-[#38a038] rounded-3xl shadow-2xl transform-style-3d rotate-x-[25deg] scale-[0.85] md:scale-[0.95] origin-center border-[4px] border-[#328c32] overflow-visible">
                         
                         {/* Field Texture */}
                         <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,transparent,transparent_49px,rgba(0,0,0,0.05)_50px)] rounded-xl opacity-30"></div>
@@ -517,7 +517,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-black/80 font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -537,7 +537,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -557,7 +557,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -577,7 +577,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-blue-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -599,7 +599,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -619,7 +619,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -639,7 +639,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                                 <span className="text-white font-black text-[9px] md:text-[11px]">{p.jersey}</span>
                                             </div>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
+                                        <div className="mt-0.5 md:mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 bg-orange-900/80 backdrop-blur-sm rounded text-[6px] md:text-[8px] font-bold text-white text-center shadow-md border border-white/10 whitespace-nowrap">
                                             {p.subbedOut && <ArrowDown size={8} className="text-red-400" strokeWidth={3} />}
                                             {p.name.split(' ').pop()}
                                         </div>
@@ -814,21 +814,21 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
             return (
                 <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-4 md:p-6 flex flex-col items-center">
-                     <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-6">Possession</h3>
-                     <div className="flex items-center justify-center gap-4 md:gap-12 w-full">
+                     <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 md:mb-6">Possession</h3>
+                     <div className="flex items-center justify-center gap-2 md:gap-12 w-full">
                         {/* Home Team */}
-                        <div className="flex items-center gap-4 text-right">
-                            <div className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{homeVal}%</div>
+                        <div className="flex items-center gap-2 md:gap-4 text-right">
+                            <div className="text-xl md:text-4xl font-black text-gray-900 dark:text-white">{homeVal}%</div>
                             <img 
                                 src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.homeTeam.name} 
-                                className="w-12 h-12 md:w-14 md:h-14 object-contain" 
+                                className="w-8 h-8 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
                         </div>
 
                         {/* Chart */}
-                        <div className="relative w-28 h-28 md:w-36 md:h-36 flex items-center justify-center">
+                        <div className="relative w-20 h-20 md:w-36 md:h-36 flex items-center justify-center">
                              <svg className="transform -rotate-90 w-full h-full drop-shadow-xl">
                                 {/* Background (Home - Left side naturally if Away fills Right) */}
                                 <circle 
@@ -851,19 +851,19 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                 />
                              </svg>
                              <div className="absolute inset-0 flex items-center justify-center">
-                                 <span className="text-xs font-bold text-gray-400">VS</span>
+                                 <span className="text-[10px] md:text-xs font-bold text-gray-400">VS</span>
                              </div>
                         </div>
 
                         {/* Away Team */}
-                        <div className="flex items-center gap-4 text-left">
+                        <div className="flex items-center gap-2 md:gap-4 text-left">
                             <img 
                                 src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.awayTeam.name} 
-                                className="w-12 h-12 md:w-14 md:h-14 object-contain" 
+                                className="w-8 h-8 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
-                            <div className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{awayVal}%</div>
+                            <div className="text-xl md:text-4xl font-black text-gray-900 dark:text-white">{awayVal}%</div>
                         </div>
                      </div>
                 </div>
@@ -951,11 +951,11 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       return (
                         <div key={idx} className="flex flex-col gap-2">
                             <div className="flex justify-between items-end mb-1">
-                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
                                     {homeVal}{isPercentage && !String(homeVal).includes('%') ? '%' : ''}
                                 </span>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.name}</span>
-                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 text-center truncate px-2">{stat.name}</span>
+                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
                                     {awayVal}{isPercentage && !String(awayVal).includes('%') ? '%' : ''}
                                 </span>
                             </div>
@@ -1060,11 +1060,11 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       return (
                         <div key={idx} className="flex flex-col gap-2">
                             <div className="flex justify-between items-end mb-1">
-                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
                                     {homeVal}{isPercentage && !String(homeVal).includes('%') ? '%' : ''}
                                 </span>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.name}</span>
-                                <span className="text-lg font-black text-gray-900 dark:text-white">
+                                <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 text-center truncate px-2">{stat.name}</span>
+                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
                                     {awayVal}{isPercentage && !String(awayVal).includes('%') ? '%' : ''}
                                 </span>
                             </div>
