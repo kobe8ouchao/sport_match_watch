@@ -743,35 +743,37 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
             const total = homeVal + awayVal;
             const homePercent = total === 0 ? 50 : (homeVal / total) * 100;
 
-            const radius = 40;
+            const radius = 46;
             const circumference = 2 * Math.PI * radius;
-            const offset = circumference - (homePercent / 100) * circumference;
+            const offset = circumference - (awayVal / 100) * circumference;
 
             return (
                 <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-4 md:p-6 flex flex-col items-center">
-                     <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">Possession</h3>
-                     <div className="flex items-center justify-center gap-8 md:gap-12 w-full">
-                        <div className="text-center">
+                     <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-6">Possession</h3>
+                     <div className="flex items-center justify-center gap-4 md:gap-12 w-full">
+                        {/* Home Team */}
+                        <div className="flex items-center gap-4 text-right">
+                            <div className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{homeVal}%</div>
                             <img 
                                 src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.homeTeam.name} 
-                                className="w-8 h-8 object-contain mx-auto mb-2" 
+                                className="w-12 h-12 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
-                            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{homeVal}%</div>
                         </div>
 
-                        <div className="relative w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
+                        {/* Chart */}
+                        <div className="relative w-28 h-28 md:w-36 md:h-36 flex items-center justify-center">
                              <svg className="transform -rotate-90 w-full h-full drop-shadow-xl">
-                                {/* Background (Away) */}
+                                {/* Background (Home - Left side naturally if Away fills Right) */}
                                 <circle 
                                     cx="50%" cy="50%" r={radius} 
                                     stroke="currentColor" 
                                     strokeWidth="8" 
                                     fill="transparent" 
-                                    className="text-orange-500" 
+                                    className="text-blue-600" 
                                 />
-                                {/* Foreground (Home) */}
+                                {/* Foreground (Away - Fills Clockwise from Top -> Right) */}
                                 <circle 
                                     cx="50%" cy="50%" r={radius} 
                                     stroke="currentColor" 
@@ -780,22 +782,23 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                     strokeDasharray={circumference} 
                                     strokeDashoffset={offset} 
                                     strokeLinecap="round"
-                                    className="text-blue-600 transition-all duration-1000 ease-out" 
+                                    className="text-orange-500 transition-all duration-1000 ease-out" 
                                 />
                              </svg>
                              <div className="absolute inset-0 flex items-center justify-center">
-                                 <span className="text-[10px] font-bold text-gray-400">VS</span>
+                                 <span className="text-xs font-bold text-gray-400">VS</span>
                              </div>
                         </div>
 
-                        <div className="text-center">
+                        {/* Away Team */}
+                        <div className="flex items-center gap-4 text-left">
                             <img 
                                 src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.awayTeam.name} 
-                                className="w-8 h-8 object-contain mx-auto mb-2" 
+                                className="w-12 h-12 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
-                            <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white">{awayVal}%</div>
+                            <div className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white">{awayVal}%</div>
                         </div>
                      </div>
                 </div>

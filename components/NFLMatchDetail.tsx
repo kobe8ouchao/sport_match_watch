@@ -154,7 +154,7 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
         <div className="w-full">
             {/* Header / Scoreboard */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900 to-black text-white shadow-2xl mb-6">
-                <div className="absolute inset-0 bg-[url('https://wallpapercave.com/wp/wp1854239.jpg')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1696542095251-2dff09ec6b5b?q=80&w=1962&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
                 
                 <div className="relative z-10 p-6 md:p-8">
                     {/* Top Bar */}
