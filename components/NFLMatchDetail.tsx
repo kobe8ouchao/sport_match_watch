@@ -168,8 +168,42 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
 
                     {/* Score Board */}
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 max-w-6xl mx-auto">
-                        {/* Home Team */}
-                        <div className="flex flex-col items-center flex-1 order-1 md:order-1">
+                        
+                        {/* Mobile: Teams and Scores in one row */}
+                        <div className="flex items-center justify-between w-full md:hidden mb-4 px-2">
+                             {/* Home Team (Mobile) */}
+                            <div className="flex flex-col items-center flex-1">
+                                <img 
+                                    src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                                    alt={match.homeTeam.name} 
+                                    className="w-16 h-16 object-contain drop-shadow-lg mb-2"
+                                />
+                                <h3 className="text-lg font-bold text-center leading-tight">{match.homeTeam.name}</h3>
+                                <div className="text-xs text-gray-400 font-bold">{match.homeTeam.record}</div>
+                            </div>
+
+                             {/* Scores (Mobile) */}
+                            <div className="flex items-center gap-4 px-4">
+                                <span className="text-4xl font-black">{match.homeScore}</span>
+                                <span className="text-gray-500 text-xl font-bold">-</span>
+                                <span className="text-4xl font-black">{match.awayScore}</span>
+                            </div>
+
+                             {/* Away Team (Mobile) */}
+                            <div className="flex flex-col items-center flex-1">
+                                <img 
+                                    src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                                    alt={match.awayTeam.name} 
+                                    className="w-16 h-16 object-contain drop-shadow-lg mb-2"
+                                />
+                                <h3 className="text-lg font-bold text-center leading-tight">{match.awayTeam.name}</h3>
+                                <div className="text-xs text-gray-400 font-bold">{match.awayTeam.record}</div>
+                            </div>
+                        </div>
+
+
+                        {/* Desktop: Home Team */}
+                        <div className="hidden md:flex flex-col items-center flex-1 order-1">
                             <img 
                                 src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.homeTeam.name} 
@@ -181,7 +215,7 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
                         </div>
 
                         {/* Center Info */}
-                        <div className="flex flex-col items-center px-4 order-3 md:order-2 w-full md:w-auto mt-6 md:mt-0">
+                        <div className="flex flex-col items-center px-4 order-3 md:order-2 w-full md:w-auto mt-0 md:mt-0">
                              {/* Status */}
                             <div className="bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 mb-6">
                                 <span className="text-sm font-bold tracking-widest uppercase text-yellow-400">
@@ -191,8 +225,8 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
 
                             {/* Quarter Scoreboard */}
                             {(match.homeTeam.linescores && match.awayTeam.linescores) && (
-                                <div className="bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10 w-full md:w-auto mb-4">
-                                    <table className="text-sm text-center w-full md:w-auto">
+                                <div className="bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10 w-full md:w-auto mb-4 overflow-x-auto">
+                                    <table className="text-sm text-center w-full md:w-auto min-w-[300px]">
                                         <thead>
                                             <tr className="text-white/40 text-xs border-b border-white/10">
                                                 <th className="px-2 pb-2 text-left min-w-[60px]">Team</th>
@@ -225,12 +259,12 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
                             )}
                             
                             {/* Game Info Box */}
-                            <div className="flex gap-4">
-                                <div className="flex flex-col items-center gap-1 bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center min-w-[140px]">
+                            <div className="flex flex-wrap justify-center gap-4 w-full">
+                                <div className="flex flex-col items-center gap-1 bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center flex-1 min-w-[140px]">
                                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Game Info</div>
-                                    {match.stadium && <div className="text-xs font-bold text-white">{match.stadium}</div>}
+                                    {match.stadium && <div className="text-xs font-bold text-white line-clamp-1">{match.stadium}</div>}
                                     {match.gameInfo?.venue?.address?.city && (
-                                        <div className="text-[10px] text-gray-300">{match.gameInfo.venue.address.city}, {match.gameInfo.venue.address.state}</div>
+                                        <div className="text-[10px] text-gray-300 line-clamp-1">{match.gameInfo.venue.address.city}, {match.gameInfo.venue.address.state}</div>
                                     )}
                                     {match.gameInfo?.attendance && (
                                         <div className="text-[10px] text-gray-400 mt-1 flex items-center gap-1 justify-center">
@@ -240,9 +274,9 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
                                 </div>
 
                                 {match.gameInfo?.odds && match.gameInfo.odds.length > 0 && (
-                                    <div className="flex flex-col items-center gap-1 bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center min-w-[120px]">
+                                    <div className="flex flex-col items-center gap-1 bg-black/30 backdrop-blur-md rounded-xl p-3 border border-white/10 text-center flex-1 min-w-[120px]">
                                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Odds</div>
-                                        <div className="text-xs font-bold text-white">
+                                        <div className="text-xs font-bold text-white line-clamp-1">
                                             {match.gameInfo.odds[0].details}
                                         </div>
                                         <div className="text-[10px] text-gray-300">
@@ -253,8 +287,8 @@ const NFLMatchDetail: React.FC<NFLMatchDetailProps> = ({ match, onBack }) => {
                             </div>
                         </div>
 
-                        {/* Away Team */}
-                        <div className="flex flex-col items-center flex-1 order-2 md:order-3">
+                        {/* Desktop: Away Team */}
+                        <div className="hidden md:flex flex-col items-center flex-1 order-3">
                             <img 
                                 src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.awayTeam.name} 

@@ -76,7 +76,71 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
           </div>
 
           {/* Score Board */}
-          <div className={`flex items-center w-full max-w-4xl ${hasGoals ? 'justify-between' : 'justify-center gap-16 md:gap-32'}`}>
+          <div className="w-full max-w-4xl">
+            {/* Mobile Layout */}
+            <div className="flex flex-col items-center w-full md:hidden mb-6">
+                <div className="flex items-center justify-between w-full px-2 mb-4">
+                    {/* Home Team */}
+                    <div className="flex flex-col items-center flex-1">
+                        <img 
+                            src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
+                            alt={match.homeTeam.name} 
+                            className="h-16 w-16 object-contain drop-shadow-2xl mb-2" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
+                        <h3 className="text-lg font-bold text-center leading-tight">{match.homeTeam.name}</h3>
+                    </div>
+
+                    {/* Score */}
+                    <div className="flex items-center gap-4 px-2">
+                        {match.status === 'SCHEDULED' ? (
+                            <div className="flex flex-col items-center">
+                                <span className="text-3xl font-black opacity-80">VS</span>
+                                <div className="text-xs font-mono mt-1">
+                                    {match.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <span className="text-4xl font-black font-mono">{match.homeScore}</span>
+                                <span className="text-xl opacity-50 font-light">-</span>
+                                <span className="text-4xl font-black font-mono">{match.awayScore}</span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Away Team */}
+                    <div className="flex flex-col items-center flex-1">
+                        <img 
+                            src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
+                            alt={match.awayTeam.name} 
+                            className="h-16 w-16 object-contain drop-shadow-2xl mb-2" 
+                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                        />
+                        <h3 className="text-lg font-bold text-center leading-tight">{match.awayTeam.name}</h3>
+                    </div>
+                </div>
+
+                {/* Mobile Status */}
+                {isLive ? (
+                    <div className="flex items-center gap-2 bg-red-500/20 px-4 py-1.5 rounded-full border border-red-500/30 backdrop-blur-md">
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                        </span>
+                        <span className="text-sm font-bold text-white tracking-widest uppercase">
+                            {match.status === 'LIVE' ? `LIVE • ${match.minute}'` : match.status}
+                        </span>
+                    </div>
+                ) : (
+                    <div className="px-4 py-1.5 rounded-full text-sm font-bold tracking-widest uppercase border bg-white/10 border-white/20">
+                        {match.status}
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Layout */}
+            <div className={`hidden md:flex items-center w-full ${hasGoals ? 'justify-between' : 'justify-center gap-16 md:gap-32'}`}>
             {/* Home Team */}
             <div className="flex flex-col items-center flex-1">
               <img 
@@ -136,6 +200,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
               />
               <h2 className="text-2xl md:text-4xl font-bold text-center tracking-tight">{match.awayTeam.name}</h2>
             </div>
+          </div>
           </div>
 
           {/* Goals List */}

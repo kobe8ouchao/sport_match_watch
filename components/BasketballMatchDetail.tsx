@@ -119,7 +119,85 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                         {match.leagueId} Basketball
                     </div>
 
-                    <div className="flex justify-between items-center w-full max-w-5xl">
+                    <div className="w-full max-w-5xl">
+                        {/* Mobile Header */}
+                        <div className="md:hidden flex flex-col w-full mb-6">
+                             {/* Teams & Score Row */}
+                             <div className="flex items-center justify-between px-2 mb-4">
+                                {/* Home Team */}
+                                <div className="flex flex-col items-center flex-1">
+                                    <img src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} alt={match.homeTeam.name} className="h-16 w-16 object-contain mb-2 drop-shadow-2xl" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }} />
+                                    <h3 className="text-lg font-bold text-center leading-tight text-orange-200">{match.homeTeam.shortName}</h3>
+                                </div>
+
+                                {/* Score */}
+                                <div className="flex items-center gap-3 px-2">
+                                     <span className="text-4xl font-black">{match.homeScore}</span>
+                                     <span className="text-xl text-white/50">-</span>
+                                     <span className="text-4xl font-black">{match.awayScore}</span>
+                                </div>
+
+                                {/* Away Team */}
+                                <div className="flex flex-col items-center flex-1">
+                                    <img src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} alt={match.awayTeam.name} className="h-16 w-16 object-contain mb-2 drop-shadow-2xl" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }} />
+                                    <h3 className="text-lg font-bold text-center leading-tight text-white/80">{match.awayTeam.shortName}</h3>
+                                </div>
+                             </div>
+
+                             {/* Center Info (Status + Table) */}
+                             <div className="flex flex-col items-center w-full">
+                                 {/* Status */}
+                                 {match.status !== 'SCHEDULED' && match.status !== 'FINISHED' ? (
+                                    <div className="flex items-center gap-2 mb-4 bg-red-500/20 px-3 py-1 rounded-full border border-red-500/30 backdrop-blur-md">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                        </span>
+                                        <span className="text-sm font-bold text-white tracking-widest uppercase">{match.status}</span>
+                                    </div>
+                                ) : (
+                                    <div className="text-sm font-bold text-white/60 mb-4 uppercase tracking-widest">{match.status}</div>
+                                )}
+
+                                {/* Scoreboard Table */}
+                                {(match.homeTeam.linescores && match.awayTeam.linescores) && (
+                                    <div className="bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-white/10 w-full overflow-x-auto">
+                                        <table className="text-sm text-center w-full min-w-[300px]">
+                                            <thead>
+                                                <tr className="text-white/40 text-xs border-b border-white/10">
+                                                    <th className="px-2 pb-2"></th>
+                                                    {match.homeTeam.linescores.map((_, i) => (
+                                                        <th key={i} className="px-2 pb-2 w-8">
+                                                            {i < 4 ? `Q${i + 1}` : `OT${i - 3}`}
+                                                        </th>
+                                                    ))}
+                                                    <th className="px-2 pb-2 font-bold text-white">T</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="font-mono">
+                                                <tr className="border-b border-white/5">
+                                                    <td className="px-2 py-2 text-left font-bold text-orange-400">{match.homeTeam.shortName}</td>
+                                                    {match.homeTeam.linescores.map((s, i) => (
+                                                        <td key={i} className="px-2 py-2">{s.displayValue || s.value}</td>
+                                                    ))}
+                                                    <td className="px-2 py-2 font-bold">{match.homeScore}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-2 py-2 text-left font-bold text-white">{match.awayTeam.shortName}</td>
+                                                    {match.awayTeam.linescores.map((s, i) => (
+                                                        <td key={i} className="px-2 py-2">{s.displayValue || s.value}</td>
+                                                    ))}
+                                                    <td className="px-2 py-2 font-bold">{match.awayScore}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                             </div>
+                        </div>
+
+                        {/* Desktop Header */}
+                        <div className="hidden md:flex justify-between items-center w-full">
                         {/* Home Team */}
                         <div className="flex flex-col items-center flex-1">
                             <img 
@@ -203,6 +281,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                             )}
                             <span className="text-lg font-bold text-white/80">{match.awayTeam.shortName}</span>
                         </div>
+                    </div>
                     </div>
 
                     <div className="mt-8 flex items-center gap-6 text-sm text-white/60 font-medium">
