@@ -494,6 +494,27 @@ const App: React.FC = () => {
         <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
+        {/* Dynamic SEO Landing Pages */}
+        {SEO_PAGES.map((page) => (
+          <React.Fragment key={page.slug}>
+            <Route
+              path={`/${page.slug}`}
+              element={
+                <SEOArticlePage
+                  title={page.title}
+                  description={page.description}
+                  h1={page.h1}
+                  content={page.content}
+                  keywords={page.keyword}
+                  relatedLeagueId={page.relatedLeagueId}
+                  darkMode={darkMode}
+                  toggleTheme={toggleTheme}
+                />
+              }
+            />
+          </React.Fragment>
+        ))}
+
         {/* SEO Landing Pages */}
         <Route 
           path="/nba-live-scores" 
