@@ -461,6 +461,8 @@ import SitemapPage from './components/SitemapPage';
 import SEO from './components/SEO';
 import LeagueLandingPage from './components/LeagueLandingPage';
 import WorldCupPage from './components/WorldCupPage';
+import SEOArticlePage from './components/SEOArticlePage';
+import { SEO_PAGES } from './constants/seoPages';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -500,7 +502,7 @@ const App: React.FC = () => {
               leagueId="nba"
               title="NBA Live Scores, Standings & Schedule 2025"
               description="Get real-time NBA scores, live updates, standings, and schedule for the 2025-26 season. Follow your favorite teams with instant match statistics."
-              keywords="NBA Scores, NBA Standings, NBA Schedule, Live Basketball Scores, NBA Results 2025"
+              keywords="NBA Scores, NBA Standings, NBA Schedule, Live Basketball Scores, NBA Results 2025, nfl scores, nba scores, champions league, cricket live, mlb scores, formula 1, nhl scores, super bowl, nba games today, epl table, football scores, nfl games today, nba standings, tennis, live sports, nba playoffs, soccer, mma, boxing, world cup"
               heroColor="bg-orange-600"
               darkMode={darkMode}
               toggleTheme={toggleTheme}
@@ -542,7 +544,7 @@ const App: React.FC = () => {
               leagueId="eng.1"
               title="Premier League Live Scores, Table & News"
               description="Experience the English Premier League like never before. Live scores, up-to-the-minute table standings, and fixtures for all 20 EPL clubs."
-              keywords="Premier League Scores, EPL Table, Premier League Fixtures, Live Football, England Football Results"
+              keywords="Premier League Scores, EPL Table, Premier League Fixtures, Live Football, England Football Results, nfl scores, nba scores, champions league, cricket live, mlb scores, formula 1, nhl scores, super bowl, nba games today, epl table, football scores, nfl games today, nba standings, tennis, live sports, nba playoffs, soccer, mma, boxing, world cup"
               heroColor="bg-purple-700"
               darkMode={darkMode}
               toggleTheme={toggleTheme}
@@ -556,7 +558,7 @@ const App: React.FC = () => {
               leagueId="esp.1"
               title="La Liga Match Results & Standings"
               description="Real-time Spanish La Liga football scores and standings. Follow Real Madrid, Barcelona, and Atletico Madrid with live match statistics."
-              keywords="La Liga Scores, Spanish Football, La Liga Table, El Clasico, Live Soccer Results"
+              keywords="La Liga Scores, Spanish Football, La Liga Table, El Clasico, Live Soccer Results, nfl scores, nba scores, champions league, cricket live, mlb scores, formula 1, nhl scores, super bowl, nba games today, epl table, football scores, nfl games today, nba standings, tennis, live sports, nba playoffs, soccer, mma, boxing, world cup"
               heroColor="bg-red-600"
               darkMode={darkMode}
               toggleTheme={toggleTheme}
@@ -598,7 +600,7 @@ const App: React.FC = () => {
               leagueId="ita.1"
               title="Serie A Match Schedule & Standings"
               description="Live Italian Serie A football scores, schedule, and league table. Keep up with Juventus, AC Milan, and Inter Milan match results."
-              keywords="Serie A Scores, Italian Football, Serie A Table, Calcio, Live Matches"
+              keywords="Serie A Scores, Italian Football, Serie A Table, Calcio, Live Matches, nfl scores, nba scores, champions league, cricket live, mlb scores, formula 1, nhl scores, super bowl, nba games today, epl table, football scores, nfl games today, nba standings, tennis, live sports, nba playoffs, soccer, mma, boxing, world cup"
               heroColor="bg-blue-500"
               darkMode={darkMode}
               toggleTheme={toggleTheme}
@@ -640,7 +642,7 @@ const App: React.FC = () => {
               leagueId="eng.fa"
               title="FA Cup Live Scores, Draw & News"
               description="Experience the magic of the FA Cup. Live scores, tournament bracket updates, and fixtures for the world's oldest national football competition."
-              keywords="FA Cup Scores, FA Cup Draw, FA Cup Fixtures, Live Football, England Cup Results"
+              keywords="FA Cup Scores, FA Cup Draw, FA Cup Fixtures, Live Football, England Cup Results, nfl scores, nba scores, champions league, cricket live, mlb scores, formula 1, nhl scores, super bowl, nba games today, epl table, football scores, nfl games today, nba standings, tennis, live sports, nba playoffs, soccer, mma, boxing, world cup"
               heroColor="bg-red-600"
               darkMode={darkMode}
               toggleTheme={toggleTheme}

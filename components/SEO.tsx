@@ -103,6 +103,7 @@ const SEO = () => {
 
     // Standard Meta
     updateMeta('description', description);
+    updateMeta('keywords', 'NBA, Premier League, La Liga, Bundesliga, Ligue 1, Serie A, live scores, results, standings, fixtures, sports news');
 
     // OpenGraph
     updateOG('og:title', title);

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import { fileURLToPath } from 'url';
+import { SEO_PAGES_DATA } from '../constants/seoPagesData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -185,13 +186,17 @@ const generateSitemap = (matchUrls) => {
         xml += '  </url>\n';
     });
 
-    // Add Match Routes
-    matchUrls.forEach(url => {
+    // Add Match and SEO Routes
+    matchUrls.forEach(urlItem => {
+        const loc = typeof urlItem === 'string' ? urlItem : urlItem.loc;
+        const priority = typeof urlItem === 'string' ? '0.7' : (urlItem.priority || '0.7');
+        const changefreq = typeof urlItem === 'string' ? 'daily' : (urlItem.changefreq || 'daily');
+
         xml += '  <url>\n';
-        xml += `    <loc>${BASE_URL}${url}</loc>\n`;
+        xml += `    <loc>${BASE_URL}${loc}</loc>\n`;
         xml += `    <lastmod>${today}</lastmod>\n`;
-        xml += `    <changefreq>daily</changefreq>\n`;
-        xml += `    <priority>0.7</priority>\n`;
+        xml += `    <changefreq>${changefreq}</changefreq>\n`;
+        xml += `    <priority>${priority}</priority>\n`;
         xml += '  </url>\n';
     });
 
@@ -216,6 +221,60 @@ const generatePages = async () => {
     }
 
     const template = fs.readFileSync(INDEX_HTML_PATH, 'utf-8');
+
+    // Generate SEO Landing Pages
+    console.log('Generating SEO landing pages...');
+    for (const page of SEO_PAGES_DATA) {
+        try {
+            // Create output directory: dist/[slug]
+            const outputFilePath = path.join(OUTPUT_DIR, page.slug, 'index.html');
+            ensureDirectoryExistence(outputFilePath);
+
+            let html = template;
+
+            // Replace Title
+            html = html.replace(
+                /<title>.*?<\/title>/,
+                `<title>${page.title}</title>`
+            );
+
+            // Replace Description
+            html = html.replace(
+                /<meta name="description" content=".*?" \/>/,
+                `<meta name="description" content="${page.description}" />`
+            );
+
+            // Replace Keywords
+            if (html.includes('<meta name="keywords"')) {
+                 html = html.replace(
+                    /<meta name="keywords" content=".*?" \/>/,
+                    `<meta name="keywords" content="${page.keyword}" />`
+                );
+            } else {
+                 html = html.replace('</head>', `<meta name="keywords" content="${page.keyword}" />\n</head>`);
+            }
+
+            // Inject Content into #root for SEO
+            const contentHtml = `
+                <div class="min-h-screen bg-pantone-cloud text-gray-900">
+                    <div class="max-w-7xl mx-auto px-4 py-12">
+                        <article class="prose lg:prose-xl max-w-none">
+                            <h1>${page.h1}</h1>
+                            ${page.content}
+                        </article>
+                    </div>
+                </div>
+            `;
+            html = html.replace('<div id="root"></div>', `<div id="root">${contentHtml}</div>`);
+
+            fs.writeFileSync(outputFilePath, html);
+            generatedUrls.push({ loc: `/${page.slug}`, priority: '0.9', changefreq: 'daily' });
+            console.log(`Generated ${page.slug}`);
+
+        } catch (e) {
+            console.error(`Error generating ${page.slug}:`, e);
+        }
+    }
 
     for (const league of LEAGUES) {
         console.log(`Processing league: ${league}`);
@@ -244,61 +303,48 @@ const generatePages = async () => {
                     const awayName = away.team.displayName;
                     
                     // Generate Slug: [home-slug]-vs-[away-slug]-[date]-[matchId]
-                    // We append matchId to ensure uniqueness and easy ID extraction in React
                     const slugify = (text) => text.toLowerCase()
-                        .replace(/[^\w\s-]/g, '') // Remove special chars
-                        .replace(/\s+/g, '-')     // Replace spaces with hyphens
-                        .replace(/-+/g, '-');     // Remove duplicate hyphens
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-');
                         
                     const homeSlug = slugify(homeName);
                     const awaySlug = slugify(awayName);
-                    const matchDateSlug = dateStr; // YYYYMMDD
+                    const matchDateSlug = dateStr;
                     
-                    // Format: team-a-vs-team-b-20231225-123456
                     const urlSlug = `${homeSlug}-vs-${awaySlug}-${matchDateSlug}-${matchId}`;
 
-                    // 1. Generate Title: [Team A] vs [Team B] 实时比分 (Live Score)
                     const pageTitle = `${homeName} vs ${awayName} 实时比分 (Live Score)`;
 
-                    // 2. Generate Keywords
                     const homeKeywords = getKeywordsForTeam(homeName);
                     const awayKeywords = getKeywordsForTeam(awayName);
                     const allKeywords = [...new Set([...homeKeywords, ...awayKeywords, ...GENERAL_KEYWORDS])];
                     const keywordsStr = allKeywords.join(', ');
 
-                    // 3. Generate Description
                     const description = `Watch ${homeName} vs ${awayName} live. Find out how to watch the game tonight, check live scores, and see match stats. ${allKeywords.slice(0, 3).join('. ')}.`;
 
-                    // 4. Create File Path: dist/match/[leagueId]/[urlSlug]/index.html
-                    // This matches the route /match/:leagueId/:slugAndId
                     const outputFilePath = path.join(OUTPUT_DIR, 'match', league, urlSlug, 'index.html');
                     ensureDirectoryExistence(outputFilePath);
 
-                    // 5. Inject Content
                     let content = template;
                     
-                    // Replace Title
                     content = content.replace(
                         /<title>.*?<\/title>/, 
                         `<title>${pageTitle}</title>`
                     );
 
-                    // Replace Description
                     content = content.replace(
                         /<meta name="description" content=".*?" \/>/,
                         `<meta name="description" content="${description}" />`
                     );
 
-                    // Replace Keywords
                     content = content.replace(
                         /<meta name="keywords" content=".*?" \/>/,
                         `<meta name="keywords" content="${keywordsStr}" />`
                     );
 
-                    // Write File
                     fs.writeFileSync(outputFilePath, content);
                     
-                    // Add to Sitemap list
                     generatedUrls.push(`/match/${league}/${urlSlug}`);
                 }
             } catch (err) {

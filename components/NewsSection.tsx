@@ -7,9 +7,11 @@ interface NewsSectionProps {
   matchId?: string;
   hideHeader?: boolean;
   className?: string;
+  limit?: number;
+  compact?: boolean;
 }
 
-const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader, className }) => {
+const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader, className, limit, compact }) => {
   const [news, setNews] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +20,7 @@ const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader
       try {
         setLoading(true);
         const articles = await fetchNews(leagueId, matchId);
-        setNews(articles);
+        setNews(limit ? articles.slice(0, limit) : articles);
       } catch (e) {
         console.error(e);
         setNews([]);
@@ -28,7 +30,7 @@ const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader
     };
 
     loadNews();
-  }, [leagueId, matchId]);
+  }, [leagueId, matchId, limit]);
 
   if (loading) {
     return (
@@ -56,11 +58,12 @@ const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader
             {matchId ? 'Match News' : 'Latest News'}
           </h3>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 ${compact ? '' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
             {news.map((a: Article) => {
               const img = a.images?.[0]?.url;
               return (
                 <a key={a.headline || Math.random()} href={a.link} target="_blank" rel="noreferrer" className="group rounded-3xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/5 shadow-sm hover:shadow-md transition-all hover:bg-white/20 dark:hover:bg-white/10 glass-card">
+                  {!compact && (
                   <div className="aspect-video bg-gray-100/10 dark:bg-white/5 overflow-hidden">
                     {img ? (
                       <img src={img} alt={a.headline || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -68,6 +71,7 @@ const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader
                       <div className="w-full h-full flex items-center justify-center text-3xl">📰</div>
                     )}
                   </div>
+                  )}
                   <div className="p-4">
                     <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 leading-snug min-h-[2.5rem]">
                       {a.headline}
