@@ -802,13 +802,38 @@ export const fetchPlayerStats = async (leagueId: string): Promise<PlayerStatCate
 };
 
 export const fetchNews = async (leagueId: string, matchId?: string): Promise<Article[]> => {
+  // Handle "top" request - fetch news from major leagues and combine
+  if (leagueId === 'top') {
+    const leaguesToFetch = [
+      'nba',
+      'nfl',
+      'eng.1', // Premier League
+      'esp.1', // La Liga
+      'uefa.champions', // UCL
+    ];
+
+    try {
+      const results = await Promise.all(
+        leaguesToFetch.map(id => fetchNews(id))
+      );
+      
+      const allArticles = results.flat();
+      
+      // Sort by date descending
+      return allArticles.sort((a, b) => 
+        new Date(b.published).getTime() - new Date(a.published).getTime()
+      );
+    } catch (error) {
+      console.error('Error fetching top news:', error);
+      return [];
+    }
+  }
+
   let endpoint = '';
   if (leagueId === 'nba') {
     endpoint = 'basketball/nba';
   } else if (leagueId === 'nfl') {
     endpoint = 'football/nfl';
-  } else if (leagueId === 'top') {
-    endpoint = 'soccer/eng.1'; // Default to Premier League for Top
   } else {
     endpoint = `soccer/${leagueId}`;
   }

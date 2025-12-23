@@ -16,6 +16,7 @@ const SEO = () => {
 
   useEffect(() => {
     const path = location.pathname;
+    const searchParams = new URLSearchParams(location.search);
     let title = 'Live Scores & Results for NBA, Premier League, La Liga - Sports Match';
     
     if (path.startsWith('/standings/')) {
@@ -28,7 +29,14 @@ const SEO = () => {
     } else if (path === '/news') {
         title = 'Sports News - Latest Headlines - Sports Match';
     } else if (path === '/schedule') {
-        title = 'Match Schedule - Upcoming Fixtures - Sports Match';
+        const dateParam = searchParams.get('date');
+        if (dateParam) {
+            const date = new Date(dateParam + 'T12:00:00');
+            const dateStr = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            title = `Match Schedule for ${dateStr} - Sports Match`;
+        } else {
+            title = 'Match Schedule - Upcoming Fixtures - Sports Match';
+        }
     } else if (path === '/sitemap') {
         title = 'Sitemap - Sports Match';
     } else if (path === '/nba-live-scores') {

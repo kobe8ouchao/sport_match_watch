@@ -36,6 +36,19 @@ const STATIC_ROUTES = [
     { loc: '/serie-a-live-football', changefreq: 'daily', priority: '0.9' }
 ];
 
+// Generate Schedule Pages for the next 14 days
+const today = new Date();
+for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    STATIC_ROUTES.push({ 
+        loc: `/schedule?date=${dateStr}`, 
+        changefreq: 'daily', 
+        priority: '0.8' 
+    });
+}
+
 // Keywords Data (will be populated dynamically)
 let KEYWORD_DATA = [];
 
