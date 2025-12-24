@@ -9,9 +9,10 @@ interface NewsSectionProps {
   className?: string;
   limit?: number;
   compact?: boolean;
+  sidebar?: boolean; // New prop
 }
 
-const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader, className, limit, compact }) => {
+const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader, className, limit, compact, sidebar }) => {
   const [news, setNews] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -50,6 +51,12 @@ const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader
       );
   }
 
+  const gridClass = sidebar 
+    ? 'grid-cols-1' 
+    : compact 
+        ? 'grid-cols-1' 
+        : 'sm:grid-cols-2 lg:grid-cols-3';
+
   return (
     <div className={`animate-slide-up ${className || ''}`}>
         {!hideHeader && (
@@ -58,25 +65,29 @@ const NewsSection: React.FC<NewsSectionProps> = ({ leagueId, matchId, hideHeader
             {matchId ? 'Match News' : 'Latest News'}
           </h3>
         )}
-        <div className={`grid grid-cols-1 ${compact ? '' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-6`}>
+        <div className={`grid grid-cols-1 ${gridClass} gap-6`}>
             {news.map((a: Article) => {
               const img = a.images?.[0]?.url;
               return (
-                <a key={a.headline || Math.random()} href={a.link} target="_blank" rel="noreferrer" className="group rounded-3xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/10 dark:bg-white/5 shadow-sm hover:shadow-md transition-all hover:bg-white/20 dark:hover:bg-white/10 glass-card">
-                  {!compact && (
-                  <div className="aspect-video bg-gray-100/10 dark:bg-white/5 overflow-hidden">
+                <a key={a.headline || Math.random()} href={a.link} target="_blank" rel="noreferrer" className="group relative block w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-white/10">
+                  
+                  {/* Background Image Layer */}
+                  <div className="absolute inset-0 z-0">
                     {img ? (
-                      <img src={img} alt={a.headline || ''} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={img} alt={a.headline || ''} className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl">📰</div>
+                      <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-4xl opacity-30">📰</div>
                     )}
+                    {/* Dark gradient overlay for entire card */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
                   </div>
-                  )}
-                  <div className="p-4">
-                    <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 leading-snug min-h-[2.5rem]">
+
+                  {/* Content Overlay - Minimalist Frosted Glass */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-8 pb-3 px-3 transition-all duration-300">
+                    <div className="text-[18px] font-bold text-white line-clamp-2 leading-relaxed drop-shadow-md mb-0.5">
                       {a.headline}
                     </div>
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="text-[12px] text-gray-300 font-medium opacity-80">
                       {new Date(a.published).toLocaleDateString()}
                     </div>
                   </div>

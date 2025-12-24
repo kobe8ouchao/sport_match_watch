@@ -13,6 +13,7 @@ import { isSameDay } from './utils';
 import { Loader2, ArrowUp, CalendarDays } from 'lucide-react';
 import MatchDetail from './components/MatchDetail';
 import NewsSection from './components/NewsSection';
+import NewsCarousel from './components/NewsCarousel';
 import StandingsWidget from './components/StandingsWidget';
 
 // Wrapper to handle navigation
@@ -342,10 +343,14 @@ const Dashboard: React.FC = () => {
                   <CalendarDays size={18} />
                 </button>
                </div>
-              <FeaturedCarousel
-                matches={hotMatches}
-                onMatchClick={(m) => openMatchDetail(m.id, m.leagueId)}
-              />
+              {hotMatches.length > 0 ? (
+                <FeaturedCarousel
+                  matches={hotMatches}
+                  onMatchClick={(m) => openMatchDetail(m.id, m.leagueId)}
+                />
+              ) : (
+                <NewsCarousel />
+              )}
             </div>
 
             {/* Standings */}
