@@ -337,9 +337,13 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
             <div className="max-w-6xl mx-auto">
                 {/* Team Stats Tab */}
                 <div style={{ display: activeTab === 'stats' ? 'block' : 'none' }}>
-                    
-                    {/* Game Leaders Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    {match.status === 'SCHEDULED' ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <p className="text-gray-400 dark:text-gray-500 font-medium mb-1">Match Not Started</p>
+                            <p className="text-gray-300 dark:text-gray-600 text-xs">Team stats will be available after tip-off</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         {/* Game Leaders Section */}
                         <div className="glass-card p-6 rounded-3xl h-full">
                             <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-white/10 pb-4">
@@ -562,12 +566,22 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                             </div>
                         </div>
                     </div>
+                    )}
                 </div>
 
                 {/* Player Stats Tab */}
                 <div style={{ display: activeTab === 'players' ? 'block' : 'none' }}>
-                    {renderTeamBoxscore(match.homeTeam.shortName, match.homePlayers, match.homeTeam.logo, match.homeTeam.record)}
-                    {renderTeamBoxscore(match.awayTeam.shortName, match.awayPlayers, match.awayTeam.logo, match.awayTeam.record)}
+                    {match.status === 'SCHEDULED' ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <p className="text-gray-400 dark:text-gray-500 font-medium mb-1">Match Not Started</p>
+                            <p className="text-gray-300 dark:text-gray-600 text-xs">Player stats will be available after tip-off</p>
+                        </div>
+                    ) : (
+                        <>
+                            {renderTeamBoxscore(match.homeTeam.shortName, match.homePlayers, match.homeTeam.logo, match.homeTeam.record)}
+                            {renderTeamBoxscore(match.awayTeam.shortName, match.awayPlayers, match.awayTeam.logo, match.awayTeam.record)}
+                        </>
+                    )}
                 </div>
 
                 {/* News Tab */}

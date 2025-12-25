@@ -797,7 +797,13 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
       {/* Team Stats (Stacked below timeline) */}
       <div style={{ display: activeTab === 'statics' ? 'block' : 'none' }} className="space-y-6">
-        
+        {match.status === 'SCHEDULED' ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <p className="text-gray-400 dark:text-gray-500 font-medium mb-1">Match Not Started</p>
+            <p className="text-gray-300 dark:text-gray-600 text-xs">Team stats will be available after kick-off</p>
+          </div>
+        ) : (
+          <>
         {/* Possession Card */}
         {(() => {
             const possessionStat = match.stats.find(s => s.name.toLowerCase().includes('possession'));
@@ -1090,7 +1096,8 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                 </div>
             </div>
         </div>
-
+          </>
+        )}
       </div>
       <div style={{ display: activeTab === 'news' ? 'block' : 'none' }} className="glass-card bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">
