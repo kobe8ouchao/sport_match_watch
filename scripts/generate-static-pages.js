@@ -20,6 +20,7 @@ const STATIC_ROUTES = [
     { loc: '/leagues', changefreq: 'weekly', priority: '0.8' },
     { loc: '/schedule', changefreq: 'daily', priority: '0.9' },
     { loc: '/news', changefreq: 'daily', priority: '0.8' },
+    { loc: '/player-comparison', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/nba', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/nfl', changefreq: 'daily', priority: '0.8' },
     { loc: '/standings/eng.1', changefreq: 'daily', priority: '0.8' },

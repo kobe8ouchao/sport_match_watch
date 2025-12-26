@@ -33,6 +33,7 @@ const SitemapPage: React.FC<{ toggleTheme: () => void; darkMode: boolean }> = ({
                         <li><Link to="/leagues" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Leagues</Link></li>
                         <li><Link to="/schedule" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Schedule</Link></li>
                         <li><Link to="/news" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">News</Link></li>
+                        <li><Link to="/player-comparison" className="text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Player Comparison</Link></li>
                         <li><Link to="/world-cup-2026" className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors">FIFA World Cup 2026™</Link></li>
                     </ul>
                 </div>
