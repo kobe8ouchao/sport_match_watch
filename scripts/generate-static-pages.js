@@ -254,6 +254,17 @@ const generatePages = async () => {
                  html = html.replace('</head>', `<meta name="keywords" content="${page.keyword}" />\n</head>`);
             }
 
+            // Add Canonical URL
+            const canonicalUrl = `${BASE_URL}/${page.slug}`;
+            if (html.includes('<link rel="canonical"')) {
+                html = html.replace(
+                    /<link rel="canonical" href=".*?" \/>/,
+                    `<link rel="canonical" href="${canonicalUrl}" />`
+                );
+            } else {
+                html = html.replace('</head>', `<link rel="canonical" href="${canonicalUrl}" />\n</head>`);
+            }
+
             // Inject Content into #root for SEO
             const contentHtml = `
                 <div class="min-h-screen bg-pantone-cloud text-gray-900">
@@ -342,6 +353,17 @@ const generatePages = async () => {
                         /<meta name="keywords" content=".*?" \/>/,
                         `<meta name="keywords" content="${keywordsStr}" />`
                     );
+
+                    // Add Canonical URL
+                    const canonicalUrl = `${BASE_URL}/match/${league}/${urlSlug}`;
+                    if (content.includes('<link rel="canonical"')) {
+                        content = content.replace(
+                            /<link rel="canonical" href=".*?" \/>/,
+                            `<link rel="canonical" href="${canonicalUrl}" />`
+                        );
+                    } else {
+                        content = content.replace('</head>', `<link rel="canonical" href="${canonicalUrl}" />\n</head>`);
+                    }
 
                     fs.writeFileSync(outputFilePath, content);
                     

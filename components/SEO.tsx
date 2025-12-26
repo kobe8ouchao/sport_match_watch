@@ -120,6 +120,20 @@ const SEO = () => {
     updateMeta('twitter:image', image);
     // Optional: updateMeta('twitter:site', '@YourTwitterHandle');
 
+    // Canonical Link
+    let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    // Remove query params for canonical unless it's the schedule page where date is needed
+    // But typically canonical should be the clean URL. 
+    // For this specific app, we'll use the full URL if it's a schedule page with date, otherwise strip params if possible?
+    // Actually, simple rule: just use the current full URL without tracking params. 
+    // Since we don't have tracking params logic here, using the constructed 'url' variable is safe enough for now.
+    link.setAttribute('href', url);
+
   }, [location]);
 
   return null;
