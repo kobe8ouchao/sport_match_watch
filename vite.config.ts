@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3030,
         host: '0.0.0.0',
+        proxy: {
+          '/fpl-api': {
+            target: 'https://fantasy.premierleague.com/api',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/fpl-api/, ''),
+          }
+        }
       },
       plugins: [react()],
       define: {

@@ -72,6 +72,9 @@ const SEO = () => {
     } else if (path === '/serie-a-live-football') {
         title = 'Serie A Match Schedule & Standings';
         description = 'Serie A football schedule, live scores, and current standings.';
+    } else if (path === '/player-comparison') {
+        title = 'FPL Player Comparison Tool - Stats Radar';
+        description = 'Compare Fantasy Premier League players head-to-head. Analyze goals, assists, xG, and more with our interactive radar chart.';
     }
     // Note: Match detail pages handle their own title to include team names
     // However, if we want global OG tags for them, we might need to handle them here or let them override.

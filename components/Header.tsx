@@ -8,7 +8,7 @@
  * @LastEditTime: 2025-12-13 20:37:05
  */
 import React from 'react';
-import { Moon, Sun, CalendarDays } from 'lucide-react';
+import { Moon, Sun, CalendarDays, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface HeaderProps {
@@ -38,6 +38,14 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
 
       {/* Actions */}
       <div className="flex items-center space-x-3">
+          <Link 
+            to="/player-comparison"
+            className="p-2.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300"
+            title="Player Comparison"
+          >
+              <Activity size={18} />
+          </Link>
+
           <button 
               onClick={toggleTheme}
               className="p-2.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300"
