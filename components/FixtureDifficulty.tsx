@@ -417,66 +417,6 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
             )}
 
             {/* Team Analysis Sidebar/Modal */}
-            {selectedTeam && (
-                <div className="fixed inset-0 z-[100] flex justify-end">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedTeam(null)}></div>
-                    <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 h-full shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-right duration-300">
-                        <button 
-                            onClick={() => setSelectedTeam(null)}
-                            className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition"
-                        >
-                            <X size={24} />
-                        </button>
-                        
-                        <div className="mt-8">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-2xl font-bold">
-                                    {selectedTeam.short_name}
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-black">{selectedTeam.name}</h2>
-                                    <div className="text-sm text-gray-500">Next 5 GW Difficulty: {processedData.find(d => d.teamId === selectedTeam.id)?.totalDifficulty.toFixed(1)}</div>
-                                </div>
-                            </div>
-
-                            {/* Rotation Warning */}
-                            <div className="mb-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/30 rounded-xl">
-                                <h3 className="font-bold text-yellow-800 dark:text-yellow-500 flex items-center gap-2 mb-2">
-                                    <AlertTriangle size={18} />
-                                    Rotation Risk
-                                </h3>
-                                <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                                    Mid-week Champions League fixture vs Real Madrid. 
-                                    High rotation risk for Full-backs and Wingers.
-                                </p>
-                            </div>
-
-                            {/* Best Assets */}
-                            <div className="mb-8">
-                                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                                    <User size={20} className="text-blue-500" />
-                                    Best Differential Picks
-                                </h3>
-                                <div className="space-y-3">
-                                    {getDifferentialPicks(selectedTeam.id).map((pick, i) => (
-                                        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                                            <div>
-                                                <div className="font-bold">{pick.name}</div>
-                                                <div className="text-xs text-gray-500">{pick.position} · {pick.ownership} owned</div>
-                                            </div>
-                                            <div className="font-bold text-blue-500">£{pick.price}m</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition">
-                                View Full Team Stats
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
                 <div>
