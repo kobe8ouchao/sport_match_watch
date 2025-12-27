@@ -73,7 +73,7 @@ interface ProcessedFixture {
   defDiff: number;
 }
 
-const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void }> = ({ darkMode, toggleTheme }) => {
+const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; hideLayout?: boolean }> = ({ darkMode, toggleTheme, hideLayout = false }) => {
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState<FPLTeam[]>([]);
   const [fixtures, setFixtures] = useState<FPLFixture[]>([]);
@@ -377,16 +377,7 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void }
       ];
   };
 
-  return (
-    <div className={`min-h-screen transition-colors duration-500 relative flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'}`}>
-       {/* Background Ambient */}
-       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-         <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-green-500/10 blur-[120px]" />
-         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-2 flex-grow">
-        <Header darkMode={darkMode} toggleTheme={toggleTheme} onOpenCalendar={() => {}} isCalendarOpen={false} />
+  const content = (
 
         
 
@@ -672,8 +663,21 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void }
             )}
             
         </div>
-        
-        
+  );
+
+  if (hideLayout) return content;
+
+  return (
+    <div className={`min-h-screen transition-colors duration-500 relative flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'}`}>
+       {/* Background Ambient */}
+       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+         <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-green-500/10 blur-[120px]" />
+         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-2 flex-grow">
+        <Header darkMode={darkMode} toggleTheme={toggleTheme} onOpenCalendar={() => {}} isCalendarOpen={false} />
+        {content}
       </div>
       <Footer />
     </div>

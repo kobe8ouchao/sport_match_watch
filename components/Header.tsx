@@ -40,19 +40,13 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
       {/* Actions */}
       <div className="flex items-center space-x-3">
           <Link 
-                to="/fixture-difficulty"
-                className="p-2.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300"
-                title="Fixture Difficulty Ticker"
+                to="/fantasy-premier-league-tool"
+                className="p-2.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-2"
+                title="Fantasy Premier League Tools"
               >
-                  <Shield size={18} />
+                  <Gamepad2 size={18} />
+                  <span className="hidden md:inline text-sm font-bold">FPL Tools</span>
               </Link>
-              <Link 
-                to="/player-comparison"
-            className="p-2.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300"
-            title="Player Comparison"
-          >
-              <Gamepad2 size={18} />
-          </Link>
 
           <button 
               onClick={toggleTheme}

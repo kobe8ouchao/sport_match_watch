@@ -470,6 +470,8 @@ import SEOArticlePage from './components/SEOArticlePage';
 import { SEO_PAGES } from './constants/seoPages';
 import PlayerComparison from './components/PlayerComparison';
 import FixtureDifficulty from './components/FixtureDifficulty';
+import FantasyToolsPage from './components/FantasyToolsPage';
+import FPLLanding from './components/FPLLanding';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -502,6 +504,8 @@ const App: React.FC = () => {
         <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/player-comparison" element={<PlayerComparison darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/fixture-difficulty" element={<FixtureDifficulty darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/fantasy-premier-league-tool" element={<FantasyToolsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/fantasy-premier-league" element={<FPLLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
         {/* Dynamic SEO Landing Pages */}
         {SEO_PAGES.map((page) => (

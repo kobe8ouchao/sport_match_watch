@@ -68,9 +68,10 @@ interface ProcessedPlayer {
 interface PlayerComparisonProps {
   darkMode: boolean;
   toggleTheme: () => void;
+  hideLayout?: boolean;
 }
 
-const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleTheme }) => {
+const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleTheme, hideLayout = false }) => {
   const navigate = useNavigate();
   const [allPlayers, setAllPlayers] = useState<ProcessedPlayer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -270,17 +271,7 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
     return null;
   };
 
-  return (
-    <div className={`min-h-screen transition-colors duration-500 relative flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'}`}>
-      
-      {/* Background Ambient */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-         <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[120px]" />
-         <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex-grow w-full">
-          <Header darkMode={darkMode} toggleTheme={toggleTheme} onOpenCalendar={() => {}} isCalendarOpen={false} />
+  const content = (
           
           <div className="w-full py-8 flex-grow">
               
@@ -530,6 +521,22 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
                   </div>
               )}
           </div>
+  );
+
+  if (hideLayout) return content;
+
+  return (
+    <div className={`min-h-screen transition-colors duration-500 relative flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'}`}>
+      
+      {/* Background Ambient */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+         <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[120px]" />
+         <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex-grow w-full">
+          <Header darkMode={darkMode} toggleTheme={toggleTheme} onOpenCalendar={() => {}} isCalendarOpen={false} />
+          {content}
           <Footer />
       </div>
     </div>

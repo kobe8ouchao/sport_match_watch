@@ -5,7 +5,7 @@
  * @version: 1.0
  * @Date: 2025-12-13 16:35:41
  * @LastEditors: ouchao
- * @LastEditTime: 2025-12-13 18:10:29
+ * @LastEditTime: 2025-12-27 18:21:25
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -54,6 +54,16 @@ const Footer: React.FC = () => {
               <li>
                   <Link to="/news" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
                     News
+                  </Link>
+              </li>
+              <li>
+                  <Link to="/fantasy-premier-league" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    Fantasy Premier League Home
+                  </Link>
+              </li>
+              <li>
+                  <Link alt="Fantasy Premier League Tools" to="/fantasy-premier-league-tool" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    Fantasy Premier League Tools
                   </Link>
               </li>
               <li>
