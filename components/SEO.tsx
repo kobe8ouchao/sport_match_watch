@@ -5,7 +5,7 @@
  * @version: 1.0
  * @Date: 2025-12-13 21:27:15
  * @LastEditors: ouchao
- * @LastEditTime: 2025-12-14 10:49:22
+ * @LastEditTime: 2025-12-27 16:29:52
  */
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -75,6 +75,9 @@ const SEO = () => {
     } else if (path === '/player-comparison') {
         title = 'FPL Player Comparison Tool - Stats Radar';
         description = 'Compare Fantasy Premier League players head-to-head. Analyze goals, assists, xG, and more with our interactive radar chart.';
+    } else if (path === '/fixture-difficulty') {
+        title = 'FPL Fixture Difficulty Ticker - Live FDR';
+        description = 'Advanced FPL Fixture Difficulty Ticker with live updates from ESPN data. Plan your transfers with our smart difficulty ratings.';
     }
     // Note: Match detail pages handle their own title to include team names
     // However, if we want global OG tags for them, we might need to handle them here or let them override.
