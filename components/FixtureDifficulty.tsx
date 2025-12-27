@@ -372,11 +372,12 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
   // Mock differential picks (would be real algo in production)
   const getDifferentialPicks = (teamId: number) => {
       // Return 3 players based on team
-      return [
-          { name: 'Player A', position: 'MID', price: 6.5, ownership: '2.3%' },
-          { name: 'Player B', position: 'DEF', price: 4.5, ownership: '1.1%' },
-          { name: 'Player C', position: 'FWD', price: 7.0, ownership: '0.8%' },
-      ];
+    //   return [
+    //       { name: 'Player A', position: 'MID', price: 6.5, ownership: '2.3%' },
+    //       { name: 'Player B', position: 'DEF', price: 4.5, ownership: '1.1%' },
+    //       { name: 'Player C', position: 'FWD', price: 7.0, ownership: '0.8%' },
+    //   ];
+    return null
   };
 
   const content = (
