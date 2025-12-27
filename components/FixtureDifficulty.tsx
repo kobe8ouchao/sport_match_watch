@@ -104,8 +104,9 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
         setLoading(true);
         
         // 1. Fetch FPL Static Data (Teams)
-        const staticRes = await fetch('/fpl-api/bootstrap-static/');
-        if (!staticRes.ok) {
+        const staticRes = await fetch('/fpl-api/bootstrap-static/', { headers: { 'Accept': 'application/json' } });
+        const staticContentType = staticRes.headers.get("content-type");
+        if (!staticRes.ok || (staticContentType && staticContentType.indexOf("application/json") === -1)) {
            const text = await staticRes.text();
            console.error("FPL API Error (Static):", text.substring(0, 100));
            throw new Error(`FPL API returned ${staticRes.status}`);
@@ -119,8 +120,9 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
         setCurrentGameweek(currentGw);
 
         // 2. Fetch Fixtures
-        const fixturesRes = await fetch('/fpl-api/fixtures/');
-        if (!fixturesRes.ok) {
+        const fixturesRes = await fetch('/fpl-api/fixtures/', { headers: { 'Accept': 'application/json' } });
+        const fixturesContentType = fixturesRes.headers.get("content-type");
+        if (!fixturesRes.ok || (fixturesContentType && fixturesContentType.indexOf("application/json") === -1)) {
            const text = await fixturesRes.text();
            console.error("FPL API Error (Fixtures):", text.substring(0, 100));
            throw new Error(`FPL API returned ${fixturesRes.status}`);

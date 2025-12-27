@@ -113,7 +113,18 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/fpl-api/bootstrap-static/');
+        const res = await fetch('/fpl-api/bootstrap-static/', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        // Check content type
+        const contentType = res.headers.get("content-type");
+        if (!res.ok || (contentType && contentType.indexOf("application/json") === -1)) {
+             const text = await res.text();
+             console.error("FPL API Error:", text.substring(0, 100));
+             throw new Error("Invalid response from FPL API");
+        }
+
         const data = await res.json();
         
         // Process Teams
