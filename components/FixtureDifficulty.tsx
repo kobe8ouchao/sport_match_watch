@@ -1,6 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, RefreshCw, AlertTriangle, Info, Shield, Swords, User, X, Search } from 'lucide-react';
+import { ArrowLeft, RefreshCw, AlertTriangle, Info, Shield, Swords, User, X, Search, GripVertical, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  TouchSensor,
+  MouseSensor
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import Header from './Header';
 import Footer from './Footer';
 
@@ -73,6 +92,125 @@ interface ProcessedFixture {
   defDiff: number;
 }
 
+const getTeamLogo = (code: number) => {
+    return `https://resources.premierleague.com/premierleague/badges/70/t${code}.png`;
+};
+
+interface SortableRowProps {
+    team: DifficultyData;
+    teams: FPLTeam[];
+    currentGameweek: number;
+    displayGameweeks: number;
+    sortMode: string;
+    setSelectedTeam: (team: FPLTeam | null) => void;
+    handleFixtureHover: (e: React.MouseEvent, fixture: ProcessedFixture) => void;
+    handleMouseLeave: () => void;
+}
+
+const SortableRow: React.FC<SortableRowProps> = ({ 
+    team, 
+    teams, 
+    displayGameweeks, 
+    sortMode, 
+    setSelectedTeam, 
+    handleFixtureHover, 
+    handleMouseLeave 
+}) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: team.teamId });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        position: isDragging ? 'relative' : 'static',
+        opacity: isDragging ? 0.8 : 1
+    };
+
+    return (
+        <tr 
+            ref={setNodeRef} 
+            style={style} 
+            className={`hover:bg-white/50 dark:hover:bg-white/5 transition group ${isDragging ? 'bg-blue-50 dark:bg-blue-900/20 shadow-lg' : ''}`}
+        >
+            <td 
+                className="p-4 font-bold text-gray-900 dark:text-white sticky left-0 bg-white dark:bg-zinc-950/95 backdrop-blur-sm border-r border-gray-100 dark:border-white/5 z-10"
+            >
+                <div className="flex items-center gap-3">
+                    {/* Drag Handle */}
+                    <div 
+                        {...listeners} 
+                        {...attributes} 
+                        className="cursor-grab active:cursor-grabbing touch-none text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10"
+                    >
+                        <GripVertical size={16} />
+                    </div>
+
+                    {/* Logo placeholder */}
+                    <div 
+                        className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 p-1 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm cursor-pointer hover:border-blue-500 transition-colors"
+                        onClick={() => setSelectedTeam(teams.find(t => t.id === team.teamId) || null)}
+                    >
+                        <img 
+                            src={getTeamLogo(teams.find(t => t.id === team.teamId)?.code || 0)} 
+                            alt={team.teamShortName}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                            }}
+                        />
+                        <span className="hidden text-[10px] font-bold">{team.teamShortName[0]}</span>
+                    </div>
+                    
+                    {/* Team Name - Hidden on Mobile */}
+                    <span 
+                        className="hidden md:block cursor-pointer hover:text-blue-500 transition-colors"
+                        onClick={() => setSelectedTeam(teams.find(t => t.id === team.teamId) || null)}
+                    >
+                        {team.teamName}
+                    </span>
+                    {/* Mobile Only Short Name (Optional, but logo might be enough as requested) */}
+                    {/* <span className="md:hidden text-xs">{team.teamShortName}</span> */}
+                </div>
+            </td>
+            {team.fixtures.map((fix, idx) => (
+                <td key={idx} className="p-2 text-center">
+                    {fix.difficulty > 0 ? (
+                        <div 
+                            className={`w-full h-full min-h-[50px] rounded-xl flex flex-col items-center justify-center p-1 shadow-sm transition-transform hover:scale-105 cursor-help ${fix.difficultyClass}`}
+                            onMouseEnter={(e) => handleFixtureHover(e, fix)}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            <span className="font-black text-xs uppercase tracking-wider">
+                                {fix.opponentShortName}
+                            </span>
+                            <span className="text-[10px] opacity-80 font-medium">
+                                {fix.isHome ? '(H)' : '(A)'}
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="w-full h-full min-h-[50px] rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400">
+                            -
+                        </div>
+                    )}
+                </td>
+            ))}
+            <td className="p-4 text-center font-black text-lg">
+                {sortMode === 'attack' ? team.attackDifficulty.toFixed(1) : 
+                 sortMode === 'defence' ? team.defenceDifficulty.toFixed(1) : 
+                 team.totalDifficulty.toFixed(1)}
+            </td>
+        </tr>
+    );
+};
+
 const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; hideLayout?: boolean }> = ({ darkMode, toggleTheme, hideLayout = false }) => {
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState<FPLTeam[]>([]);
@@ -87,6 +225,25 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
   const [filterPosition, setFilterPosition] = useState<'ALL' | 'GKP' | 'DEF' | 'MID' | 'FWD'>('ALL');
   const [searchTeam, setSearchTeam] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [manualOrder, setManualOrder] = useState<number[]>([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+    useSensor(TouchSensor, {
+        activationConstraint: {
+            delay: 250,
+            tolerance: 5,
+        },
+    }),
+    useSensor(MouseSensor, {
+        activationConstraint: {
+            distance: 10,
+        },
+    })
+  );
 
   // Difficulty Color Map - Updated
   const getDifficultyClass = (difficulty: number) => {
@@ -96,6 +253,24 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
     if (difficulty <= 3.2) return 'bg-gray-300 text-black';
     if (difficulty <= 4.2) return 'bg-red-400 text-white';
     return 'bg-red-700 text-white';
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+        setManualOrder((prev) => {
+             // If we don't have a manual order yet, initialize it with current sortedData order
+             const currentOrder = prev.length > 0 ? prev : sortedData.map(t => t.teamId);
+             
+             const oldIndex = currentOrder.indexOf(active.id as number);
+             const newIndex = currentOrder.indexOf(over.id as number);
+             
+             return arrayMove(currentOrder, oldIndex, newIndex);
+        });
+        // Switch to custom sort mode implicitly or explicitly? 
+        // Let's keep current sortMode visual but override it with manualOrder in logic
+    }
   };
 
   useEffect(() => {
@@ -166,10 +341,6 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
           const espnName = s.team.displayName.toLowerCase();
           return espnName.includes(normalizedFpl) || normalizedFpl.includes(espnName.replace('fc', '').trim());
       });
-  };
-
-  const getTeamLogo = (code: number) => {
-      return `https://resources.premierleague.com/premierleague/badges/70/t${code}.png`;
   };
 
   // Process Data for Grid
@@ -320,12 +491,27 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
         filtered = filtered.filter(t => t.teamName.toLowerCase().includes(lower) || t.teamShortName.toLowerCase().includes(lower));
     }
 
+    // Manual Sort Priority
+     if (manualOrder.length > 0) {
+         // Create a map for O(1) lookup
+         const orderMap = new Map<number, number>(manualOrder.map((id, index) => [id, index]));
+         
+         // Sort based on manual order. Items not in manual order (e.g. new search result?) go to end
+         return filtered.sort((a, b) => {
+              const valA = orderMap.get(a.teamId);
+              const valB = orderMap.get(b.teamId);
+              const indexA = valA !== undefined ? valA : 9999;
+              const indexB = valB !== undefined ? valB : 9999;
+              return indexA - indexB;
+         });
+     }
+
     return filtered.sort((a, b) => {
         if (sortMode === 'attack') return a.attackDifficulty - b.attackDifficulty;
         if (sortMode === 'defence') return a.defenceDifficulty - b.defenceDifficulty;
         return a.totalDifficulty - b.totalDifficulty;
     });
-  }, [processedData, sortMode, searchTeam]);
+  }, [processedData, sortMode, searchTeam, manualOrder]);
 
   const getFixtureHoverData = (fixture: ProcessedFixture) => {
     // In a real app, this would fetch from an API or use pre-fetched advanced stats
@@ -502,25 +688,33 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
                     {/* View Controls */}
                     <div className="flex items-center gap-4 bg-white dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-white/10 overflow-x-auto max-w-full">
                     <button 
-                        onClick={() => setSortMode('overall')}
-                        className={`px-8 py-2 rounded-lg text-sm font-bold transition whitespace-nowrap ${sortMode === 'overall' ? 'bg-gray-900 text-white dark:bg-white dark:text-black' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
+                        onClick={() => { setSortMode('overall'); setManualOrder([]); }}
+                        className={`px-8 py-2 rounded-lg text-sm font-bold transition whitespace-nowrap ${sortMode === 'overall' && manualOrder.length === 0 ? 'bg-gray-900 text-white dark:bg-white dark:text-black' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
                     >
                         Overall
                     </button>
                     <button 
-                        onClick={() => setSortMode('attack')}
-                        className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'attack' ? 'bg-green-500 text-white' : 'text-gray-500 hover:text-green-500'}`}
+                        onClick={() => { setSortMode('attack'); setManualOrder([]); }}
+                        className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'attack' && manualOrder.length === 0 ? 'bg-green-500 text-white' : 'text-gray-500 hover:text-green-500'}`}
                     >
                         <Swords size={16} /> Attack
                     </button>
                     <button 
-                        onClick={() => setSortMode('defence')}
-                        className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'defence' ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-blue-500'}`}
+                        onClick={() => { setSortMode('defence'); setManualOrder([]); }}
+                        className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'defence' && manualOrder.length === 0 ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-blue-500'}`}
                     >
                         <Shield size={16} /> Defence
                     </button>
                     
-                    
+                    {/* Reset Manual Sort (Visible if manual sort is active) */}
+                    {manualOrder.length > 0 && (
+                        <button 
+                            onClick={() => setManualOrder([])}
+                            className="px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                            <RefreshCw size={14} /> Reset Order
+                        </button>
+                    )}
                     
                 </div>
                 </div>
@@ -533,74 +727,51 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
                 </div>
             ) : (
                 <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl">
+                    {/* Mobile Hint */}
+                    <div className="md:hidden text-[10px] text-center text-gray-400 py-2 bg-gray-50/50 dark:bg-white/5 flex items-center justify-center gap-2 border-b border-gray-100 dark:border-white/5">
+                        <ArrowRight size={12} className="animate-pulse" /> Swipe left to see stats
+                    </div>
+
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr className="border-b border-gray-200 dark:border-white/5 bg-gray-50/80 dark:bg-white/5 backdrop-blur">
-                                    <th className="p-4 text-left font-bold text-gray-500 dark:text-gray-400 w-48 sticky left-0 bg-gray-50 dark:bg-zinc-900 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Team</th>
-                                    {Array.from({ length: displayGameweeks }).map((_, i) => (
-                                        <th key={i} className="p-4 text-center font-bold text-gray-900 dark:text-white min-w-[100px]">
-                                            GW {currentGameweek + i}
-                                        </th>
-                                    ))}
-                                    <th className="p-4 text-center font-bold text-gray-500 dark:text-gray-400">Diff</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                                {sortedData.map((team) => (
-                                    <tr key={team.teamId} className="hover:bg-white/50 dark:hover:bg-white/5 transition group">
-                                        <td 
-                                            className="p-4 font-bold text-gray-900 dark:text-white sticky left-0 bg-white dark:bg-zinc-950/95 backdrop-blur-sm border-r border-gray-100 dark:border-white/5 z-10 cursor-pointer hover:text-blue-500 transition-colors"
-                                            onClick={() => setSelectedTeam(teams.find(t => t.id === team.teamId) || null)}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                {/* Logo placeholder */}
-                                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 p-1 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm">
-                                                    <img 
-                                                        src={getTeamLogo(teams.find(t => t.id === team.teamId)?.code || 0)} 
-                                                        alt={team.teamShortName}
-                                                        className="w-full h-full object-contain"
-                                                        onError={(e) => {
-                                                            (e.target as HTMLImageElement).style.display = 'none';
-                                                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                                                        }}
-                                                    />
-                                                    <span className="hidden text-[10px] font-bold">{team.teamShortName[0]}</span>
-                                                </div>
-                                                {team.teamName}
-                                            </div>
-                                        </td>
-                                        {team.fixtures.map((fix, idx) => (
-                                            <td key={idx} className="p-2 text-center">
-                                                {fix.difficulty > 0 ? (
-                                                    <div 
-                                                        className={`w-full h-full min-h-[50px] rounded-xl flex flex-col items-center justify-center p-1 shadow-sm transition-transform hover:scale-105 cursor-help ${fix.difficultyClass}`}
-                                                        onMouseEnter={(e) => handleFixtureHover(e, fix)}
-                                                        onMouseLeave={handleMouseLeave}
-                                                    >
-                                                        <span className="font-black text-xs uppercase tracking-wider">
-                                                            {fix.opponentShortName}
-                                                        </span>
-                                                        <span className="text-[10px] opacity-80 font-medium">
-                                                            {fix.isHome ? '(H)' : '(A)'}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="w-full h-full min-h-[50px] rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400">
-                                                        -
-                                                    </div>
-                                                )}
-                                            </td>
+                        <DndContext 
+                            sensors={sensors} 
+                            collisionDetection={closestCenter} 
+                            onDragEnd={handleDragEnd}
+                        >
+                            <table className="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr className="border-b border-gray-200 dark:border-white/5 bg-gray-50/80 dark:bg-white/5 backdrop-blur">
+                                        <th className="p-4 text-left font-bold text-gray-500 dark:text-gray-400 w-48 sticky left-0 bg-gray-50 dark:bg-zinc-900 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Team</th>
+                                        {Array.from({ length: displayGameweeks }).map((_, i) => (
+                                            <th key={i} className="p-4 text-center font-bold text-gray-900 dark:text-white min-w-[100px]">
+                                                GW {currentGameweek + i}
+                                            </th>
                                         ))}
-                                        <td className="p-4 text-center font-black text-lg">
-                                            {sortMode === 'attack' ? team.attackDifficulty.toFixed(1) : 
-                                             sortMode === 'defence' ? team.defenceDifficulty.toFixed(1) : 
-                                             team.totalDifficulty.toFixed(1)}
-                                        </td>
+                                        <th className="p-4 text-center font-bold text-gray-500 dark:text-gray-400">Diff</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <SortableContext 
+                                    items={sortedData.map(t => t.teamId)} 
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                        {sortedData.map((team) => (
+                                            <SortableRow 
+                                                key={team.teamId} 
+                                                team={team} 
+                                                teams={teams}
+                                                currentGameweek={currentGameweek}
+                                                displayGameweeks={displayGameweeks}
+                                                sortMode={sortMode}
+                                                setSelectedTeam={setSelectedTeam}
+                                                handleFixtureHover={handleFixtureHover}
+                                                handleMouseLeave={handleMouseLeave}
+                                            />
+                                        ))}
+                                    </tbody>
+                                </SortableContext>
+                            </table>
+                        </DndContext>
                     </div>
                 </div>
             )}
