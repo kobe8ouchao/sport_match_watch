@@ -326,9 +326,9 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                         <div className="flex items-center gap-1.5 font-bold text-xs">
                           {hasYellow && <span className="inline-block w-3 h-4 bg-yellow-400 border border-yellow-600 rounded-[1px] shadow-sm" title="Yellow Card" />}
                           {hasRed && <span className="inline-block w-3 h-4 bg-red-500 border border-red-700 rounded-[1px] shadow-sm" title="Red Card" />}
-                          {hasGoal && !isPenaltyGoal && !isOwnGoal && <span className="flex items-center" title="Goal">⚽</span>}
-                          {isOwnGoal && <span className="flex items-center text-red-500" title="Own Goal">⚽<span className="text-[10px] ml-0.5">(OG)</span></span>}
-                          {isPenaltyGoal && <span className="flex items-center" title="Penalty Goal">⚽<span className="text-[10px] ml-0.5">(P)</span></span>}
+                          {hasGoal && !isPenaltyGoal && !isOwnGoal && <span className="flex items-center text-base md:text-lg" title="Goal">⚽</span>}
+                          {isOwnGoal && <span className="flex items-center text-red-500" title="Own Goal"><span className="text-base md:text-lg">⚽</span><span className="text-[10px] ml-0.5">(OG)</span></span>}
+                          {isPenaltyGoal && <span className="flex items-center" title="Penalty Goal"><span className="text-base md:text-lg">⚽</span><span className="text-[10px] ml-0.5">(P)</span></span>}
                           {isMissedPenalty && <span className="flex items-center text-red-500" title="Penalty Missed">❌<span className="text-[10px] ml-0.5">(P)</span></span>}
                         </div>
                       ) : null;
@@ -814,31 +814,31 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
             const total = homeVal + awayVal;
             const homePercent = total === 0 ? 50 : (homeVal / total) * 100;
 
-            const radius = 46;
+            const radius = 42; // Slightly reduced to fit safely in 100x100 viewbox with stroke
             const circumference = 2 * Math.PI * radius;
             const offset = circumference - (awayVal / 100) * circumference;
 
             return (
                 <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-4 md:p-6 flex flex-col items-center">
                      <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 md:mb-6">Possession</h3>
-                     <div className="flex items-center justify-center gap-2 md:gap-12 w-full">
+                     <div className="flex items-center justify-between md:justify-center gap-2 md:gap-12 w-full max-w-sm md:max-w-full">
                         {/* Home Team */}
-                        <div className="flex items-center gap-2 md:gap-4 text-right">
-                            <div className="text-xl md:text-4xl font-black text-gray-900 dark:text-white">{homeVal}%</div>
+                        <div className="flex items-center gap-2 md:gap-4 text-right flex-1 justify-end">
+                            <div className="text-lg md:text-4xl font-black text-gray-900 dark:text-white whitespace-nowrap">{homeVal}%</div>
                             <img 
                                 src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.homeTeam.name} 
-                                className="w-8 h-8 md:w-14 md:h-14 object-contain" 
+                                className="w-6 h-6 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
                         </div>
 
                         {/* Chart */}
-                        <div className="relative w-20 h-20 md:w-36 md:h-36 flex items-center justify-center">
-                             <svg className="transform -rotate-90 w-full h-full drop-shadow-xl">
+                        <div className="relative w-16 h-16 md:w-36 md:h-36 flex items-center justify-center flex-shrink-0">
+                             <svg className="transform -rotate-90 w-full h-full drop-shadow-xl" viewBox="0 0 100 100">
                                 {/* Background (Home - Left side naturally if Away fills Right) */}
                                 <circle 
-                                    cx="50%" cy="50%" r={radius} 
+                                    cx="50" cy="50" r={radius} 
                                     stroke="currentColor" 
                                     strokeWidth="8" 
                                     fill="transparent" 
@@ -846,7 +846,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                 />
                                 {/* Foreground (Away - Fills Clockwise from Top -> Right) */}
                                 <circle 
-                                    cx="50%" cy="50%" r={radius} 
+                                    cx="50" cy="50" r={radius} 
                                     stroke="currentColor" 
                                     strokeWidth="8" 
                                     fill="transparent" 
@@ -862,14 +862,14 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                         </div>
 
                         {/* Away Team */}
-                        <div className="flex items-center gap-2 md:gap-4 text-left">
+                        <div className="flex items-center gap-2 md:gap-4 text-left flex-1 justify-start">
                             <img 
                                 src={match.awayTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.awayTeam.name} 
-                                className="w-8 h-8 md:w-14 md:h-14 object-contain" 
+                                className="w-6 h-6 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
-                            <div className="text-xl md:text-4xl font-black text-gray-900 dark:text-white">{awayVal}%</div>
+                            <div className="text-lg md:text-4xl font-black text-gray-900 dark:text-white whitespace-nowrap">{awayVal}%</div>
                         </div>
                      </div>
                 </div>
