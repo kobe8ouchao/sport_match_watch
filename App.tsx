@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import LeagueNav from './components/LeagueNav';
 import MatchCard from './components/MatchCard';
@@ -468,10 +468,12 @@ import LeagueLandingPage from './components/LeagueLandingPage';
 import WorldCupPage from './components/WorldCupPage';
 import SEOArticlePage from './components/SEOArticlePage';
 import { SEO_PAGES } from './constants/seoPages';
-import PlayerComparison from './components/PlayerComparison';
+import PlayerComparisonPage from './components/PlayerComparisonPage';
 import FixtureDifficulty from './components/FixtureDifficulty';
 import FantasyToolsPage from './components/FantasyToolsPage';
 import FPLLanding from './components/FPLLanding';
+import GameToolsMenu from './components/GameToolsMenu';
+import FPLToolsLayout from './components/FPLToolsLayout';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -502,10 +504,23 @@ const App: React.FC = () => {
         <Route path="/world-cup-2026" element={<WorldCupPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
-        <Route path="/player-comparison" element={<PlayerComparison darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/player-comparison" element={<PlayerComparisonPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/fixture-difficulty" element={<FixtureDifficulty darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/fantasy-premier-league-tool" element={<FantasyToolsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/fantasy-premier-league" element={<FPLLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />
+
+        {/* Game Tools Routes */}
+        <Route path="/game-tools" element={<GameToolsMenu darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/game-tools/fpl" element={<FPLToolsLayout darkMode={darkMode} toggleTheme={toggleTheme} />}>
+            <Route index element={<Navigate to="comparison" replace />} />
+            <Route path="comparison" element={<PlayerComparisonPage darkMode={darkMode} toggleTheme={toggleTheme} hideLayout={true} />} />
+            <Route path="standings" element={<StandingsPage darkMode={darkMode} toggleTheme={toggleTheme} leagueId="eng.1" hideLayout={true} />} />
+            <Route path="fixture" element={<FixtureDifficulty darkMode={darkMode} toggleTheme={toggleTheme} hideLayout={true} />} />
+        </Route>
+        
+        {/* Placeholder for NBA Tools to avoid 404 when clicking tab */}
+        <Route path="/game-tools/nba" element={<GameToolsMenu darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/game-tools/nbaf" element={<GameToolsMenu darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
         {/* Dynamic SEO Landing Pages */}
         {SEO_PAGES.map((page) => (

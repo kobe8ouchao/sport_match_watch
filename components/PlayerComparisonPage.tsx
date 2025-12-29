@@ -4,9 +4,12 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { Search, X, ArrowLeft, Users, Trophy } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
+// import Header from './Header';
+// import Footer from './Footer';
 
 interface FPLPlayer {
   id: number;
+  code: number;
   web_name: string;
   first_name: string;
   second_name: string;
@@ -71,7 +74,26 @@ interface PlayerComparisonProps {
   hideLayout?: boolean;
 }
 
-const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleTheme, hideLayout = false }) => {
+const PlayerComparisonPage: React.FC<PlayerComparisonProps> = ({ darkMode, toggleTheme, hideLayout = false }) => {
+  useEffect(() => {
+    document.title = "FPL Player Comparison Tool - Stats & Analysis | Sports Match";
+    
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', "Compare Fantasy Premier League players head-to-head. Analyze stats, form, xG, xA, and points potential to make the best FPL transfer decisions.");
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = "Compare Fantasy Premier League players head-to-head. Analyze stats, form, xG, xA, and points potential to make the best FPL transfer decisions.";
+      document.head.appendChild(meta);
+    }
+
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) {
+      metaKeywords.setAttribute('content', "FPL Player Comparison, Compare FPL Players, FPL Stats, Fantasy Premier League Stats, xG, xA, ICT Index, FPL Transfers, Player Analysis, FPL Radar Chart");
+    }
+  }, []);
+
   const navigate = useNavigate();
   const [allPlayers, setAllPlayers] = useState<ProcessedPlayer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,112 +130,116 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
     saves: 1
   });
 
+  const getTeamName = (id: number, teams: any[]) => {
+    const team = teams.find((t: any) => t.id === id);
+    return team ? team.short_name : 'UNK';
+  };
 
+  const getPosition = (type: number) => {
+    switch (type) {
+      case 1: return 'GKP';
+      case 2: return 'DEF';
+      case 3: return 'MID';
+      case 4: return 'FWD';
+      default: return 'UNK';
+    }
+  };
 
-  // Teams map (simplified for now, ideally fetched from bootstrap-static 'teams')
-  // We can just use ID if we don't fetch teams, but names are better.
-  // I'll fetch teams too.
-  const [teams, setTeams] = useState<Record<number, string>>({});
+  const getImage = (code: number) => {
+    return `https://resources.premierleague.com/premierleague/photos/players/110x140/p${code}.png`;
+  };
 
+  // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/fpl-api/bootstrap-static/', {
-            headers: { 'Accept': 'application/json' }
-        });
+        const response = await fetch('/fpl-api/bootstrap-static/');
+        const data = await response.json();
         
-        // Check content type
-        const contentType = res.headers.get("content-type");
-        if (!res.ok || (contentType && contentType.indexOf("application/json") === -1)) {
-             const text = await res.text();
-             console.error("FPL API Error:", text.substring(0, 100));
-             throw new Error("Invalid response from FPL API");
-        }
-
-        const data = await res.json();
-        
-        // Process Teams
-        const teamMap: Record<number, string> = {};
-        if (data.teams) {
-            data.teams.forEach((t: any) => {
-                teamMap[t.id] = t.short_name || t.name;
-            });
-        }
-        setTeams(teamMap);
-
-        // Process Players
-        const processed: ProcessedPlayer[] = data.elements.map((p: FPLPlayer) => ({
-            id: p.id,
-            name: p.web_name,
-            fullName: `${p.first_name} ${p.second_name}`,
-            position: p.element_type === 1 ? 'GK' : p.element_type === 2 ? 'DEF' : p.element_type === 3 ? 'MID' : 'FWD',
-            team: teamMap[p.team] || '',
-            image: `https://resources.premierleague.com/premierleague/photos/players/110x140/p${p.photo.replace('.jpg', '.png')}`,
-            stats: {
-                goals: p.goals_scored,
-                assists: p.assists,
-                minutes: p.minutes,
-                yellow_cards: p.yellow_cards,
-                red_cards: p.red_cards,
-                xg: parseFloat(p.expected_goals) || 0,
-                keyPasses: parseFloat(p.creativity) || 0,
-                touchesInBox: parseFloat(p.threat) || 0,
-                price: p.now_cost / 10,
-                total_points: p.total_points,
-                points_per_game: parseFloat(p.points_per_game) || 0,
-                selected_by_percent: parseFloat(p.selected_by_percent) || 0,
-                form: parseFloat(p.form) || 0,
-                ict_index: parseFloat(p.ict_index) || 0,
-                clean_sheets: p.clean_sheets,
-                goals_conceded: p.goals_conceded,
-                bonus: p.bonus,
-                saves: p.saves,
-                penalties_saved: p.penalties_saved
-            },
-            raw: p
+        const processed = data.elements.map((p: any) => ({
+          id: p.id,
+          name: p.web_name,
+          fullName: `${p.first_name} ${p.second_name}`,
+          position: getPosition(p.element_type),
+          team: getTeamName(p.team, data.teams),
+          image: getImage(p.code),
+          stats: {
+            goals: p.goals_scored,
+            assists: p.assists,
+            minutes: p.minutes,
+            yellow_cards: p.yellow_cards,
+            red_cards: p.red_cards,
+            xg: parseFloat(p.expected_goals) || 0,
+            keyPasses: parseFloat(p.creativity) || 0,
+            touchesInBox: parseFloat(p.threat) || 0,
+            price: p.now_cost / 10,
+            total_points: p.total_points,
+            points_per_game: parseFloat(p.points_per_game) || 0,
+            selected_by_percent: parseFloat(p.selected_by_percent) || 0,
+            form: parseFloat(p.form) || 0,
+            ict_index: parseFloat(p.ict_index) || 0,
+            clean_sheets: p.clean_sheets,
+            goals_conceded: p.goals_conceded,
+            bonus: p.bonus,
+            saves: p.saves,
+            penalties_saved: p.penalties_saved
+          },
+          raw: p
         }));
 
-        // Calculate Max Values for Normalization
-        const maxs = {
-            goals: Math.max(...processed.map(p => p.stats.goals), 1),
-            assists: Math.max(...processed.map(p => p.stats.assists), 1),
-            xg: Math.max(...processed.map(p => p.stats.xg), 1),
-            keyPasses: Math.max(...processed.map(p => p.stats.keyPasses), 1),
-            touchesInBox: Math.max(...processed.map(p => p.stats.touchesInBox), 1),
-            price: Math.max(...processed.map(p => p.stats.price), 1),
-            total_points: Math.max(...processed.map(p => p.stats.total_points), 1),
-            ict_index: Math.max(...processed.map(p => p.stats.ict_index), 1),
-            form: Math.max(...processed.map(p => p.stats.form), 1)
-        };
+        setAllPlayers(processed);
         
+        // Calculate Max Values
+        const maxs = { ...maxValues };
+        processed.forEach((p: ProcessedPlayer) => {
+          maxs.goals = Math.max(maxs.goals, p.stats.goals);
+          maxs.assists = Math.max(maxs.assists, p.stats.assists);
+          maxs.xg = Math.max(maxs.xg, p.stats.xg);
+          maxs.keyPasses = Math.max(maxs.keyPasses, p.stats.keyPasses);
+          maxs.touchesInBox = Math.max(maxs.touchesInBox, p.stats.touchesInBox);
+          maxs.price = Math.max(maxs.price, p.stats.price);
+          maxs.total_points = Math.max(maxs.total_points, p.stats.total_points);
+          maxs.form = Math.max(maxs.form, p.stats.form);
+          maxs.ict_index = Math.max(maxs.ict_index, p.stats.ict_index);
+          maxs.clean_sheets = Math.max(maxs.clean_sheets, p.stats.clean_sheets);
+          maxs.bonus = Math.max(maxs.bonus, p.stats.bonus);
+          maxs.saves = Math.max(maxs.saves, p.stats.saves);
+        });
         setMaxValues(maxs);
-        setAllPlayers(processed.sort((a, b) => b.raw.total_points - a.raw.total_points)); // Sort by points initially
+
+        // Set default players (Palmer vs Saka)
+        const palmer = processed.find((p: ProcessedPlayer) => p.raw.code === 474323 || p.name === 'Palmer'); // Cole Palmer
+        const saka = processed.find((p: ProcessedPlayer) => p.raw.code === 223340 || p.name === 'Saka'); // Bukayo Saka
+        
+        if (palmer) setP1(palmer);
+        if (saka) setP2(saka);
+
         setLoading(false);
-
-        // Set default players if empty (e.g. top 2 scorers)
-        if (processed.length >= 2) {
-             const topScorers = [...processed].sort((a, b) => b.stats.goals - a.stats.goals);
-             // Try to find Palmer and Saka as defaults since user mentioned them
-             const palmer = processed.find(p => p.name === 'Palmer');
-             const saka = processed.find(p => p.name === 'Saka');
-             
-             if (palmer && saka) {
-                 setP1(palmer);
-                 setP2(saka);
-             } else {
-                 setP1(topScorers[0]);
-                 setP2(topScorers[1]);
-             }
-        }
-
       } catch (error) {
-        console.error("Failed to fetch FPL data:", error);
+        console.error('Error fetching FPL data:', error);
         setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  const getFilteredPlayers = (search: string) => {
+    if (!search) return [];
+    const lower = search.toLowerCase();
+    return allPlayers.filter(p => 
+      p.name.toLowerCase().includes(lower) || 
+      p.fullName.toLowerCase().includes(lower)
+    ).slice(0, 5);
+  };
+
+  const getNormalizedValue = (player: ProcessedPlayer, key: keyof typeof maxValues) => {
+    // @ts-ignore
+    const val = player.stats[key];
+    // @ts-ignore
+    const max = maxValues[key];
+    return max > 0 ? (val / max) * 100 : 0;
+  };
 
   const filteredPlayers1 = useMemo(() => {
     if (!search1) return allPlayers.slice(0, 50);
@@ -289,7 +315,7 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
 
   const content = (
           
-          <div className="w-full py-8 flex-grow">
+          <div className="w-full py-2 flex-grow">
               
               <div className="flex items-center gap-4 mb-8">
                   
@@ -311,12 +337,20 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
                                   <input 
                                     type="text" 
                                     placeholder="Search Player 1..." 
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-blue-500 outline-none transition"
+                                    className="w-full pl-10 pr-10 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-blue-500 outline-none transition"
                                     value={search1}
                                     onChange={(e) => setSearch1(e.target.value)}
                                     onFocus={() => setIsSearch1Focused(true)}
                                     onBlur={() => setTimeout(() => setIsSearch1Focused(false), 200)}
                                   />
+                                  {search1 && (
+                                    <button 
+                                      onClick={() => setSearch1('')}
+                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    </button>
+                                  )}
                               </div>
                               {isSearch1Focused && (
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
@@ -349,12 +383,20 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
                                   <input 
                                     type="text" 
                                     placeholder="Search Player 2..." 
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-red-500 outline-none transition"
+                                    className="w-full pl-10 pr-10 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-red-500 outline-none transition"
                                     value={search2}
                                     onChange={(e) => setSearch2(e.target.value)}
                                     onFocus={() => setIsSearch2Focused(true)}
                                     onBlur={() => setTimeout(() => setIsSearch2Focused(false), 200)}
                                   />
+                                  {search2 && (
+                                    <button 
+                                      onClick={() => setSearch2('')}
+                                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    </button>
+                                  )}
                               </div>
                               {isSearch2Focused && (
                                   <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
@@ -539,22 +581,36 @@ const PlayerComparison: React.FC<PlayerComparisonProps> = ({ darkMode, toggleThe
           </div>
   );
 
-  if (hideLayout) return content;
+  if (hideLayout) {
+      return (
+          <div className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {content}
+          </div>
+      );
+  }
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 relative flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'}`}>
+    <div className={`min-h-screen transition-colors duration-500 relative overflow-x-hidden flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      {/* Background Ambient */}
+      {/* Ambient Background Elements */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-         <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[120px]" />
-         <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
+         <div className="absolute top-[-10%] left-[-5%] w-[800px] h-[800px] rounded-full bg-blue-100/50 dark:bg-blue-900/10 blur-[120px]" />
+         <div className="absolute bottom-[-10%] right-[-5%] w-[700px] h-[700px] rounded-full bg-purple-100/40 dark:bg-purple-900/10 blur-[120px]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex-grow w-full">
-          <Header darkMode={darkMode} toggleTheme={toggleTheme} onOpenCalendar={() => {}} isCalendarOpen={false} />
-          {content}
-          <Footer />
+        <Header
+          darkMode={darkMode}
+          toggleTheme={toggleTheme}
+          onOpenCalendar={() => {}}
+          isCalendarOpen={false}
+          hideCalendarButton
+        />
+
+        {content}
+
       </div>
+      <Footer />
     </div>
   );
 };
@@ -566,4 +622,4 @@ const StatRow = ({ label, value, color }: { label: string; value: string | numbe
     </div>
 );
 
-export default PlayerComparison;
+export default PlayerComparisonPage;

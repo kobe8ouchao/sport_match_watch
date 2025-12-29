@@ -10,16 +10,16 @@
 import React from 'react';
 import { Menu, X, Calendar, Search, Sun, Moon, BarChart2, Gamepad2, Shield, CalendarDays } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { LEAGUES } from '../constants';
 
 interface HeaderProps {
   darkMode: boolean;
   toggleTheme: () => void;
   onOpenCalendar: () => void;
   isCalendarOpen?: boolean;
+  hideCalendarButton?: boolean;
 }
   
-const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, isCalendarOpen }) => {
+const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, isCalendarOpen, hideCalendarButton }) => {
   return (
     <div className="flex items-center justify-between py-5 mb-2">
       {/* Logo Area */}
@@ -40,13 +40,22 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
       {/* Actions */}
       <div className="flex items-center space-x-3">
           <Link 
-                to="/fantasy-premier-league-tool"
-                className="p-2.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-2"
-                title="Fantasy Premier League Tools"
-              >
-                  <Gamepad2 size={18} />
-                  <span className="hidden md:inline text-sm font-bold">FPL Tools</span>
-              </Link>
+            to="/game-tools/fpl"
+            className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
+            title="Fantasy Premier League Tools"
+        >
+           
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" alt="Fantasy Premier League Logo" className="w-7 h-7 object-contain" />
+              <span className="hidden md:inline text-sm font-bold">Fantasy</span>
+        </Link>
+           <Link 
+              to="/game-tools/nbaf"
+              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
+              title="NBA Fantasy Tools"
+          >
+               <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA Fantasy Logo" className="w-7 h-7 object-contain" />
+              <span className="hidden md:inline text-sm font-bold">Fantasy</span>
+          </Link>
 
           <button 
               onClick={toggleTheme}
@@ -57,12 +66,14 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
           </button>
           
           {/* Calendar Button - Visible only on Mobile/Tablet (Hidden on LG) */}
-          <button 
-              onClick={onOpenCalendar}
-              className="lg:hidden relative p-2.5 rounded-full bg-black text-white dark:bg-white dark:text-black shadow-lg hover:opacity-90 transition-transform active:scale-95"
-          >
-              <CalendarDays size={18} />
-          </button>
+          {!hideCalendarButton && (
+            <button 
+                onClick={onOpenCalendar}
+                className="lg:hidden relative p-2.5 rounded-full bg-black text-white dark:bg-white dark:text-black shadow-lg hover:opacity-90 transition-transform active:scale-95"
+            >
+                <CalendarDays size={18} />
+            </button>
+          )}
       </div>
     </div>
   );

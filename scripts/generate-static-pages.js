@@ -35,7 +35,11 @@ const STATIC_ROUTES = [
     { loc: '/la-liga-standings', changefreq: 'daily', priority: '0.9' },
     { loc: '/bundesliga-scores', changefreq: 'daily', priority: '0.9' },
     { loc: '/ligue-1-match-stats', changefreq: 'daily', priority: '0.9' },
-    { loc: '/serie-a-live-football', changefreq: 'daily', priority: '0.9' }
+    { loc: '/serie-a-live-football', changefreq: 'daily', priority: '0.9' },
+    { loc: '/game-tools', changefreq: 'weekly', priority: '0.8' },
+    { loc: '/game-tools/fpl', changefreq: 'weekly', priority: '0.8' },
+    { loc: '/game-tools/fpl/comparison', changefreq: 'daily', priority: '0.8' },
+    { loc: '/game-tools/fpl/standings', changefreq: 'daily', priority: '0.8' }
 ];
 
 // Generate Schedule Pages for the next 14 days

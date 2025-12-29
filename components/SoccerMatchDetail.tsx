@@ -797,26 +797,37 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
       {/* Team Stats (Stacked below timeline) */}
       <div style={{ display: activeTab === 'statics' ? 'block' : 'none' }} className="space-y-6">
-        {match.status === 'SCHEDULED' ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+        {match.status === 'SCHEDULED' && (
+          <div className="flex flex-col items-center justify-center py-4 text-center mb-2">
             <p className="text-gray-400 dark:text-gray-500 font-medium mb-1">Match Not Started</p>
-            <p className="text-gray-300 dark:text-gray-600 text-xs">Team stats will be available after kick-off</p>
+            <p className="text-gray-300 dark:text-gray-600 text-xs">Stats initialized to zero</p>
           </div>
-        ) : (
-          <>
+        )}
+        
         {/* Possession Card */}
         {(() => {
-            const possessionStat = match.stats.find(s => s.name.toLowerCase().includes('possession'));
+            let possessionStat = match.stats.find(s => s.name.toLowerCase().includes('possession'));
+            
+            if (!possessionStat && match.status === 'SCHEDULED') {
+                possessionStat = { name: 'Possession', homeValue: '0%', awayValue: '0%' };
+            }
+
             if (!possessionStat) return null;
 
             const homeVal = parseFloat(String(possessionStat.homeValue).replace('%', ''));
             const awayVal = parseFloat(String(possessionStat.awayValue).replace('%', ''));
             const total = homeVal + awayVal;
+            // For scheduled (0 values), we might want a balanced chart or empty. 
+            // If total is 0, let's default to 50/50 for the visual circle so it's not broken, 
+            // but the text will show 0%.
             const homePercent = total === 0 ? 50 : (homeVal / total) * 100;
 
             const radius = 42; // Slightly reduced to fit safely in 100x100 viewbox with stroke
             const circumference = 2 * Math.PI * radius;
             const offset = circumference - (awayVal / 100) * circumference;
+            // If scheduled/zero, we might want the ring to be full gray or similar.
+            // But user asked for "progress bars 0". For a circle, keeping it balanced or empty is fine.
+            // Let's keep the logic simple.
 
             return (
                 <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-4 md:p-6 flex flex-col items-center">
@@ -824,7 +835,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                      <div className="flex items-center justify-between md:justify-center gap-2 md:gap-12 w-full max-w-sm md:max-w-full">
                         {/* Home Team */}
                         <div className="flex items-center gap-2 md:gap-4 text-right flex-1 justify-end">
-                            <div className="text-lg md:text-4xl font-black text-gray-900 dark:text-white whitespace-nowrap">{homeVal}%</div>
+                            <div className={`text-lg md:text-4xl font-black whitespace-nowrap ${match.status === 'SCHEDULED' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>{homeVal}%</div>
                             <img 
                                 src={match.homeTeam.logo || DEFAULT_TEAM_LOGO} 
                                 alt={match.homeTeam.name} 
@@ -835,7 +846,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
 
                         {/* Chart */}
                         <div className="relative w-16 h-16 md:w-36 md:h-36 flex items-center justify-center flex-shrink-0">
-                             <svg className="transform -rotate-90 w-full h-full drop-shadow-xl" viewBox="0 0 100 100">
+                             <svg className={`transform -rotate-90 w-full h-full drop-shadow-xl ${match.status === 'SCHEDULED' ? 'opacity-50 grayscale' : ''}`} viewBox="0 0 100 100">
                                 {/* Background (Home - Left side naturally if Away fills Right) */}
                                 <circle 
                                     cx="50" cy="50" r={radius} 
@@ -851,7 +862,10 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                     strokeWidth="8" 
                                     fill="transparent" 
                                     strokeDasharray={circumference} 
-                                    strokeDashoffset={offset} 
+                                    strokeDashoffset={match.status === 'SCHEDULED' ? circumference : offset} // If scheduled, empty/full based on preference. Let's make it full home or split. Actually if scheduled, maybe show nothing?
+                                    // If I set offset to circumference, it's empty (showing background). 
+                                    // If match.status === 'SCHEDULED', let's just show a gray ring?
+                                    // Let's stick to the request "progress bars 0".
                                     strokeLinecap="round"
                                     className="text-orange-500 transition-all duration-1000 ease-out" 
                                 />
@@ -869,7 +883,7 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                                 className="w-6 h-6 md:w-14 md:h-14 object-contain" 
                                 onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
                             />
-                            <div className="text-lg md:text-4xl font-black text-gray-900 dark:text-white whitespace-nowrap">{awayVal}%</div>
+                            <div className={`text-lg md:text-4xl font-black whitespace-nowrap ${match.status === 'SCHEDULED' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>{awayVal}%</div>
                         </div>
                      </div>
                 </div>
@@ -923,7 +937,23 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                         return 100;
                     };
 
-                    const keyStats = match.stats
+                    let statsToUse = match.stats;
+                    if (match.status === 'SCHEDULED' && (!statsToUse || statsToUse.length === 0)) {
+                        statsToUse = [
+                            { name: 'Expected Goals (xG)', homeValue: '0.00', awayValue: '0.00' },
+                            { name: 'Total Shots', homeValue: '0', awayValue: '0' },
+                            { name: 'Shots on Target', homeValue: '0', awayValue: '0' },
+                            { name: 'Big Chances', homeValue: '0', awayValue: '0' },
+                            { name: 'Fouls', homeValue: '0', awayValue: '0' },
+                            { name: 'Corners', homeValue: '0', awayValue: '0' },
+                            { name: 'Yellow Cards', homeValue: '0', awayValue: '0' },
+                            { name: 'Red Cards', homeValue: '0', awayValue: '0' },
+                            { name: 'Passes', homeValue: '0', awayValue: '0' },
+                            { name: 'Tackles', homeValue: '0', awayValue: '0' }
+                        ];
+                    }
+
+                    const keyStats = statsToUse
                         .filter(s => getKeyStatOrder(s.name) < 100 && !s.name.toLowerCase().includes('possession'))
                         .sort((a, b) => getKeyStatOrder(a.name) - getKeyStatOrder(b.name));
                     
@@ -943,26 +973,28 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       let homePercent = 0;
                       let awayPercent = 0;
 
-                      if (isPercentage) {
-                          homePercent = homeVal;
-                          awayPercent = awayVal;
-                      } else {
-                          const max = Math.max(homeVal, awayVal);
-                          if (max > 0) {
-                              homePercent = (homeVal / max) * 100;
-                              awayPercent = (awayVal / max) * 100;
+                      if (match.status !== 'SCHEDULED') {
+                          if (isPercentage) {
+                              homePercent = homeVal;
+                              awayPercent = awayVal;
+                          } else {
+                              const max = Math.max(homeVal, awayVal);
+                              if (max > 0) {
+                                  homePercent = (homeVal / max) * 100;
+                                  awayPercent = (awayVal / max) * 100;
+                              }
                           }
                       }
 
                       return (
                         <div key={idx} className="flex flex-col gap-2">
                             <div className="flex justify-between items-end mb-1">
-                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
-                                    {homeVal}{isPercentage && !String(homeVal).includes('%') ? '%' : ''}
+                                <span className={`text-base md:text-lg font-black ${match.status === 'SCHEDULED' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>
+                                    {stat.homeValue}{isPercentage && !String(stat.homeValue).includes('%') && match.status !== 'SCHEDULED' ? '%' : ''}
                                 </span>
                                 <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 text-center truncate px-2">{stat.name}</span>
-                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
-                                    {awayVal}{isPercentage && !String(awayVal).includes('%') ? '%' : ''}
+                                <span className={`text-base md:text-lg font-black ${match.status === 'SCHEDULED' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>
+                                    {stat.awayValue}{isPercentage && !String(stat.awayValue).includes('%') && match.status !== 'SCHEDULED' ? '%' : ''}
                                 </span>
                             </div>
                             
@@ -1033,7 +1065,26 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                         return 100;
                     };
 
-                    const otherStats = match.stats
+                    let statsToUse = match.stats;
+                    if (match.status === 'SCHEDULED' && (!statsToUse || statsToUse.length === 0)) {
+                         // If we already populated statsToUse in Key Stats, we might want to define it globally for this render, 
+                         // but here we are in a separate closure.
+                         // Let's reuse the same default list for simplicity, filters will sort them out.
+                         statsToUse = [
+                            { name: 'Expected Goals (xG)', homeValue: '0.00', awayValue: '0.00' },
+                            { name: 'Total Shots', homeValue: '0', awayValue: '0' },
+                            { name: 'Shots on Target', homeValue: '0', awayValue: '0' },
+                            { name: 'Big Chances', homeValue: '0', awayValue: '0' },
+                            { name: 'Fouls', homeValue: '0', awayValue: '0' },
+                            { name: 'Corners', homeValue: '0', awayValue: '0' },
+                            { name: 'Yellow Cards', homeValue: '0', awayValue: '0' },
+                            { name: 'Red Cards', homeValue: '0', awayValue: '0' },
+                            { name: 'Passes', homeValue: '0', awayValue: '0' },
+                            { name: 'Tackles', homeValue: '0', awayValue: '0' }
+                        ];
+                    }
+
+                    const otherStats = statsToUse
                         .filter(s => getKeyStatOrder(s.name) === 100 && !s.name.toLowerCase().includes('possession'));
                     
                     if (otherStats.length === 0) return <div className="text-center text-gray-400 py-4">No other statistics available.</div>;
@@ -1052,26 +1103,28 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                       let homePercent = 0;
                       let awayPercent = 0;
 
-                      if (isPercentage) {
-                          homePercent = homeVal;
-                          awayPercent = awayVal;
-                      } else {
-                          const max = Math.max(homeVal, awayVal);
-                          if (max > 0) {
-                              homePercent = (homeVal / max) * 100;
-                              awayPercent = (awayVal / max) * 100;
+                      if (match.status !== 'SCHEDULED') {
+                          if (isPercentage) {
+                              homePercent = homeVal;
+                              awayPercent = awayVal;
+                          } else {
+                              const max = Math.max(homeVal, awayVal);
+                              if (max > 0) {
+                                  homePercent = (homeVal / max) * 100;
+                                  awayPercent = (awayVal / max) * 100;
+                              }
                           }
                       }
 
                       return (
                         <div key={idx} className="flex flex-col gap-2">
                             <div className="flex justify-between items-end mb-1">
-                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
-                                    {homeVal}{isPercentage && !String(homeVal).includes('%') ? '%' : ''}
+                                <span className={`text-base md:text-lg font-black ${match.status === 'SCHEDULED' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>
+                                    {stat.homeValue}{isPercentage && !String(stat.homeValue).includes('%') && match.status !== 'SCHEDULED' ? '%' : ''}
                                 </span>
                                 <span className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 text-center truncate px-2">{stat.name}</span>
-                                <span className="text-base md:text-lg font-black text-gray-900 dark:text-white">
-                                    {awayVal}{isPercentage && !String(awayVal).includes('%') ? '%' : ''}
+                                <span className={`text-base md:text-lg font-black ${match.status === 'SCHEDULED' ? 'text-gray-300 dark:text-gray-600' : 'text-gray-900 dark:text-white'}`}>
+                                    {stat.awayValue}{isPercentage && !String(stat.awayValue).includes('%') && match.status !== 'SCHEDULED' ? '%' : ''}
                                 </span>
                             </div>
                             
@@ -1096,8 +1149,6 @@ const SoccerMatchDetail: React.FC<SoccerMatchDetailProps> = ({ match, onBack }) 
                 </div>
             </div>
         </div>
-          </>
-        )}
       </div>
       <div style={{ display: activeTab === 'news' ? 'block' : 'none' }} className="glass-card bg-white/10 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-6 md:p-8">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-8 flex items-center">

@@ -99,6 +99,16 @@ const getTeamLogo = (code: number) => {
     return `https://resources.premierleague.com/premierleague/badges/70/t${code}.png`;
 };
 
+// Difficulty Color Map - Updated
+const getDifficultyClass = (difficulty: number) => {
+  // Mapping 1-5 float to classes
+  if (difficulty <= 2.2) return 'bg-green-600 text-white';
+  if (difficulty <= 2.8) return 'bg-green-400 text-black';
+  if (difficulty <= 3.2) return 'bg-gray-300 text-black';
+  if (difficulty <= 4.2) return 'bg-red-400 text-white';
+  return 'bg-red-700 text-white';
+};
+
 interface SortableRowProps {
     team: DifficultyData;
     teams: FPLTeam[];
@@ -251,7 +261,32 @@ const SortableRow: React.FC<SortableRowProps> = ({
     );
 };
 
-const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; hideLayout?: boolean }> = ({ darkMode, toggleTheme, hideLayout = false }) => {
+interface FixtureDifficultyProps {
+  darkMode: boolean;
+  toggleTheme: () => void;
+  hideLayout?: boolean; // Added hideLayout prop
+}
+
+const FixtureDifficulty: React.FC<FixtureDifficultyProps> = ({ darkMode, toggleTheme, hideLayout = false }) => {
+  useEffect(() => {
+    document.title = "FPL Fixture Difficulty Ticker & Planner | Sports Match";
+    
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', "Plan your Fantasy Premier League transfers with our interactive Fixture Difficulty Rating (FDR) ticker. Analyze upcoming fixtures and find easy runs for your FPL team.");
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = "Plan your Fantasy Premier League transfers with our interactive Fixture Difficulty Rating (FDR) ticker. Analyze upcoming fixtures and find easy runs for your FPL team.";
+      document.head.appendChild(meta);
+    }
+
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) {
+      metaKeywords.setAttribute('content', "FPL Fixture Difficulty, FDR, FPL Fixture Ticker, Fantasy Premier League Schedule, FPL Planner, Easy Fixtures, FPL Double Gameweek, FPL Blank Gameweek, Fixture Analysis");
+    }
+  }, []);
+
   const [loading, setLoading] = useState(true);
   const [teams, setTeams] = useState<FPLTeam[]>([]);
   const [fixtures, setFixtures] = useState<FPLFixture[]>([]);
@@ -284,34 +319,6 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
         },
     })
   );
-
-  // Difficulty Color Map - Updated
-  const getDifficultyClass = (difficulty: number) => {
-    // Mapping 1-5 float to classes
-    if (difficulty <= 2.2) return 'bg-green-600 text-white';
-    if (difficulty <= 2.8) return 'bg-green-400 text-black';
-    if (difficulty <= 3.2) return 'bg-gray-300 text-black';
-    if (difficulty <= 4.2) return 'bg-red-400 text-white';
-    return 'bg-red-700 text-white';
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-        setManualOrder((prev) => {
-             // If we don't have a manual order yet, initialize it with current sortedData order
-             const currentOrder = prev.length > 0 ? prev : sortedData.map(t => t.teamId);
-             
-             const oldIndex = currentOrder.indexOf(active.id as number);
-             const newIndex = currentOrder.indexOf(over.id as number);
-             
-             return arrayMove(currentOrder, oldIndex, newIndex);
-        });
-        // Switch to custom sort mode implicitly or explicitly? 
-        // Let's keep current sortMode visual but override it with manualOrder in logic
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -569,6 +576,24 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
     });
   }, [processedData, sortMode, searchTeam, manualOrder]);
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+        setManualOrder((prev) => {
+             // If we don't have a manual order yet, initialize it with current sortedData order
+             const currentOrder = prev.length > 0 ? prev : sortedData.map(t => t.teamId);
+             
+             const oldIndex = currentOrder.indexOf(active.id as number);
+             const newIndex = currentOrder.indexOf(over.id as number);
+             
+             return arrayMove(currentOrder, oldIndex, newIndex);
+        });
+        // Switch to custom sort mode implicitly or explicitly? 
+        // Let's keep current sortMode visual but override it with manualOrder in logic
+    }
+  };
+
   const getFixtureHoverData = (fixture: ProcessedFixture) => {
     // In a real app, this would fetch from an API or use pre-fetched advanced stats
     // For now, we simulate data based on fixture properties
@@ -597,18 +622,18 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
   const handleFixtureHover = (e: React.MouseEvent, fixture: ProcessedFixture) => {
       // Calculate position
       const rect = (e.target as HTMLElement).getBoundingClientRect();
-    //   const data = getFixtureHoverData(fixture);
+      const data = getFixtureHoverData(fixture);
       
-    //   setHoveredFixture({
-    //       fixture,
-    //       x: rect.left + window.scrollX + rect.width / 2,
-    //       y: rect.top + window.scrollY,
-    //       data
-    //   });
+      setHoveredFixture({
+          fixture,
+          x: rect.left + window.scrollX + rect.width / 2,
+          y: rect.top + window.scrollY,
+          data
+      });
   };
 
   const handleMouseLeave = () => {
-    //   setHoveredFixture(null);
+      setHoveredFixture(null);
   };
 
   // Mock differential picks (would be real algo in production)
@@ -623,264 +648,279 @@ const FixtureDifficulty: React.FC<{ darkMode: boolean; toggleTheme: () => void; 
   };
 
   const content = (
-
-        
-
-        <div className="w-full relative">
-            
-            {/* Hover Tooltip */}
-            {hoveredFixture && (
-                <div 
-                    className="absolute z-50 pointer-events-none transform -translate-x-1/2 -translate-y-full mb-2 w-64 glass-card bg-black/90 text-white p-3 rounded-xl shadow-2xl border border-white/10"
-                    style={{ left: hoveredFixture.x, top: hoveredFixture.y }}
-                >
-                    <div className="text-xs font-bold text-gray-400 mb-1">GW {hoveredFixture.fixture.event}</div>
-                    <div className="font-bold text-lg mb-2 flex items-center justify-between">
-                        <span>{hoveredFixture.fixture.isHome ? '(Hone)' : '(Away)'} vs {hoveredFixture.fixture.opponentShortName}</span>
-                        <span className={`px-2 py-0.5 rounded text-xs text-black ${hoveredFixture.fixture.difficultyClass}`}>
-                            FDR {hoveredFixture.fixture.rawDifficulty.toFixed(1)}
-                        </span>
-                    </div>
-                    <div className="space-y-1 text-xs text-gray-300">
-                        <div className="font-bold text-white mb-1 border-b border-white/10 pb-1">Calculation Breakdown</div>
-                        <div className="flex justify-between">
-                            <span>Base (Official):</span>
-                            <span className="font-mono text-white">{hoveredFixture.fixture.baseDifficulty}</span>
-                        </div>
-                        {hoveredFixture.fixture.rankAdjustment !== 0 && (
-                            <div className="flex justify-between">
-                                <span>Opponent Rank:</span>
-                                <span className={`font-mono ${hoveredFixture.fixture.rankAdjustment > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                    {hoveredFixture.fixture.rankAdjustment > 0 ? '+' : ''}{hoveredFixture.fixture.rankAdjustment}
-                                </span>
-                            </div>
-                        )}
-                        {hoveredFixture.fixture.homeAdjustment !== 0 && (
-                            <div className="flex justify-between">
-                                <span>Home/Away:</span>
-                                <span className={`font-mono ${hoveredFixture.fixture.homeAdjustment > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                                    {hoveredFixture.fixture.homeAdjustment > 0 ? '+' : ''}{hoveredFixture.fixture.homeAdjustment}
-                                </span>
-                            </div>
-                        )}
-                        
-                        <div className="mt-2 pt-1 border-t border-white/10">
-                            <div className="flex justify-between text-[10px] opacity-70">
-                                <span>Clean Sheet:</span>
-                                <span>{hoveredFixture.data.csOdds}%</span>
-                            </div>
-                            <div className="flex justify-between text-[10px] opacity-70">
-                                <span>xG:</span>
-                                <span>{hoveredFixture.data.xg}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Team Analysis Sidebar/Modal */}
-
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-col gap-6">
-                    {/* Color Legend (Difficulty Scale) - Moved to top for visibility */}
-                    <h1 className="text-3xl font-black italic tracking-tighter flex items-center gap-3">
-                        <Shield className="text-green-500" />
-                        FIXTURE DIFFICULTY TICKER
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
-                        Live FDR powered by Official FPL & ESPN Data.
-                        <span className="ml-2 inline-flex items-center gap-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
-                            GW {currentGameweek} - {currentGameweek + displayGameweeks - 1}
-                        </span>
-                    </p>
-                     <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 pt-1">
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-600"></span>Very Easy</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-400"></span>Easy</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-gray-300"></span>Neutral</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-400"></span>Hard</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-700"></span>Very Hard</span>
-                        <HelpTooltip content={
-                            <div className="text-left space-y-1 min-w-[150px]">
-                                <p className="font-bold border-b border-white/20 pb-1 mb-1">FDR Calculation Formula</p>
-                                <div className="flex justify-between"><span>Base Difficulty:</span> <span className="font-mono">1 - 5</span></div>
-                                <div className="flex justify-between text-green-400"><span>vs Bottom 3:</span> <span className="font-mono">-0.5</span></div>
-                                <div className="flex justify-between text-red-400"><span>vs Top 4:</span> <span className="font-mono">+0.5</span></div>
-                                <div className="flex justify-between text-yellow-400"><span>Away Game:</span> <span className="font-mono">+0.2</span></div>
-                            </div>
-                        } />
-                    </div>
-                </div>
-                
-            </div>
-            <div className="flex flex-col md:flex-row items-center justify-between mt-8 mb-8 gap-4">
-                <div className="flex flex-row gap-4 w-full justify-between md:min-w-[800px]">
-                    {/* Search Box */}
-                    <div className="relative z-30 w-100 sm:w-80 md:w-96">
-                        <div className="relative bg-white dark:bg-white/5 px-2 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input 
-                                type="text" 
-                                placeholder="Search team..." 
-                                className="w-full pl-10 pr-4 py-3 rounded-lg bg-transparent outline-none text-sm font-medium"
-                                value={searchTeam}
-                                onChange={(e) => setSearchTeam(e.target.value)}
-                                onFocus={() => setIsSearchFocused(true)}
-                                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                            />
-                            {searchTeam && (
-                                <button 
-                                    onClick={() => setSearchTeam('')}
-                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
-                                >
-                                    <X size={16} />
-                                </button>
-                            )}
-                        </div>
-                        
-                        {/* Dropdown Suggestions */}
-                        {isSearchFocused && searchTeam && filteredTeams.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-                                {filteredTeams.map(team => (
-                                    <button
-                                        key={team.id}
-                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-3 border-b border-gray-100 dark:border-white/5 last:border-0 transition-colors"
-                                        onMouseDown={() => {
-                                            setSearchTeam(team.name);
-                                            setSelectedTeam(team);
-                                        }}
-                                    >
-                                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 p-1 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-white/10">
-                                            <img 
-                                                src={getTeamLogo(team.code)}
-                                                alt={team.short_name}
-                                                className="w-full h-full object-contain"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).style.display = 'none';
-                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                                                }}
-                                            />
-                                            <span className="hidden text-[10px] font-bold">{team.short_name[0]}</span>
-                                        </div>
-                                        <span className="font-bold text-gray-900 dark:text-white">{team.name}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* View Controls */}
-                    <div className="flex items-center gap-4 bg-white dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-white/10 overflow-x-auto md:overflow-visible max-w-full">
-                    <button 
-                        onClick={() => { setSortMode('overall'); setManualOrder([]); }}
-                        className={`px-8 py-2 rounded-lg text-sm font-bold transition whitespace-nowrap ${sortMode === 'overall' && manualOrder.length === 0 ? 'bg-gray-900 text-white dark:bg-white dark:text-black' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
-                    >
-                        Overall
-                    </button>
-                    <button 
-                        onClick={() => { setSortMode('attack'); setManualOrder([]); }}
-                        className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'attack' && manualOrder.length === 0 ? 'bg-green-500 text-white' : 'text-gray-500 hover:text-green-500'}`}
-                    >
-                        <Swords size={16} /> Attack
-                        <HelpTooltip content="Difficulty of attacking against the opponent (based on opponent's defensive strength)" />
-                    </button>
-                    <button 
-                        onClick={() => { setSortMode('defence'); setManualOrder([]); }}
-                        className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'defence' && manualOrder.length === 0 ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-blue-500'}`}
-                    >
-                        <Shield size={16} /> Defence
-                        <HelpTooltip content="Difficulty of defending against the opponent (based on opponent's attacking strength)" />
-                    </button>
-                    
-                    {/* Reset Manual Sort (Visible if manual sort is active) */}
-                    {manualOrder.length > 0 && (
-                        <button 
-                            onClick={() => setManualOrder([])}
-                            className="px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                            <RefreshCw size={14} /> Reset Order
-                        </button>
-                    )}
-                    
-                </div>
-                </div>
-            </div>
-
-            {loading ? (
-                <div className="flex flex-col items-center justify-center h-64">
-                    <RefreshCw className="animate-spin text-blue-500 mb-4" size={32} />
-                    <p className="text-gray-500">Loading Fixture Data...</p>
-                </div>
-            ) : (
-                <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl">
-                    {/* Mobile Hint */}
-                    <div className="md:hidden text-[10px] text-center text-gray-400 py-2 bg-gray-50/50 dark:bg-white/5 flex items-center justify-center gap-2 border-b border-gray-100 dark:border-white/5">
-                        <ArrowRight size={12} className="animate-pulse" /> Swipe left to see stats
-                    </div>
-
-                    <div className="overflow-x-auto">
-                        <DndContext 
-                            sensors={sensors} 
-                            collisionDetection={closestCenter} 
-                            onDragEnd={handleDragEnd}
-                        >
-                            <table className="w-full text-sm border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-200 dark:border-white/5 bg-gray-50/80 dark:bg-white/5 backdrop-blur">
-                                        <th className="p-4 text-left font-bold text-gray-500 dark:text-gray-400 w-48 sticky left-0 bg-gray-50 dark:bg-zinc-900 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Team</th>
-                                        {Array.from({ length: displayGameweeks }).map((_, i) => (
-                                            <th key={i} className="p-4 text-center font-bold text-gray-900 dark:text-white min-w-[100px]">
-                                                GW {currentGameweek + i}
-                                            </th>
-                                        ))}
-                                        <th className="p-4 text-center font-bold text-gray-500 dark:text-gray-400">Diff</th>
-                                    </tr>
-                                </thead>
-                                <SortableContext 
-                                    items={sortedData.map(t => t.teamId)} 
-                                    strategy={verticalListSortingStrategy}
-                                >
-                                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                                        {sortedData.map((team) => (
-                                            <SortableRow 
-                                                key={team.teamId} 
-                                                team={team} 
-                                                teams={teams}
-                                                currentGameweek={currentGameweek}
-                                                displayGameweeks={displayGameweeks}
-                                                sortMode={sortMode}
-                                                setSelectedTeam={setSelectedTeam}
-                                                handleFixtureHover={handleFixtureHover}
-                                                handleMouseLeave={handleMouseLeave}
-                                            />
-                                        ))}
-                                    </tbody>
-                                </SortableContext>
-                            </table>
-                        </DndContext>
-                    </div>
-                </div>
-            )}
-            
-        </div>
-  );
-
-  if (hideLayout) return content;
-
-  return (
-    <div className={`min-h-screen transition-colors duration-500 relative flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'}`}>
-       {/* Background Ambient */}
-       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-         <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-green-500/10 blur-[120px]" />
-         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[120px]" />
+    <div className="w-full py-2 flex-grow">
+      {/* Title Area */}
+      <div className="flex flex-col gap-2 mb-8">
+          <h1 className="text-3xl font-black italic tracking-tighter flex items-center gap-3">
+              <Shield className="text-green-500" />
+              FIXTURE DIFFICULTY TICKER
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Live FDR powered by Official FPL & ESPN Data.
+            <span className="ml-2 inline-flex items-center gap-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                GW {currentGameweek} - {currentGameweek + displayGameweeks - 1}
+            </span>
+          </p>
       </div>
 
-      <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 py-2 flex-grow">
-        <Header darkMode={darkMode} toggleTheme={toggleTheme} onOpenCalendar={() => {}} isCalendarOpen={false} />
+      {/* Legend */}
+      <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-gray-500 dark:text-gray-400 mb-8">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-600"></span>Very Easy</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-green-400"></span>Easy</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-gray-300"></span>Neutral</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-400"></span>Hard</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 md:w-3 md:h-3 rounded-full bg-red-700"></span>Very Hard</span>
+          <HelpTooltip content={
+              <div className="text-left space-y-1 min-w-[150px]">
+                  <p className="font-bold border-b border-white/20 pb-1 mb-1">FDR Calculation Formula</p>
+                  <div className="flex justify-between"><span>Base Difficulty:</span> <span className="font-mono">1 - 5</span></div>
+                  <div className="flex justify-between text-green-400"><span>vs Bottom 3:</span> <span className="font-mono">-0.5</span></div>
+                  <div className="flex justify-between text-red-400"><span>vs Top 4:</span> <span className="font-mono">+0.5</span></div>
+                  <div className="flex justify-between text-yellow-400"><span>Away Game:</span> <span className="font-mono">+0.2</span></div>
+              </div>
+          } />
+      </div>
+
+      {/* Hover Tooltip */}
+      {hoveredFixture && (
+        <div 
+            className="absolute z-50 pointer-events-none transform -translate-x-1/2 -translate-y-full mb-2 w-64 glass-card bg-black/90 text-white p-3 rounded-xl shadow-2xl border border-white/10"
+            style={{ left: hoveredFixture.x, top: hoveredFixture.y }}
+        >
+            <div className="text-xs font-bold text-gray-400 mb-1">GW {hoveredFixture.fixture.event}</div>
+            <div className="font-bold text-lg mb-2 flex items-center justify-between">
+                <span>{hoveredFixture.fixture.isHome ? '(Home)' : '(Away)'} vs {hoveredFixture.fixture.opponentShortName}</span>
+                <span className={`px-2 py-0.5 rounded text-xs text-black ${hoveredFixture.fixture.difficultyClass}`}>
+                    FDR {hoveredFixture.fixture.rawDifficulty.toFixed(1)}
+                </span>
+            </div>
+            <div className="space-y-1 text-xs text-gray-300">
+                <div className="font-bold text-white mb-1 border-b border-white/10 pb-1">Calculation Breakdown</div>
+                <div className="flex justify-between">
+                    <span>Base (Official):</span>
+                    <span className="font-mono text-white">{hoveredFixture.fixture.baseDifficulty}</span>
+                </div>
+                {hoveredFixture.fixture.rankAdjustment !== 0 && (
+                    <div className="flex justify-between">
+                        <span>Opponent Rank:</span>
+                        <span className={`font-mono ${hoveredFixture.fixture.rankAdjustment > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                            {hoveredFixture.fixture.rankAdjustment > 0 ? '+' : ''}{hoveredFixture.fixture.rankAdjustment}
+                        </span>
+                    </div>
+                )}
+                {hoveredFixture.fixture.homeAdjustment !== 0 && (
+                    <div className="flex justify-between">
+                        <span>Home/Away:</span>
+                        <span className={`font-mono ${hoveredFixture.fixture.homeAdjustment > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                            {hoveredFixture.fixture.homeAdjustment > 0 ? '+' : ''}{hoveredFixture.fixture.homeAdjustment}
+                        </span>
+                    </div>
+                )}
+                
+                <div className="mt-2 pt-1 border-t border-white/10">
+                    <div className="flex justify-between text-[10px] opacity-70">
+                        <span>Clean Sheet:</span>
+                        <span>{hoveredFixture.data.csOdds}%</span>
+                    </div>
+                    <div className="flex justify-between text-[10px] opacity-70">
+                        <span>xG:</span>
+                        <span>{hoveredFixture.data.xg}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Controls Area */}
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+          <div className="flex flex-row gap-4 w-full justify-between md:min-w-[800px]">
+              {/* Search Box */}
+              <div className="relative z-30 w-100 sm:w-80 md:w-96">
+                  <div className="relative bg-white dark:bg-white/5 px-2 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
+                      <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input 
+                          type="text" 
+                          placeholder="Search team..." 
+                          className="w-full pl-10 pr-4 py-3 rounded-lg bg-transparent outline-none text-sm font-medium"
+                          value={searchTeam}
+                          onChange={(e) => setSearchTeam(e.target.value)}
+                          onFocus={() => setIsSearchFocused(true)}
+                          onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                      />
+                      {searchTeam && (
+                          <button 
+                              onClick={() => setSearchTeam('')}
+                              className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
+                          >
+                              <X size={16} />
+                          </button>
+                      )}
+                  </div>
+                  
+                  {/* Dropdown Suggestions */}
+                  {isSearchFocused && searchTeam && filteredTeams.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                          {filteredTeams.map(team => (
+                              <button
+                                  key={team.id}
+                                  className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-3 border-b border-gray-100 dark:border-white/5 last:border-0 transition-colors"
+                                  onMouseDown={() => {
+                                      setSearchTeam(team.name);
+                                      setSelectedTeam(team);
+                                  }}
+                              >
+                                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 p-1 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-white/10">
+                                      <img 
+                                          src={getTeamLogo(team.code)}
+                                          alt={team.short_name}
+                                          className="w-full h-full object-contain"
+                                          onError={(e) => {
+                                              (e.target as HTMLImageElement).style.display = 'none';
+                                              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                          }}
+                                      />
+                                      <span className="hidden text-[10px] font-bold">{team.short_name[0]}</span>
+                                  </div>
+                                  <span className="font-bold text-gray-900 dark:text-white">{team.name}</span>
+                              </button>
+                          ))}
+                      </div>
+                  )}
+              </div>
+
+              {/* View Controls */}
+              <div className="flex items-center gap-4 bg-white dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-white/10 overflow-x-auto md:overflow-visible max-w-full">
+              <button 
+                  onClick={() => { setSortMode('overall'); setManualOrder([]); }}
+                  className={`px-8 py-2 rounded-lg text-sm font-bold transition whitespace-nowrap ${sortMode === 'overall' && manualOrder.length === 0 ? 'bg-gray-900 text-white dark:bg-white dark:text-black' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
+              >
+                  Overall
+              </button>
+              <button 
+                  onClick={() => { setSortMode('attack'); setManualOrder([]); }}
+                  className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'attack' && manualOrder.length === 0 ? 'bg-green-500 text-white' : 'text-gray-500 hover:text-green-500'}`}
+              >
+                  <Swords size={16} /> Attack
+                  <HelpTooltip content="Difficulty of attacking against the opponent (based on opponent's defensive strength)" />
+              </button>
+              <button 
+                  onClick={() => { setSortMode('defence'); setManualOrder([]); }}
+                  className={`px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap ${sortMode === 'defence' && manualOrder.length === 0 ? 'bg-blue-500 text-white' : 'text-gray-500 hover:text-blue-500'}`}
+              >
+                  <Shield size={16} /> Defence
+                  <HelpTooltip content="Difficulty of defending against the opponent (based on opponent's attacking strength)" />
+              </button>
+              
+              {/* Reset Manual Sort (Visible if manual sort is active) */}
+              {manualOrder.length > 0 && (
+                  <button 
+                      onClick={() => setManualOrder([])}
+                      className="px-3 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 whitespace-nowrap text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                      <RefreshCw size={14} /> Reset Order
+                  </button>
+              )}
+              
+          </div>
+          </div>
+      </div>
+
+      {loading ? (
+          <div className="flex flex-col items-center justify-center h-64">
+              <RefreshCw className="animate-spin text-blue-500 mb-4" size={32} />
+              <p className="text-gray-500">Loading Fixture Data...</p>
+          </div>
+      ) : (
+          <div className="glass-card bg-white/50 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-3xl overflow-hidden shadow-xl">
+              {/* Mobile Hint */}
+              <div className="md:hidden text-[10px] text-center text-gray-400 py-2 bg-gray-50/50 dark:bg-white/5 flex items-center justify-center gap-2 border-b border-gray-100 dark:border-white/5">
+                  <ArrowRight size={12} className="animate-pulse" /> Swipe left to see stats
+              </div>
+
+              <div className="overflow-x-auto">
+                  <DndContext 
+                      sensors={sensors} 
+                      collisionDetection={closestCenter} 
+                      onDragEnd={handleDragEnd}
+                  >
+                      <table className="w-full text-sm border-collapse">
+                          <thead>
+                              <tr className="border-b border-gray-200 dark:border-white/5 bg-gray-50/80 dark:bg-white/5 backdrop-blur">
+                                  <th className="p-4 text-left font-bold text-gray-500 dark:text-gray-400 w-48 sticky left-0 bg-gray-50 dark:bg-zinc-900 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Team</th>
+                                  {Array.from({ length: displayGameweeks }).map((_, i) => (
+                                      <th key={i} className="p-4 text-center font-bold text-gray-900 dark:text-white min-w-[100px]">
+                                          GW {currentGameweek + i}
+                                      </th>
+                                  ))}
+                                  <th className="p-4 text-center font-bold text-gray-500 dark:text-gray-400">Diff</th>
+                              </tr>
+                          </thead>
+                          <SortableContext 
+                              items={sortedData.map(t => t.teamId)} 
+                              strategy={verticalListSortingStrategy}
+                          >
+                              <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                                  {sortedData.map((team) => (
+                                      <SortableRow 
+                                          key={team.teamId} 
+                                          team={team} 
+                                          teams={teams}
+                                          currentGameweek={currentGameweek}
+                                          displayGameweeks={displayGameweeks}
+                                          sortMode={sortMode}
+                                          setSelectedTeam={setSelectedTeam}
+                                          handleFixtureHover={handleFixtureHover}
+                                          handleMouseLeave={handleMouseLeave}
+                                      />
+                                  ))}
+                              </tbody>
+                          </SortableContext>
+                      </table>
+                  </DndContext>
+              </div>
+          </div>
+      )}
+    </div>
+  );
+
+  if (hideLayout) {
+      return (
+          <div className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              {content}
+          </div>
+      );
+  }
+
+  return (
+    <div className={`min-h-screen transition-colors duration-500 relative overflow-x-hidden flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      {/* Ambient Background Elements */}
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-5%] w-[800px] h-[800px] rounded-full bg-blue-100/50 dark:bg-blue-900/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[700px] h-[700px] rounded-full bg-purple-100/40 dark:bg-purple-900/10 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex-grow w-full">
+        <Header
+            darkMode={darkMode}
+            toggleTheme={toggleTheme}
+            onOpenCalendar={() => {}}
+            isCalendarOpen={false}
+            hideCalendarButton
+        />
+        
+        {/* Back Link for standalone mode */}
+        <div className="mb-8">
+            <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-4">
+                <ArrowLeft size={16} className="mr-1" />
+                Back to Dashboard
+            </Link>
+        </div>
+
         {content}
       </div>
       <Footer />
     </div>
   );
-};
+}
 
 export default FixtureDifficulty;
