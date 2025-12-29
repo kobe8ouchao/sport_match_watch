@@ -37,9 +37,10 @@ const STATIC_ROUTES = [
     { loc: '/ligue-1-match-stats', changefreq: 'daily', priority: '0.9' },
     { loc: '/serie-a-live-football', changefreq: 'daily', priority: '0.9' },
     { loc: '/game-tools', changefreq: 'weekly', priority: '0.8' },
-    { loc: '/game-tools/fpl', changefreq: 'weekly', priority: '0.8' },
-    { loc: '/game-tools/fpl/comparison', changefreq: 'daily', priority: '0.8' },
-    { loc: '/game-tools/fpl/standings', changefreq: 'daily', priority: '0.8' }
+    { loc: '/game-tools/fantasy-premier-league', changefreq: 'weekly', priority: '0.8' },
+    { loc: '/game-tools/fantasy-premier-league/comparison', changefreq: 'daily', priority: '0.8' },
+    { loc: '/game-tools/fantasy-premier-league/standings', changefreq: 'daily', priority: '0.8' },
+    { loc: '/game-tools/fantasy-premier-league/differential', changefreq: 'daily', priority: '0.8' }
 ];
 
 // Generate Schedule Pages for the next 14 days

@@ -40,7 +40,7 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                 {/* FPL Tool Card */}
-                <Link to="/game-tools/fpl" className="group relative overflow-hidden rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <Link to="/game-tools/fantasy-premier-league" className="group relative overflow-hidden rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     
                     <div className="p-8">
