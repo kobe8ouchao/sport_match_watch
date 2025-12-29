@@ -57,12 +57,12 @@ const Footer: React.FC = () => {
                   </Link>
               </li>
               <li>
-                  <Link to="/fantasy-premier-league" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                  <Link to="/game-tools/fpl" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
                     Fantasy Premier League Home
                   </Link>
               </li>
               <li>
-                  <Link alt="Fantasy Premier League Tools" to="/fantasy-premier-league-tool" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                  <Link alt="Fantasy Premier League Tools" to="/game-tools/fpl" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
                     Fantasy Premier League Tools
                   </Link>
               </li>

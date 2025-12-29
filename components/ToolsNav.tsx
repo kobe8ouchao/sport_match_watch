@@ -95,7 +95,7 @@ const ToolsNav: React.FC<ToolsNavProps> = ({ items }) => {
                 {/* Content Layer */}
                 <div className="relative z-10 flex items-center space-x-2.5">
                   {item.icon && (
-                    <div className={`flex items-center justify-center h-5 w-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100'}`}>
+                    <div className={`flex items-center justify-center h-5 w-5 transition-transform duration-300 dark:brightness-0 dark:invert ${isActive ? 'scale-110' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100'}`}>
                       {item.icon}
                     </div>
                   )}
