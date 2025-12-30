@@ -32,6 +32,12 @@ const FPLToolsLayout: React.FC<FPLToolsLayoutProps> = ({ darkMode, toggleTheme }
       icon: <Calculator size={16} />
     },
     {
+      id: 'captaincy',
+      name: 'Captaincy Decider',
+      path: '/game-tools/fantasy-premier-league/captaincy',
+      icon: <Shield size={16} />
+    },
+    {
       id: 'fixture',
       name: 'Fixture Difficulty',
       path: '/game-tools/fantasy-premier-league/fixture',

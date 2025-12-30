@@ -94,12 +94,15 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                             Fantasy Premier League
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-                            Comprehensive tools for FPL managers including Player Comparison Radar, Differential Finder, Budget Finder, and Fixture Difficulty Planner.
+                            Comprehensive tools for FPL managers including Player Comparison Radar, Differential Finder, Budget Finder, Captaincy Decider, and Fixture Difficulty Planner.
                         </p>
 
                         <div className="flex flex-wrap gap-2">
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
                                 Player Comparison
+                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                Captaincy Decider
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
                                 Differential Finder
