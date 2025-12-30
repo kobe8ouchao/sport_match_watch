@@ -143,98 +143,116 @@ const CaptaincyDecider: React.FC = () => {
         .slice(0, 30);
 
       // 4. Fetch Detailed History for Candidates (in parallel)
-      const scoredCandidates: CandidateScore[] = await Promise.all(initialCandidates.map(async (p) => {
-        // Fetch history
-        const historyRes = await fetch(`/fpl-api/element-summary/${p.id}/`);
-        const historyData = await historyRes.json();
-        const history: PlayerHistory[] = historyData.history;
-
-        // Get last 3 games
-        // Sort by round desc just in case
-        const last3 = history.slice(-3);
-        const last3xGI = last3.reduce((acc, match) => acc + parseFloat(match.expected_goal_involvements), 0);
-        
-        const seasonPPG = parseFloat(p.points_per_game);
-
-        // Opponent Info & Scoring
-        const playerFixtures = teamFixtureMap[p.team] || [];
-        const opponents: OpponentInfo[] = [];
-        let totalScore = 0;
-        
-        // Base Potential Score (Player Intrinsic)
-        // Normalize xGI (Top tier ~ 3.0 for 3 games) -> 0-1
-        // Normalize PPG (Top tier ~ 8.0) -> 0-1
-        const normXGI = Math.min(last3xGI / 3.0, 1); 
-        const normPPG = Math.min(seasonPPG / 9.0, 1);
-        const scorePotential = (normXGI * 0.7 + normPPG * 0.3) * 100;
-
-        let totalOpponentScore = 0;
-        let totalHomeScore = 0;
-
-        if (playerFixtures.length > 0) {
-          playerFixtures.forEach(fix => {
-            const opponentTeam = teamMap[fix.opponent];
-            
-            // Record opponent info
-            opponents.push({
-              name: opponentTeam?.name || 'Unknown',
-              short_name: opponentTeam?.short_name || 'UNK',
-              difficulty: fix.difficulty,
-              isHome: fix.isHome,
-              kickoff_time: fix.kickoff_time
-            });
-
-            // --- SCORING LOGIC PER MATCH ---
-
-            // 2. Opponent Weakness (30%)
-            let fdrScore = 0;
-            if (fix.difficulty <= 2) fdrScore = 1;
-            else if (fix.difficulty === 3) fdrScore = 0.5;
-            else fdrScore = 0.2;
-
-            // Boost if opponent concedes a lot
-            const oppDefStrength = fix.isHome ? opponentTeam?.strength_defence_away : opponentTeam?.strength_defence_home;
-            const defScore = oppDefStrength ? (1500 - oppDefStrength) / 500 : 0.5; 
-            
-            const scoreOpponent = ((fdrScore * 0.6) + (defScore * 0.4)) * 100;
-
-            // 3. Home Factor (10%)
-            const scoreHome = fix.isHome ? 100 : 0;
-
-            // Weighted Match Score
-            const matchScore = (scorePotential * 0.6) + (scoreOpponent * 0.3) + (scoreHome * 0.1);
-            
-            totalScore += matchScore;
-            totalOpponentScore += scoreOpponent;
-            totalHomeScore += scoreHome;
-          });
-        } else {
-           // Blank Gameweek - minimal score
-           totalScore = 0;
-        }
-        
-        // Sort opponents by kickoff time
-        opponents.sort((a, b) => new Date(a.kickoff_time).getTime() - new Date(b.kickoff_time).getTime());
-
-        // Average the component scores for breakdown display (approximate)
-        const avgOpponentScore = playerFixtures.length > 0 ? totalOpponentScore / playerFixtures.length : 0;
-        const avgHomeScore = playerFixtures.length > 0 ? totalHomeScore / playerFixtures.length : 0;
-
-        return {
-          player: p,
-          score: totalScore, // Total Score accumulates for DGW
-          breakdown: {
-            scoringPotential: scorePotential,
-            opponentWeakness: avgOpponentScore,
-            homeFactor: avgHomeScore
-          },
-          details: {
-            last3xGI,
-            seasonPPG,
-            opponents
+      const scoredCandidatesResults = await Promise.all(initialCandidates.map(async (p) => {
+        try {
+          // Fetch history
+          const historyRes = await fetch(`/fpl-api/element-summary/${p.id}/`);
+          
+          if (!historyRes.ok) {
+            console.warn(`Failed to fetch history for player ${p.id}: ${historyRes.status}`);
+            return null;
           }
-        };
+
+          const historyData = await historyRes.json();
+          const history: PlayerHistory[] = historyData.history;
+
+          if (!history || !Array.isArray(history)) {
+            console.warn(`Invalid history data for player ${p.id}`);
+            return null;
+          }
+
+          // Get last 3 games
+          // Sort by round desc just in case
+          const last3 = history.slice(-3);
+          const last3xGI = last3.reduce((acc, match) => acc + parseFloat(match.expected_goal_involvements), 0);
+          
+          const seasonPPG = parseFloat(p.points_per_game);
+
+          // Opponent Info & Scoring
+          const playerFixtures = teamFixtureMap[p.team] || [];
+          const opponents: OpponentInfo[] = [];
+          let totalScore = 0;
+          
+          // Base Potential Score (Player Intrinsic)
+          // Normalize xGI (Top tier ~ 3.0 for 3 games) -> 0-1
+          // Normalize PPG (Top tier ~ 8.0) -> 0-1
+          const normXGI = Math.min(last3xGI / 3.0, 1); 
+          const normPPG = Math.min(seasonPPG / 9.0, 1);
+          const scorePotential = (normXGI * 0.7 + normPPG * 0.3) * 100;
+
+          let totalOpponentScore = 0;
+          let totalHomeScore = 0;
+
+          if (playerFixtures.length > 0) {
+            playerFixtures.forEach(fix => {
+              const opponentTeam = teamMap[fix.opponent];
+              
+              // Record opponent info
+              opponents.push({
+                name: opponentTeam?.name || 'Unknown',
+                short_name: opponentTeam?.short_name || 'UNK',
+                difficulty: fix.difficulty,
+                isHome: fix.isHome,
+                kickoff_time: fix.kickoff_time
+              });
+
+              // --- SCORING LOGIC PER MATCH ---
+
+              // 2. Opponent Weakness (30%)
+              let fdrScore = 0;
+              if (fix.difficulty <= 2) fdrScore = 1;
+              else if (fix.difficulty === 3) fdrScore = 0.5;
+              else fdrScore = 0.2;
+
+              // Boost if opponent concedes a lot
+              const oppDefStrength = fix.isHome ? opponentTeam?.strength_defence_away : opponentTeam?.strength_defence_home;
+              const defScore = oppDefStrength ? (1500 - oppDefStrength) / 500 : 0.5; 
+              
+              const scoreOpponent = ((fdrScore * 0.6) + (defScore * 0.4)) * 100;
+
+              // 3. Home Factor (10%)
+              const scoreHome = fix.isHome ? 100 : 0;
+
+              // Weighted Match Score
+              const matchScore = (scorePotential * 0.6) + (scoreOpponent * 0.3) + (scoreHome * 0.1);
+              
+              totalScore += matchScore;
+              totalOpponentScore += scoreOpponent;
+              totalHomeScore += scoreHome;
+            });
+          } else {
+             // Blank Gameweek - minimal score
+             totalScore = 0;
+          }
+          
+          // Sort opponents by kickoff time
+          opponents.sort((a, b) => new Date(a.kickoff_time).getTime() - new Date(b.kickoff_time).getTime());
+
+          // Average the component scores for breakdown display (approximate)
+          const avgOpponentScore = playerFixtures.length > 0 ? totalOpponentScore / playerFixtures.length : 0;
+          const avgHomeScore = playerFixtures.length > 0 ? totalHomeScore / playerFixtures.length : 0;
+
+          return {
+            player: p,
+            score: totalScore, // Total Score accumulates for DGW
+            breakdown: {
+              scoringPotential: scorePotential,
+              opponentWeakness: avgOpponentScore,
+              homeFactor: avgHomeScore
+            },
+            details: {
+              last3xGI,
+              seasonPPG,
+              opponents
+            }
+          };
+        } catch (error) {
+          console.error(`Error analyzing player ${p.web_name}`, error);
+          return null;
+        }
       }));
+
+      const scoredCandidates = scoredCandidatesResults.filter((c): c is CandidateScore => c !== null);
 
       // Sort by Total Score
       scoredCandidates.sort((a, b) => b.score - a.score);
