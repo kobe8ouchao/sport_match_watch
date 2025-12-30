@@ -58,6 +58,12 @@ interface PlayerHistory {
   round: number;
 }
 
+interface OpponentInfo {
+  name: string;
+  difficulty: number;
+  isHome: boolean;
+}
+
 interface CandidateScore {
   player: FPLPlayer;
   score: number;
@@ -69,9 +75,7 @@ interface CandidateScore {
   details: {
     last3xGI: number;
     seasonPPG: number;
-    opponentName: string;
-    opponentDifficulty: number;
-    isHome: boolean;
+    opponents: OpponentInfo[];
   };
 }
 
@@ -83,8 +87,6 @@ const CaptaincyDecider: React.FC = () => {
   const [swordPick, setSwordPick] = useState<CandidateScore | null>(null);
   const [wildcardPick, setWildcardPick] = useState<CandidateScore | null>(null);
   const [teams, setTeams] = useState<Record<number, FPLTeam>>({});
-  const [compareMode, setCompareMode] = useState(false);
-  const [comparePlayers, setComparePlayers] = useState<[CandidateScore | null, CandidateScore | null]>([null, null]);
 
   useEffect(() => {
     fetchData();
@@ -114,11 +116,14 @@ const CaptaincyDecider: React.FC = () => {
       const fixturesRes = await fetch(`/fpl-api/fixtures/?event=${nextGw.id}`);
       const fixtures: FPLFixture[] = await fixturesRes.json();
       
-      // Map team ID to their next fixture info
-      const teamFixtureMap: Record<number, { opponent: number; isHome: boolean; difficulty: number }> = {};
+      // Map team ID to their next fixture info (Support Multiple Fixtures/DGW)
+      const teamFixtureMap: Record<number, { opponent: number; isHome: boolean; difficulty: number }[]> = {};
       fixtures.forEach(f => {
-        teamFixtureMap[f.team_h] = { opponent: f.team_a, isHome: true, difficulty: f.team_h_difficulty };
-        teamFixtureMap[f.team_a] = { opponent: f.team_h, isHome: false, difficulty: f.team_a_difficulty };
+        if (!teamFixtureMap[f.team_h]) teamFixtureMap[f.team_h] = [];
+        teamFixtureMap[f.team_h].push({ opponent: f.team_a, isHome: true, difficulty: f.team_h_difficulty });
+        
+        if (!teamFixtureMap[f.team_a]) teamFixtureMap[f.team_a] = [];
+        teamFixtureMap[f.team_a].push({ opponent: f.team_h, isHome: false, difficulty: f.team_a_difficulty });
       });
 
       // 3. Filter Initial Candidates (Top 30 by projected points ep_next to save API calls)
@@ -143,58 +148,77 @@ const CaptaincyDecider: React.FC = () => {
         
         const seasonPPG = parseFloat(p.points_per_game);
 
-        // Opponent Info
-        const fixtureInfo = teamFixtureMap[p.team];
-        const opponentId = fixtureInfo ? fixtureInfo.opponent : 0;
-        const isHome = fixtureInfo ? fixtureInfo.isHome : false;
-        const difficulty = fixtureInfo ? fixtureInfo.difficulty : 3;
-        const opponentTeam = teamMap[opponentId];
-
-        // --- SCORING LOGIC ---
+        // Opponent Info & Scoring
+        const playerFixtures = teamFixtureMap[p.team] || [];
+        const opponents: OpponentInfo[] = [];
+        let totalScore = 0;
         
-        // 1. Scoring Potential (60%)
+        // Base Potential Score (Player Intrinsic)
         // Normalize xGI (Top tier ~ 3.0 for 3 games) -> 0-1
         // Normalize PPG (Top tier ~ 8.0) -> 0-1
         const normXGI = Math.min(last3xGI / 3.0, 1); 
         const normPPG = Math.min(seasonPPG / 9.0, 1);
         const scorePotential = (normXGI * 0.7 + normPPG * 0.3) * 100;
 
-        // 2. Opponent Weakness (30%)
-        // FDR 1-2 is good. Opponent Defense Strength (Low is good).
-        // Max strength ~1350, Min ~1000.
-        // We use FDR mainly.
-        let fdrScore = 0;
-        if (difficulty <= 2) fdrScore = 1;
-        else if (difficulty === 3) fdrScore = 0.5;
-        else fdrScore = 0.2;
+        let totalOpponentScore = 0;
+        let totalHomeScore = 0;
 
-        // Boost if opponent concedes a lot (Proxy: Strength Defence)
-        // Lower defence strength = better for attacker
-        const oppDefStrength = isHome ? opponentTeam?.strength_defence_away : opponentTeam?.strength_defence_home;
-        const defScore = oppDefStrength ? (1500 - oppDefStrength) / 500 : 0.5; // Rough normalization
+        if (playerFixtures.length > 0) {
+          playerFixtures.forEach(fix => {
+            const opponentTeam = teamMap[fix.opponent];
+            
+            // Record opponent info
+            opponents.push({
+              name: opponentTeam?.name || 'Unknown',
+              difficulty: fix.difficulty,
+              isHome: fix.isHome
+            });
+
+            // --- SCORING LOGIC PER MATCH ---
+
+            // 2. Opponent Weakness (30%)
+            let fdrScore = 0;
+            if (fix.difficulty <= 2) fdrScore = 1;
+            else if (fix.difficulty === 3) fdrScore = 0.5;
+            else fdrScore = 0.2;
+
+            // Boost if opponent concedes a lot
+            const oppDefStrength = fix.isHome ? opponentTeam?.strength_defence_away : opponentTeam?.strength_defence_home;
+            const defScore = oppDefStrength ? (1500 - oppDefStrength) / 500 : 0.5; 
+            
+            const scoreOpponent = ((fdrScore * 0.6) + (defScore * 0.4)) * 100;
+
+            // 3. Home Factor (10%)
+            const scoreHome = fix.isHome ? 100 : 0;
+
+            // Weighted Match Score
+            const matchScore = (scorePotential * 0.6) + (scoreOpponent * 0.3) + (scoreHome * 0.1);
+            
+            totalScore += matchScore;
+            totalOpponentScore += scoreOpponent;
+            totalHomeScore += scoreHome;
+          });
+        } else {
+           // Blank Gameweek - minimal score
+           totalScore = 0;
+        }
         
-        const scoreOpponent = ((fdrScore * 0.6) + (defScore * 0.4)) * 100;
-
-        // 3. Home Factor (10%)
-        const scoreHome = isHome ? 100 : 0;
-
-        // Total Weighted Score
-        const totalScore = (scorePotential * 0.6) + (scoreOpponent * 0.3) + (scoreHome * 0.1);
+        // Average the component scores for breakdown display (approximate)
+        const avgOpponentScore = playerFixtures.length > 0 ? totalOpponentScore / playerFixtures.length : 0;
+        const avgHomeScore = playerFixtures.length > 0 ? totalHomeScore / playerFixtures.length : 0;
 
         return {
           player: p,
-          score: totalScore,
+          score: totalScore, // Total Score accumulates for DGW
           breakdown: {
             scoringPotential: scorePotential,
-            opponentWeakness: scoreOpponent,
-            homeFactor: scoreHome
+            opponentWeakness: avgOpponentScore,
+            homeFactor: avgHomeScore
           },
           details: {
             last3xGI,
             seasonPPG,
-            opponentName: opponentTeam?.name || 'Unknown',
-            opponentDifficulty: difficulty,
-            isHome
+            opponents
           }
         };
       }));
@@ -321,13 +345,17 @@ const CaptaincyDecider: React.FC = () => {
                </div>
              </div>
              <div className="bg-white/60 dark:bg-black/20 rounded-lg p-3">
-               <div className="text-xs text-gray-500 mb-1">Opponent</div>
-               <div className="flex items-center gap-2">
-                 <span className="font-bold text-gray-900 dark:text-white truncate">{data.details.opponentName}</span>
-                 <span className={`text-[10px] font-bold text-white px-1.5 py-0.5 rounded ${getDifficultyColor(data.details.opponentDifficulty)}`}>
-                   {data.details.opponentDifficulty}
-                 </span>
-                 <span className="text-[10px] text-gray-500">{data.details.isHome ? '(H)' : '(A)'}</span>
+               <div className="text-xs text-gray-500 mb-1">Opponent{data.details.opponents.length > 1 ? 's' : ''}</div>
+               <div className="flex flex-col gap-1">
+                 {data.details.opponents.map((opp, idx) => (
+                   <div key={idx} className="flex items-center gap-2">
+                     <span className="font-bold text-gray-900 dark:text-white truncate max-w-[80px] text-xs">{opp.name}</span>
+                     <span className={`text-[10px] font-bold text-white px-1.5 py-0.5 rounded ${getDifficultyColor(opp.difficulty)}`}>
+                       {opp.difficulty}
+                     </span>
+                     <span className="text-[10px] text-gray-500">{opp.isHome ? '(H)' : '(A)'}</span>
+                   </div>
+                 ))}
                </div>
              </div>
           </div>
@@ -445,12 +473,16 @@ const CaptaincyDecider: React.FC = () => {
                      <span className="font-bold text-xl text-gray-900 dark:text-white">{c.player.selected_by_percent}%</span>
                    </div>
                    <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-white/5">
-                     <span className="text-gray-500 font-medium">Next Opponent</span>
-                     <div className="text-right">
-                       <span className="block font-bold text-lg text-gray-900 dark:text-white">{c.details.opponentName} {c.details.isHome ? '(H)' : '(A)'}</span>
-                       <span className={`inline-block text-xs font-bold text-white px-2 py-0.5 rounded mt-1 ${getDifficultyColor(c.details.opponentDifficulty)}`}>
-                         FDR {c.details.opponentDifficulty}
-                       </span>
+                     <span className="text-gray-500 font-medium">Next Opponent{c.details.opponents.length > 1 ? 's' : ''}</span>
+                     <div className="text-right flex flex-col gap-2 items-end">
+                       {c.details.opponents.map((opp, i) => (
+                         <div key={i} className="flex items-center gap-2">
+                           <span className="block font-bold text-lg text-gray-900 dark:text-white">{opp.name} {opp.isHome ? '(H)' : '(A)'}</span>
+                           <span className={`inline-block text-xs font-bold text-white px-2 py-0.5 rounded ${getDifficultyColor(opp.difficulty)}`}>
+                             FDR {opp.difficulty}
+                           </span>
+                         </div>
+                       ))}
                      </div>
                    </div>
                  </div>
