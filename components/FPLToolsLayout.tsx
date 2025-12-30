@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { BarChart2, Shield, Calendar, Target } from 'lucide-react';
+import { BarChart2, Shield, Calendar, Target, Calculator } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 import ToolsNav, { ToolItem } from './ToolsNav';
@@ -26,10 +26,16 @@ const FPLToolsLayout: React.FC<FPLToolsLayoutProps> = ({ darkMode, toggleTheme }
       icon: <Target size={16} />
     },
     {
-        id: 'fixture',
-        name: 'Fixture Difficulty',
-        path: '/game-tools/fantasy-premier-league/fixture',
-        icon: <Calendar size={16} />
+      id: 'budget-finder',
+      name: 'Budget Finder',
+      path: '/game-tools/fantasy-premier-league/budget-finder',
+      icon: <Calculator size={16} />
+    },
+    {
+      id: 'fixture',
+      name: 'Fixture Difficulty',
+      path: '/game-tools/fantasy-premier-league/fixture',
+      icon: <Calendar size={16} />
     }
   ];
 
