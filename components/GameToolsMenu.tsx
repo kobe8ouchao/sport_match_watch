@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trophy, Activity, ArrowRight, Gamepad2, TrendingUp } from 'lucide-react';
 import Header from './Header';
@@ -10,6 +10,45 @@ interface GameToolsMenuProps {
 }
 
 const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) => {
+  
+  // SEO Configuration
+  useEffect(() => {
+    document.title = "Fantasy Game Tools - FPL & NBA Fantasy Analytics | SportsLive";
+    
+    // Helper to update or create meta tags
+    const updateMeta = (name: string, content: string) => {
+        let element = document.querySelector(`meta[name="${name}"]`);
+        if (!element) {
+            element = document.createElement('meta');
+            element.setAttribute('name', name);
+            document.head.appendChild(element);
+        }
+        element.setAttribute('content', content);
+    };
+
+    // Meta Description & Keywords
+    updateMeta('description', 'Dominate your fantasy leagues with our advanced tools. Access Fantasy Premier League (FPL) player comparison, fixture difficulty ticker, and upcoming NBA fantasy projections.');
+    updateMeta('keywords', 'Fantasy Game Tools, FPL Tools, NBA Fantasy, Fantasy Premier League, Player Comparison, Fixture Difficulty, Fantasy Sports Analytics, NBA Fantasy Projections, FPL Planner, Fantasy Basketball, SportsLive Fantasy');
+
+    // Open Graph Tags
+    const updateOG = (property: string, content: string) => {
+        let element = document.querySelector(`meta[property="${property}"]`);
+        if (!element) {
+            element = document.createElement('meta');
+            element.setAttribute('property', property);
+            document.head.appendChild(element);
+        }
+        element.setAttribute('content', content);
+    };
+
+    updateOG('og:title', 'Fantasy Game Tools - FPL & NBA Fantasy Analytics');
+    updateOG('og:description', 'Dominate your fantasy leagues with our advanced tools. Access Fantasy Premier League (FPL) player comparison, fixture difficulty ticker, and upcoming NBA fantasy projections.');
+    updateOG('og:type', 'website');
+    // Assuming a default image exists or referencing one
+    updateOG('og:image', 'https://sportlive.win/logo.png');
+
+  }, []);
+
   return (
     <div className={`min-h-screen transition-colors duration-500 relative overflow-x-hidden flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-gray-50 text-gray-900'}`}>
       

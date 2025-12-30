@@ -10,7 +10,7 @@ import Footer from './components/Footer';
 import { LEAGUES, MOCK_MATCHES, MatchWithHot } from './constants';
 import { fetchMatches } from './services/api';
 import { isSameDay } from './utils';
-import { Loader2, ArrowUp, CalendarDays } from 'lucide-react';
+import { Loader2, ArrowUp, CalendarDays, ArrowDown } from 'lucide-react';
 import MatchDetail from './components/MatchDetail';
 import NewsSection from './components/NewsSection';
 import NewsCarousel from './components/NewsCarousel';
@@ -76,36 +76,6 @@ const Dashboard: React.FC = () => {
     setPastMatches([]);
     setDaysBackLoaded(0);
   }, [selectedDate, selectedLeagueId]);
-
-  // Infinite Scroll Handler for Past Matches
-  useEffect(() => {
-    if (!isSameDay(selectedDate, new Date())) return;
-
-    const checkAndLoad = () => {
-      // If content is short (less than viewport + buffer), load 3 days at once
-      // "If screen is half empty" - we check if scrollHeight is small
-      if (document.documentElement.scrollHeight <= window.innerHeight * 1.5 && !loadingPast) {
-        loadMorePastMatches(3);
-      }
-    };
-
-    const handleScroll = () => {
-      // Check if near bottom of page
-      if (
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500 &&
-        !loadingPast
-      ) {
-        // Normal scroll loads 1 day at a time
-        loadMorePastMatches(1);
-      }
-    };
-
-    // Check immediately and on updates
-    checkAndLoad();
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingPast, daysBackLoaded, selectedDate, selectedLeagueId, matches, pastMatches]);
 
   // Scroll to Top Logic
   useEffect(() => {
@@ -317,13 +287,25 @@ const Dashboard: React.FC = () => {
                   </div>
                 ))}
 
-                {loadingPast && (
-                  <div className="flex justify-center items-center py-8">
-                    <Loader2 className="animate-spin text-gray-400" size={30} />
-                  </div>
-                )}
-                
-                {/* Invisible sentinel for scroll detection if needed, but using window scroll event for now */}
+                <div className="flex justify-center pt-4 pb-8">
+                  <button
+                    onClick={() => loadMorePastMatches(1)}
+                    disabled={loadingPast}
+                    className="px-6 py-2.5 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {loadingPast ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Load Previous Day
+                        <ArrowDown size={18} />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>

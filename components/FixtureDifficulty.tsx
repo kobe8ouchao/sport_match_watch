@@ -338,9 +338,8 @@ const FixtureDifficulty: React.FC<FixtureDifficultyProps> = ({ darkMode, toggleT
         
         // Find current gameweek
         const currentEvent = staticData.events.find((e: any) => e.is_current) || staticData.events.find((e: any) => e.is_next);
-        const currentGw = currentEvent ? currentEvent.id : 1;
-        setCurrentGameweek(currentGw);
-
+        let currentGw = currentEvent ? currentEvent.id : 1;
+        
         // 2. Fetch Fixtures
         const fixturesRes = await fetch('/fpl-api/fixtures/', { headers: { 'Accept': 'application/json' } });
         const fixturesContentType = fixturesRes.headers.get("content-type");
@@ -351,6 +350,16 @@ const FixtureDifficulty: React.FC<FixtureDifficultyProps> = ({ darkMode, toggleT
         }
         const fixturesData = await fixturesRes.json();
         setFixtures(fixturesData);
+
+        // Check if all fixtures in the current gameweek are finished
+        // If so, move to the next gameweek to show upcoming fixtures
+        const currentGwFixtures = fixturesData.filter((f: any) => f.event === currentGw);
+        const isCurrentGwFinished = currentGwFixtures.length > 0 && currentGwFixtures.every((f: any) => f.finished);
+
+        if (isCurrentGwFinished) {
+            currentGw += 1;
+        }
+        setCurrentGameweek(currentGw);
 
         // 3. Fetch ESPN Data (Optional Enhancement)
         try {

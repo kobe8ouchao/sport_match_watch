@@ -24,12 +24,7 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                         <tr>
                             <th className="px-3 py-2 rounded-l-xl">
                                 <span>
-                                    <img 
-                                        src={teamLogo || DEFAULT_TEAM_LOGO} 
-                                        alt={teamName} 
-                                        className="w-8 h-8 object-contain" 
-                                        onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
-                                    /> 
+                                    {title}
                                 </span>
                             </th>
                             <th className="px-2 py-2 text-center">MIN</th>
@@ -97,8 +92,8 @@ const BasketballMatchDetail: React.FC<BasketballMatchDetailProps> = ({ match, on
                    </div>
                 </div>
                 <div className="p-6">
-                    {renderPlayerStats(starters, 'Starters', teamName, teamLogo || DEFAULT_TEAM_LOGO)}
-                    {bench.length > 0 && renderPlayerStats(bench, 'Bench', teamName, teamLogo || DEFAULT_TEAM_LOGO)}
+                    {renderPlayerStats(starters, 'Starters', teamName, 'Starters')}
+                    {bench.length > 0 && renderPlayerStats(bench, 'Bench', teamName, 'Bench')}
                     {players.length === 0 && <div className="text-center text-gray-400 py-4">No player data available.</div>}
                 </div>
             </div>

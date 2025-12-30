@@ -12,6 +12,10 @@ import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Github, Mail } from 'lucide-react';
 
 const Footer: React.FC = () => {
+  const scrollToTop = () => {
+    window.scrollTo(0, 0);
+  };
+
   return (
     <footer className="w-full mt-12 border-t border-gray-200/50 dark:border-white/5 bg-white/30 dark:bg-black/20 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -19,7 +23,7 @@ const Footer: React.FC = () => {
           
           {/* Brand Column */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/" onClick={scrollToTop} className="flex items-center space-x-2">
                 <img 
                   src="/logo.png" 
                   alt="SportsLive Logo" 
@@ -57,17 +61,17 @@ const Footer: React.FC = () => {
                   </Link>
               </li>
               <li>
-                  <Link to="/game-tools/fantasy-premier-league" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-                    Fantasy Premier League Home
+                  <Link to="/game-tools" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    Fantasy Game Tools
                   </Link>
               </li>
               <li>
-                  <Link alt="Fantasy Premier League Tools" to="/game-tools/fantasy-premier-league" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                  <Link alt="Fantasy Premier League Tools" to="/game-tools/fantasy-premier-league" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
                     Fantasy Premier League Tools
                   </Link>
               </li>
               <li>
-                  <Link to="/world-cup-2026" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-blue-300 transition-colors flex items-center gap-1">
+                  <Link to="/world-cup-2026" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-blue-300 transition-colors flex items-center gap-1">
                     FIFA World Cup 2026™
                   </Link>
               </li>
