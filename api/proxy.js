@@ -8,8 +8,18 @@ export default async function handler(req, res) {
   // Ensure endpoint is a string
   const path = Array.isArray(endpoint) ? endpoint.join('/') : endpoint;
   
+  // Get other query parameters
+  const queryParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(req.query)) {
+    if (key !== 'endpoint') {
+      queryParams.append(key, value);
+    }
+  }
+  
+  const queryString = queryParams.toString();
+  
   // Construct the target URL
-  const targetUrl = `https://fantasy.premierleague.com/api/${path}`;
+  const targetUrl = `https://fantasy.premierleague.com/api/${path}${queryString ? `?${queryString}` : ''}`;
 
   try {
     const response = await fetch(targetUrl, {

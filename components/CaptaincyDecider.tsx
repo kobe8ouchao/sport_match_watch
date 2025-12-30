@@ -116,7 +116,13 @@ const CaptaincyDecider: React.FC = () => {
 
       // 2. Fetch Fixtures for Next GW
       const fixturesRes = await fetch(`/fpl-api/fixtures/?event=${nextGw.id}`);
-      const fixtures: FPLFixture[] = await fixturesRes.json();
+      let fixtures: FPLFixture[] = await fixturesRes.json();
+      
+      // Safety check: Filter fixtures to ensure they match the requested event
+      // This protects against API proxy issues returning all season fixtures
+      if (nextGw?.id) {
+        fixtures = fixtures.filter(f => f.event === nextGw.id);
+      }
       
       // Map team ID to their next fixture info (Support Multiple Fixtures/DGW)
       const teamFixtureMap: Record<number, { opponent: number; isHome: boolean; difficulty: number; kickoff_time: string }[]> = {};
