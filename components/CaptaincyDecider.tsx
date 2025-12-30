@@ -60,8 +60,10 @@ interface PlayerHistory {
 
 interface OpponentInfo {
   name: string;
+  short_name: string;
   difficulty: number;
   isHome: boolean;
+  kickoff_time: string;
 }
 
 interface CandidateScore {
@@ -117,13 +119,13 @@ const CaptaincyDecider: React.FC = () => {
       const fixtures: FPLFixture[] = await fixturesRes.json();
       
       // Map team ID to their next fixture info (Support Multiple Fixtures/DGW)
-      const teamFixtureMap: Record<number, { opponent: number; isHome: boolean; difficulty: number }[]> = {};
+      const teamFixtureMap: Record<number, { opponent: number; isHome: boolean; difficulty: number; kickoff_time: string }[]> = {};
       fixtures.forEach(f => {
         if (!teamFixtureMap[f.team_h]) teamFixtureMap[f.team_h] = [];
-        teamFixtureMap[f.team_h].push({ opponent: f.team_a, isHome: true, difficulty: f.team_h_difficulty });
+        teamFixtureMap[f.team_h].push({ opponent: f.team_a, isHome: true, difficulty: f.team_h_difficulty, kickoff_time: f.kickoff_time });
         
         if (!teamFixtureMap[f.team_a]) teamFixtureMap[f.team_a] = [];
-        teamFixtureMap[f.team_a].push({ opponent: f.team_h, isHome: false, difficulty: f.team_a_difficulty });
+        teamFixtureMap[f.team_a].push({ opponent: f.team_h, isHome: false, difficulty: f.team_a_difficulty, kickoff_time: f.kickoff_time });
       });
 
       // 3. Filter Initial Candidates (Top 30 by projected points ep_next to save API calls)
@@ -170,8 +172,10 @@ const CaptaincyDecider: React.FC = () => {
             // Record opponent info
             opponents.push({
               name: opponentTeam?.name || 'Unknown',
+              short_name: opponentTeam?.short_name || 'UNK',
               difficulty: fix.difficulty,
-              isHome: fix.isHome
+              isHome: fix.isHome,
+              kickoff_time: fix.kickoff_time
             });
 
             // --- SCORING LOGIC PER MATCH ---
@@ -203,6 +207,9 @@ const CaptaincyDecider: React.FC = () => {
            totalScore = 0;
         }
         
+        // Sort opponents by kickoff time
+        opponents.sort((a, b) => new Date(a.kickoff_time).getTime() - new Date(b.kickoff_time).getTime());
+
         // Average the component scores for breakdown display (approximate)
         const avgOpponentScore = playerFixtures.length > 0 ? totalOpponentScore / playerFixtures.length : 0;
         const avgHomeScore = playerFixtures.length > 0 ? totalHomeScore / playerFixtures.length : 0;
@@ -349,7 +356,7 @@ const CaptaincyDecider: React.FC = () => {
                <div className="flex flex-col gap-1">
                  {data.details.opponents.map((opp, idx) => (
                    <div key={idx} className="flex items-center gap-2">
-                     <span className="font-bold text-gray-900 dark:text-white truncate max-w-[80px] text-xs">{opp.name}</span>
+                     <span className="font-bold text-gray-900 dark:text-white text-xs w-8">{opp.short_name}</span>
                      <span className={`text-[10px] font-bold text-white px-1.5 py-0.5 rounded ${getDifficultyColor(opp.difficulty)}`}>
                        {opp.difficulty}
                      </span>
