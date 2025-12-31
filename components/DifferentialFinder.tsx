@@ -176,6 +176,17 @@ const DifferentialFinder: React.FC = () => {
         fetchBaseData();
     }, []);
 
+    // Auto-run analysis on initial load if no results
+    useEffect(() => {
+        if (!loading && allPlayers.length > 0 && results.length === 0 && !analyzing && !error) {
+            // Small delay to ensure UI is ready
+            const timer = setTimeout(() => {
+                runAnalysis();
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [loading, allPlayers]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // Analysis Logic
     const runAnalysis = async () => {
         setAnalyzing(true);
@@ -379,111 +390,138 @@ const DifferentialFinder: React.FC = () => {
             )}
 
             {/* Control Panel */}
-            <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/10 p-6 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Ownership Toggle */}
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5 uppercase tracking-wider">
-                                Max Ownership
-                            </label>
-                            <span className="text-teal-600 dark:text-teal-400 font-bold text-sm">{ownershipLimit}%</span>
-                        </div>
-                        <div className="h-11 flex items-center px-4 bg-white/50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/5">
+            <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/10 p-4 shadow-sm">
+                <div className="flex flex-col lg:flex-row gap-4 items-end lg:items-center">
+                    
+                    {/* Controls Group */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                        
+                        {/* Ownership Toggle - Compact */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Max Ownership</label>
+                                <span className="text-teal-600 dark:text-teal-400 font-bold text-xs">{ownershipLimit}%</span>
+                            </div>
                             <input 
                                 type="range" 
-                                min="1" 
-                                max="25" 
-                                step="1"
+                                min="1" max="25" step="1"
                                 value={ownershipLimit}
                                 onChange={(e) => setOwnershipLimit(parseInt(e.target.value))}
-                                className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-teal-500"
+                                className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-teal-500 block"
                             />
                         </div>
-                    </div>
 
-                    {/* Price Range */}
-                    <div className="space-y-3">
-                        <label className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5 uppercase tracking-wider">
-                            Budget
-                        </label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {[
-                                { id: 'budget', label: 'Cheap', desc: '<6.0£' },
-                                { id: 'mid', label: 'Mid', desc: '6£-9£' },
-                                { id: 'premium', label: 'High', desc: '>9.0£' }
-                            ].map((opt) => (
+                        {/* Price Range - Compact Segmented Control */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Budget</label>
+                            <div className="flex bg-gray-100 dark:bg-black/20 p-1 rounded-lg">
+                                {[
+                                    { id: 'budget', label: 'Cheap', desc: '<6.0' },
+                                    { id: 'mid', label: 'Mid', desc: '6-9' },
+                                    { id: 'premium', label: 'High', desc: '>9.0' }
+                                ].map((opt) => (
+                                    <button
+                                        key={opt.id}
+                                        onClick={() => setPriceRange(opt.id as any)}
+                                        className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition-all ${
+                                            priceRange === opt.id 
+                                            ? 'bg-teal-500 text-white shadow-md transform scale-[1.02]' 
+                                            : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'
+                                        }`}
+                                    >
+                                        {opt.label} <span className={`text-[9px] font-normal hidden xl:inline ${priceRange === opt.id ? 'text-teal-100 opacity-90' : 'opacity-60'}`}>({opt.desc})</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Risk Profile - Compact Segmented Control */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Risk Level</label>
+                            <div className="flex bg-gray-100 dark:bg-black/20 p-1 rounded-lg">
                                 <button
-                                    key={opt.id}
-                                    onClick={() => setPriceRange(opt.id as any)}
-                                    className={`h-11 flex flex-col items-center justify-center rounded-xl border transition-all ${
-                                        priceRange === opt.id 
-                                        ? 'bg-teal-500 text-white border-teal-500 shadow-md transform scale-[1.02]' 
-                                        : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10'
+                                    onClick={() => setRiskProfile('safe')}
+                                    className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                        riskProfile === 'safe'
+                                        ? 'bg-blue-500 text-white shadow-md transform scale-[1.02]'
+                                        : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'
                                     }`}
                                 >
-                                    <span className="font-bold text-xs leading-none mb-0.5">{opt.label}</span>
-                                    <span className="text-[10px] opacity-80 leading-none">{opt.desc}</span>
+                                    Safe
                                 </button>
-                            ))}
+                                <button
+                                    onClick={() => setRiskProfile('high_risk')}
+                                    className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+                                        riskProfile === 'high_risk'
+                                        ? 'bg-purple-500 text-white shadow-md transform scale-[1.02]'
+                                        : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'
+                                    }`}
+                                >
+                                    Risky
+                                </button>
+                            </div>
                         </div>
+
                     </div>
 
-                    {/* Risk Profile */}
-                    <div className="space-y-3">
-                        <label className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5 uppercase tracking-wider">
-                            Risk
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => setRiskProfile('safe')}
-                                className={`h-11 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
-                                    riskProfile === 'safe'
-                                    ? 'bg-blue-500 text-white border-blue-500 shadow-md transform scale-[1.02]'
-                                    : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10'
-                                }`}
-                            >
-                                <span className="font-bold text-xs">Safe</span>
-                                <span className="text-[10px] opacity-80">Proven</span>
-                            </button>
-                            <button
-                                onClick={() => setRiskProfile('high_risk')}
-                                className={`h-11 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
-                                    riskProfile === 'high_risk'
-                                    ? 'bg-purple-500 text-white border-purple-500 shadow-md transform scale-[1.02]'
-                                    : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/10'
-                                }`}
-                            >
-                                <span className="font-bold text-xs">Risky</span>
-                                <span className="text-[10px] opacity-80">Potential</span>
-                            </button>
-                        </div>
+                    {/* Action Button - Compact */}
+                    <div className="w-full lg:w-auto min-w-[140px]">
+                        <button
+                            onClick={runAnalysis}
+                            disabled={loading || analyzing}
+                            className={`
+                                w-full h-11 rounded-xl font-bold text-sm text-white shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2
+                                ${analyzing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500'}
+                            `}
+                        >
+                            {analyzing ? (
+                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <Search size={16} />
+                            )}
+                            <span>{analyzing ? 'Scanning...' : 'Find Picks'}</span>
+                        </button>
                     </div>
-                </div>
-
-                <div className="mt-8 flex justify-center md:justify-end border-t border-gray-100 dark:border-white/5 pt-6">
-                    <button
-                        onClick={runAnalysis}
-                        disabled={loading || analyzing}
-                        className={`
-                            w-full md:w-auto relative px-10 py-4 rounded-2xl font-black text-base tracking-wide text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3
-                            ${analyzing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500'}
-                        `}
-                    >
-                        {analyzing ? (
-                            <>
-                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Analyzing {progress}%
-                            </>
-                        ) : (
-                            <>
-                                <Search size={20} />
-                                Find Differentials
-                            </>
-                        )}
-                    </button>
                 </div>
             </div>
+
+            {/* Analysis Progress - Main Display Area */}
+            {analyzing && (
+                <div className="bg-white/60 dark:bg-white/5 backdrop-blur-xl rounded-2xl border border-white/40 dark:border-white/10 p-8 shadow-sm flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
+                     <div className="relative w-20 h-20 mb-6">
+                        <svg className="w-full h-full transform -rotate-90">
+                            <circle
+                                cx="40"
+                                cy="40"
+                                r="36"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="transparent"
+                                className="text-gray-200 dark:text-gray-700"
+                            />
+                            <circle
+                                cx="40"
+                                cy="40"
+                                r="36"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="transparent"
+                                strokeDasharray={36 * 2 * Math.PI}
+                                strokeDashoffset={36 * 2 * Math.PI - (progress / 100) * (36 * 2 * Math.PI)}
+                                className="text-teal-500 transition-all duration-300 ease-out"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center font-black text-xl text-teal-600 dark:text-teal-400">
+                            {progress}%
+                        </div>
+                     </div>
+                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Analyzing Player Data</h3>
+                     <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                        Scanning recent form, xG performance, and upcoming fixture difficulties to find the best differential picks for you.
+                     </p>
+                </div>
+            )}
 
             {/* Results Section */}
             {results.length > 0 && (
