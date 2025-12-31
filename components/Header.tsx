@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
               <span className="text-sm font-bold">Fantasy</span>
         </Link>
            <Link 
-              to="/game-tools/nba-fantasy"
+              to="/game-tools/fantasy-nba/player-compare?p1=1966&p2=6450"
               target="_blank"
               rel="noopener noreferrer"
               className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
@@ -112,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
                 <span className="text-sm font-bold text-gray-700 dark:text-gray-200">FPL Tools</span>
             </Link>
             <Link 
-                to="/game-tools/fantasy-nba/player-compare?"
+                to="/game-tools/fantasy-nba/player-compare?p1=1966&p2=6450"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsMenuOpen(false)}
