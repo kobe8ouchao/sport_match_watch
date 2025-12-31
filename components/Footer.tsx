@@ -71,6 +71,11 @@ const Footer: React.FC = () => {
                   </Link>
               </li>
               <li>
+                  <Link to="/nba-fantasy" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    NBA Fantasy
+                  </Link>
+              </li>
+              <li>
                   <Link to="/world-cup-2026" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-blue-300 transition-colors flex items-center gap-1">
                     FIFA World Cup 2026™
                   </Link>
