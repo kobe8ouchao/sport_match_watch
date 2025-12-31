@@ -363,7 +363,7 @@ const FixtureDifficulty: React.FC<FixtureDifficultyProps> = ({ darkMode, toggleT
 
         // 3. Fetch ESPN Data (Optional Enhancement)
         try {
-            const espnRes = await fetch('https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/standings');
+            const espnRes = await fetch('/api/espn/site/sports/soccer/eng.1/standings');
             if (espnRes.ok) {
                 const espnData = await espnRes.json();
                 if (espnData.children && espnData.children[0] && espnData.children[0].standings) {

@@ -112,7 +112,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
                 <span className="text-sm font-bold text-gray-700 dark:text-gray-200">FPL Tools</span>
             </Link>
             <Link 
-                to="/game-tools/nbaf"
+                to="/game-tools/fantasy-nba/player-compare?"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsMenuOpen(false)}

@@ -23,6 +23,21 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/fpl-api/, ''),
           },
+          '/api/espn/site': {
+            target: 'https://site.api.espn.com/apis/site/v2',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/espn\/site/, ''),
+          },
+          '/api/espn/web-site': {
+             target: 'https://site.web.api.espn.com/apis/site/v2',
+             changeOrigin: true,
+             rewrite: (path) => path.replace(/^\/api\/espn\/web-site/, ''),
+          },
+          '/api/espn/common': {
+             target: 'https://site.web.api.espn.com/apis/common/v3',
+             changeOrigin: true,
+             rewrite: (path) => path.replace(/^\/api\/espn\/common/, ''),
+          },
         },
       },
       plugins: [react()],

@@ -118,32 +118,37 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                 </Link>
 
                 {/* NBA Tool Card */}
-                <div className="group relative overflow-hidden rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-xl opacity-75 cursor-not-allowed">
+                <Link to="/game-tools/fantasy-nba" className="group relative overflow-hidden rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                     <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5 dark:from-orange-500/10 dark:to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                     
                      <div className="p-8">
                         <div className="flex items-center justify-between mb-8">
                             <div className="p-4 rounded-2xl bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                                 <Activity size={32} />
                             </div>
-                            <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 dark:bg-white/10 text-gray-500">COMING SOON</span>
+                            <ArrowRight className="text-gray-300 dark:text-gray-600 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
                         </div>
                         
-                        <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white">
+                        <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                             NBA Fantasy Tool
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-                            Advanced metrics for NBA Fantasy including Daily Projections, Schedule Grid, and Player Rater.
+                            Advanced player comparison for NBA Fantasy. Compare stats, visualize strengths with radar charts, and discover hidden value with deep analysis.
                         </p>
 
                         <div className="flex flex-wrap gap-2">
                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Projections
+                                Player Comparison
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Schedule Grid
+                                Radar Charts
+                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                Trend Analysis
                             </span>
                         </div>
                     </div>
-                </div>
+                </Link>
             </div>
         </div>
       </div>

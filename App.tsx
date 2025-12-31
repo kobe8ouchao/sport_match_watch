@@ -459,6 +459,8 @@ import FantasyToolsPage from './components/FantasyToolsPage';
 import FPLLanding from './components/FPLLanding';
 import GameToolsMenu from './components/GameToolsMenu';
 import FPLToolsLayout from './components/FPLToolsLayout';
+import NBAPlayerCompare from './components/NBAPlayerCompare';
+import NBAToolsLayout from './components/NBAToolsLayout';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -491,6 +493,8 @@ const App: React.FC = () => {
         <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/player-comparison" element={<PlayerComparisonPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/fixture-difficulty" element={<FixtureDifficulty darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        {/* Redirect old route to new one */}
+        <Route path="/fantasy-nba/player-compare" element={<Navigate to="/game-tools/fantasy-nba/player-compare" replace />} />
         <Route path="/fantasy-premier-league-tool" element={<FantasyToolsPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/fantasy-premier-league" element={<FPLLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
@@ -506,9 +510,11 @@ const App: React.FC = () => {
             <Route path="fixture" element={<FixtureDifficulty darkMode={darkMode} toggleTheme={toggleTheme} hideLayout={true} />} />
         </Route>
         
-        {/* Placeholder for NBA Tools to avoid 404 when clicking tab */}
-        <Route path="/game-tools/nba" element={<GameToolsMenu darkMode={darkMode} toggleTheme={toggleTheme} />} />
-        <Route path="/game-tools/nbaf" element={<GameToolsMenu darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        {/* NBA Tools Routes */}
+        <Route path="/game-tools/fantasy-nba" element={<NBAToolsLayout darkMode={darkMode} toggleTheme={toggleTheme} />}>
+            <Route index element={<Navigate to="player-compare" replace />} />
+            <Route path="player-compare" element={<NBAPlayerCompare />} />
+        </Route>
 
         {/* Dynamic SEO Landing Pages */}
         {SEO_PAGES.map((page) => (

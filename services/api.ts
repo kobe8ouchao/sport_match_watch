@@ -168,11 +168,11 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
     const queryDateStr = timezone ? formatDateForLeague(d, timezone) : formatDateForApi(d);
 
     if (queryId === 'nba') {
-      url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
+      url = `/api/espn/site/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
     } else if (queryId === 'nfl') {
-      url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${queryDateStr}`;
+      url = `/api/espn/site/sports/football/nfl/scoreboard?dates=${queryDateStr}`;
     } else {
-      url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
+      url = `/api/espn/site/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
     }
 
     try {
