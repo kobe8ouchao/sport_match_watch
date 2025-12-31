@@ -35,12 +35,19 @@ export default async function handler(req, res) {
     
     let executablePath;
     if (isLocal) {
-      // Local development fallback - You might need to adjust this path for your local machine
-      // or install full 'puppeteer' package for local dev
-      executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'; 
+      // Local development fallback - Attempt to find Chrome/Chromium
+      // This path works for Windows, but we should make it more robust or just rely on fetch fallback for local
+      executablePath = process.platform === 'win32' 
+        ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        : process.platform === 'darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : '/usr/bin/google-chrome';
     } else {
       executablePath = await chromium.executablePath();
     }
+
+    // If we are local and the executable path doesn't exist, this will fail and trigger the catch block
+    // which then falls back to fetch. This is acceptable behavior.
 
     browser = await puppeteer.launch({
       args: isLocal ? [] : chromium.args,
@@ -98,17 +105,41 @@ export default async function handler(req, res) {
     // Fallback to simple fetch if Puppeteer fails (e.g., locally without Chrome path)
     try {
         console.log('Falling back to fetch...');
+        // Force User-Agent to look like a browser to bypass some basic checks
         const fetchRes = await fetch(targetUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                'Accept': 'application/json'
+                'Accept': 'application/json, text/plain, */*'
             }
         });
-        if (!fetchRes.ok) throw new Error(`Fetch failed with ${fetchRes.status}`);
-        const data = await fetchRes.json();
-        return res.status(200).json(data);
+        
+        if (!fetchRes.ok) {
+            // Try reading error text if possible
+            const errText = await fetchRes.text().catch(() => 'No error text');
+            throw new Error(`Fetch failed with ${fetchRes.status}: ${errText.substring(0, 100)}`);
+        }
+        
+        const contentType = fetchRes.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+             const data = await fetchRes.json();
+             return res.status(200).json(data);
+        } else {
+             // Sometimes it might return text that is actually JSON
+             const text = await fetchRes.text();
+             try {
+                 const data = JSON.parse(text);
+                 return res.status(200).json(data);
+             } catch (e) {
+                 throw new Error(`Received non-JSON response: ${text.substring(0, 50)}...`);
+             }
+        }
     } catch (fetchError) {
-        return res.status(500).json({ error: 'Failed to fetch data from FPL API', details: error.message });
+        console.error('Proxy Error (Fetch Fallback):', fetchError);
+        return res.status(500).json({ 
+            error: 'Failed to fetch data from FPL API', 
+            details: error.message, 
+            fallbackError: fetchError.message 
+        });
     }
   } finally {
     if (browser) {
