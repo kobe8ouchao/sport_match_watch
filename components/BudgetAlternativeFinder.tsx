@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calculator, TrendingDown, ArrowRight, DollarSign, BarChart2, Filter, Info, RefreshCw, User, Users } from 'lucide-react';
+import { Search, Calculator, TrendingDown, ArrowRight, DollarSign, BarChart2, Filter, Info, RefreshCw, User, Users, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface FPLPlayer {
@@ -108,6 +108,17 @@ const BudgetAlternativeFinder: React.FC = () => {
       if (parsed.maxPrice) setMaxPrice(parsed.maxPrice);
     }
   }, []);
+
+  // Set default Haaland
+  useEffect(() => {
+    if (allPlayers.length > 0 && !selectedPlayer) {
+      // Find Haaland
+      const haaland = allPlayers.find(p => p.web_name === 'Haaland' || (p.first_name === 'Erling' && p.second_name === 'Haaland'));
+      if (haaland) {
+        selectPlayer(haaland);
+      }
+    }
+  }, [allPlayers]);
 
   useEffect(() => {
     if (selectedPlayer && allPlayers.length > 0) {
@@ -356,8 +367,16 @@ const BudgetAlternativeFinder: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search player (e.g. Salah, Haaland)..."
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+                className="w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
               />
+              {searchTerm && (
+                <button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <X size={16} />
+                </button>
+              )}
               {searchResults.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1a1a] rounded-xl shadow-xl border border-gray-100 dark:border-white/10 overflow-hidden">
                   {searchResults.map(p => (

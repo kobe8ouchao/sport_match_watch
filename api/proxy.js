@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     const isLocal = process.env.VERCEL_ENV === 'development' || !process.env.AWS_LAMBDA_FUNCTION_VERSION;
     
     let executablePath;
-    if (isLocal) {
+      if (isLocal) {
       // Local development fallback - Attempt to find Chrome/Chromium
       // This path works for Windows, but we should make it more robust or just rely on fetch fallback for local
       executablePath = process.platform === 'win32' 
