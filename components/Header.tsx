@@ -84,15 +84,24 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
 
       {/* Mobile Actions */}
       <div className="md:hidden flex items-center space-x-2 z-20">
-          <button 
+          <Link
+              to="/game-tools/fantasy-nfl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
+              title="NFL Fantasy Tools"
+          >
+              <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="w-5 h-5 object-contain" />
+          </Link>
+          <button
               onClick={toggleTheme}
               className="p-2 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300"
           >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          
+
           {!hideCalendarButton && (
-            <button 
+            <button
                 onClick={onOpenCalendar}
                 className="lg:hidden relative p-2 rounded-full bg-black text-white dark:bg-white dark:text-black shadow-lg"
             >
@@ -100,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
             </button>
           )}
 
-          <button 
+          <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white"
           >
