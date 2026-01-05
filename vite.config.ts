@@ -23,20 +23,30 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/fpl-api/, ''),
           },
+          '/espn-api': {
+            target: 'https://site.web.api.espn.com/apis',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/espn-api/, ''),
+          },
+          '/espn-site': {
+             target: 'https://site.web.api.espn.com/apis/site/v2',
+             changeOrigin: true,
+             rewrite: (path) => path.replace(/^\/espn-site/, ''),
+          },
+          '/api/espn/common': {
+            target: 'https://site.web.api.espn.com/apis/common/v3',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/espn\/common/, ''),
+          },
           '/api/espn/site': {
             target: 'https://site.api.espn.com/apis/site/v2',
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api\/espn\/site/, ''),
           },
           '/api/espn/web-site': {
-             target: 'https://site.web.api.espn.com/apis/site/v2',
-             changeOrigin: true,
-             rewrite: (path) => path.replace(/^\/api\/espn\/web-site/, ''),
-          },
-          '/api/espn/common': {
-             target: 'https://site.web.api.espn.com/apis/common/v3',
-             changeOrigin: true,
-             rewrite: (path) => path.replace(/^\/api\/espn\/common/, ''),
+            target: 'https://site.web.api.espn.com/apis/site/v2',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/espn\/web-site/, ''),
           },
         },
       },

@@ -93,6 +93,21 @@ const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
+                <a href="https://www.nfl.com" target="_blank" rel="noopener noreferrer" title="Visit NFL Official Site" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
+                  NFL Official
+                </a>
+              </li>
+              <li>
+                <a href="https://fantasy.nfl.com/" target="_blank" rel="noopener noreferrer" title="Play NFL Fantasy Football" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
+                  NFL Fantasy
+                </a>
+              </li>
+              <li>
+                <Link to="/nfl-fantasy" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                  NFL Fantasy Tools
+                </Link>
+              </li>
+              <li>
                 <a href="https://www.espn.com" target="_blank" rel="noopener noreferrer" title="Visit ESPN Sports News" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
                   ESPN
                 </a>

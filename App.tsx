@@ -463,7 +463,9 @@ import NBAPlayerCompare from './components/NBAPlayerCompare';
 import NBAToolsLayout from './components/NBAToolsLayout';
 import NBAFantasyLanding from './components/NBAFantasyLanding';
 import NBAFantasyDashboard from './components/NBAFantasyDashboard';
-import FantasyWaiverRadar from './components/FantasyWaiverRadar';
+import NFLToolsLayout from './components/NFLToolsLayout';
+import NFLPlayerCompare from './components/NFLPlayerCompare';
+import NFLFantasyLanding from './components/NFLFantasyLanding';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -520,6 +522,13 @@ const App: React.FC = () => {
             <Route path="dashboard" element={<NBAFantasyDashboard />} />
             <Route path="player-compare" element={<NBAPlayerCompare />} />
         </Route>
+
+        {/* NFL Tools Routes */}
+        <Route path="/game-tools/fantasy-nfl" element={<NFLToolsLayout darkMode={darkMode} toggleTheme={toggleTheme} />}>
+            <Route index element={<Navigate to="player-compare" replace />} />
+            <Route path="player-compare" element={<NFLPlayerCompare />} />
+        </Route>
+        <Route path="/nfl-fantasy" element={<NFLFantasyLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
         {/* Dynamic SEO Landing Pages */}
         {SEO_PAGES.map((page) => (

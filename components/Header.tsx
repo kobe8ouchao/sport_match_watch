@@ -62,6 +62,16 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
                <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA Fantasy Logo" className="w-7 h-7 object-contain" />
               <span className="text-sm font-bold">Fantasy</span>
           </Link>
+          <Link 
+                to="/game-tools/fantasy-nfl"
+                target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
+              title="NFL Fantasy Tools"
+            >
+                <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="w-6 h-6 object-contain" />
+                <span className="text-sm font-bold">Fantasy</span>
+            </Link>
 
           <button 
               onClick={toggleTheme}
@@ -120,6 +130,16 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
             >
                 <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="w-6 h-6 object-contain" />
                 <span className="text-sm font-bold text-gray-700 dark:text-gray-200">NBA Fantasy</span>
+            </Link>
+            <Link 
+                to="/game-tools/fantasy-nfl"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            >
+                <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="w-6 h-6 object-contain" />
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-200">NFL Fantasy</span>
             </Link>
           </div>
       )}
