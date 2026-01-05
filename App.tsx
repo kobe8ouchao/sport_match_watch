@@ -462,6 +462,8 @@ import FPLToolsLayout from './components/FPLToolsLayout';
 import NBAPlayerCompare from './components/NBAPlayerCompare';
 import NBAToolsLayout from './components/NBAToolsLayout';
 import NBAFantasyLanding from './components/NBAFantasyLanding';
+import NBAFantasyDashboard from './components/NBAFantasyDashboard';
+import FantasyWaiverRadar from './components/FantasyWaiverRadar';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -514,7 +516,8 @@ const App: React.FC = () => {
         
         {/* NBA Tools Routes */}
         <Route path="/game-tools/fantasy-nba" element={<NBAToolsLayout darkMode={darkMode} toggleTheme={toggleTheme} />}>
-            <Route index element={<Navigate to="player-compare" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<NBAFantasyDashboard />} />
             <Route path="player-compare" element={<NBAPlayerCompare />} />
         </Route>
 

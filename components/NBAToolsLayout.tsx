@@ -1,9 +1,10 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { BarChart2 } from 'lucide-react';
+import { BarChart2, LayoutDashboard, Radar } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 import ToolsNav, { ToolItem } from './ToolsNav';
+import { NBAComparisonProvider } from '../context/NBAComparisonContext';
 
 interface NBAToolsLayoutProps {
   darkMode: boolean;
@@ -13,6 +14,12 @@ interface NBAToolsLayoutProps {
 const NBAToolsLayout: React.FC<NBAToolsLayoutProps> = ({ darkMode, toggleTheme }) => {
   const location = useLocation();
   const tools: ToolItem[] = [
+    {
+      id: 'dashboard',
+      name: 'Schedule View',
+      path: '/game-tools/fantasy-nba/dashboard',
+      icon: <LayoutDashboard size={16} />
+    },
     {
       id: 'comparison',
       name: 'Player Comparison',
@@ -45,7 +52,9 @@ const NBAToolsLayout: React.FC<NBAToolsLayoutProps> = ({ darkMode, toggleTheme }
             <ToolsNav items={tools} />
 
             <div className="mt-2">
-                <Outlet />
+                <NBAComparisonProvider>
+                    <Outlet />
+                </NBAComparisonProvider>
             </div>
         </div>
       </div>
