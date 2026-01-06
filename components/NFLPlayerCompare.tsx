@@ -105,9 +105,9 @@ const NFLPlayerCompare: React.FC = () => {
                 });
                 setSearchParams(params, { replace: true });
             } else {
-                // Defaults: Mahomes, CMC
-                await addPlayer('3139477'); 
-                await addPlayer('3117251'); 
+                // Defaults: Lamar Jackson, Josh Allen
+                await addPlayer('3916387'); 
+                await addPlayer('3918298'); 
             }
         }
     };
@@ -174,10 +174,17 @@ const NFLPlayerCompare: React.FC = () => {
       </tr>
   );
 
-  const renderStatRow = (label: string, key: keyof NFLPlayerStats, inverse: boolean = false, isPremium: boolean = false) => {
+    const renderStatRow = (label: string, key: keyof NFLPlayerStats, inverse: boolean = false, isPremium: boolean = false) => {
      let bestVal = -Infinity;
      let worstVal = Infinity;
      
+     // Percentage keys
+     const percentageKeys: (keyof NFLPlayerStats)[] = [
+         'completion_pct', 'sack_rate', 'carry_share', 
+         'target_share', 'catch_rate', 'td_per_reception'
+     ];
+     const isPercentage = percentageKeys.includes(key);
+
      // Find best/worst only if values exist
      const hasValues = players.some(p => p.seasonStats[key] !== undefined);
      
@@ -201,7 +208,13 @@ const NFLPlayerCompare: React.FC = () => {
             </td>
             {players.map(p => {
                 const val = p.seasonStats[key];
-                const displayVal = val !== undefined ? val : '-';
+                let displayVal: string | number = '-';
+                
+                if (val !== undefined) {
+                    displayVal = val;
+                    if (isPercentage) displayVal = `${val}%`;
+                }
+
                 const isBest = !isPremium && players.length > 1 && val === targetVal && val !== 0 && typeof val === 'number';
                 
                 return (
@@ -393,11 +406,24 @@ const NFLPlayerCompare: React.FC = () => {
                               {renderStatRow('Passing TDs', 'pass_td')}
                               {renderStatRow('Ints', 'pass_int', true)}
                               {renderStatRow('Sacks', 'pass_sacks', true)}
+                              {renderStatRow('Attempts', 'pass_att')}
+
+                              {renderSectionHeader('QB Efficiency')}
+                              {renderStatRow('Comp %', 'completion_pct')}
+                              {renderStatRow('Yds/Att', 'yards_per_attempt')}
+                              {renderStatRow('TD:INT Ratio', 'td_int_ratio')}
+                              {renderStatRow('Sack Rate %', 'sack_rate', true)}
 
                               {renderSectionHeader('Standard Stats (Rushing)')}
                               {renderStatRow('Carries', 'rush_carries')}
                               {renderStatRow('Rushing Yds', 'rush_yds')}
                               {renderStatRow('Rushing TDs', 'rush_td')}
+
+                              {renderSectionHeader('Rushing Efficiency')}
+                              {renderStatRow('Yds/Carry', 'yards_per_carry')}
+                              {renderStatRow('Carry Share %', 'carry_share')}
+                              {renderStatRow('Total Touches', 'total_touches')}
+                              {renderStatRow('Yds/Touch', 'yards_per_touch')}
 
                               {renderSectionHeader('Standard Stats (Receiving)')}
                               {renderStatRow('Targets', 'targets')}
@@ -405,16 +431,13 @@ const NFLPlayerCompare: React.FC = () => {
                               {renderStatRow('Rec Yds', 'rec_yds')}
                               {renderStatRow('Rec TDs', 'rec_td')}
 
-                              {renderSectionHeader('Opportunity Metrics')}
-                              {renderStatRow('Snap Share %', 'snap_share', false, true)}
-                              {renderStatRow('Target Share %', 'target_share', false, true)}
-                              {renderStatRow('Red Zone Touches', 'red_zone_touches', false, true)}
-                              {renderStatRow('Routes Run', 'routes_run', false, true)}
-
-                              {renderSectionHeader('Efficiency Metrics')}
-                              {renderStatRow('YPRR', 'yprr', false, true)}
-                              {renderStatRow('xFP', 'xfp', false, true)}
-                              {renderStatRow('Air Yards', 'air_yards', false, true)}
+                              {renderSectionHeader('Receiving Efficiency')}
+                              {renderStatRow('Target Share %', 'target_share')}
+                              {renderStatRow('Catch Rate %', 'catch_rate')}
+                              {renderStatRow('Yds/Rec', 'yards_per_reception')}
+                              {renderStatRow('Yds/Tgt', 'yards_per_target')}
+                              {renderStatRow('YPRR (Est)', 'yprr')}
+                              {renderStatRow('TD/Rec %', 'td_per_reception')}
                               
                               {renderSectionHeader('Fantasy Summary')}
                               {renderStatRow('Fantasy Pts (Tot)', 'fantasy_points')}
