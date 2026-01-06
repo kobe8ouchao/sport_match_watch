@@ -65,12 +65,35 @@ function useDebounce<T>(value: T, delay: number): T {
 const NFLPlayerCompare: React.FC = () => {
   const { players, loading, addPlayer, removePlayer, clearPlayers, refreshPlayers, setPlayers } = useNFLComparison();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // Position cache
+  const positionCache = React.useRef<Map<string, string>>(new Map());
+
+  // Fetch player position
+  const fetchPlayerPosition = async (playerId: string): Promise<string> => {
+    if (positionCache.current.has(playerId)) {
+      return positionCache.current.get(playerId)!;
+    }
+
+    try {
+      const res = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}`);
+      const data = await res.json();
+      const position = data.athlete?.position?.abbreviation || '';
+      if (position) {
+        positionCache.current.set(playerId, position);
+      }
+      return position;
+    } catch (e) {
+      console.error('Error fetching position:', e);
+      return '';
+    }
+  };
 
   // Initial Sync Logic
   const initialized = React.useRef(false);
@@ -143,7 +166,16 @@ const NFLPlayerCompare: React.FC = () => {
             const res = await fetch(`/api/espn/common/search?region=us&lang=en&contentonly=true&plugin=isex&limit=5&mode=prefix&type=player&sport=football&league=nfl&query=${encodeURIComponent(query)}`);
             const data = await res.json();
             const items = data.items || data.results?.[0]?.contents || [];
-            setSuggestions(items);
+
+            // Fetch position for each player
+            const itemsWithPositions = await Promise.all(
+                items.map(async (item: any) => {
+                    const position = await fetchPlayerPosition(item.id);
+                    return { ...item, position };
+                })
+            );
+
+            setSuggestions(itemsWithPositions);
         } catch (e) {
             console.error("Autocomplete Error:", e);
         } finally {
@@ -363,7 +395,10 @@ const NFLPlayerCompare: React.FC = () => {
                                       />
                                       <div>
                                           <div className="font-bold text-gray-900 dark:text-white">{item.displayName}</div>
-                                          <div className="text-xs text-gray-500">{item.team?.displayName || 'NFL'}</div>
+                                          <div className="text-xs text-gray-500">
+                                              {item.team?.displayName || 'NFL'}
+                                              {item.position && <span> • {item.position}</span>}
+                                          </div>
                                       </div>
                                   </button>
                               ))}
