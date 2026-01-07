@@ -137,11 +137,6 @@ const NFLPlayerCompare: React.FC = () => {
              // Defaults: Lamar Jackson, Josh Allen
              uniqueIds.push('3916387'); 
              uniqueIds.push('3918298'); 
-        } else if (uniqueIds.length === 0 && players.length > 0) {
-             // Defaults if empty URL? Or keep existing?
-             // Let's stick to defaults for now to be safe.
-             uniqueIds.push('3916387'); 
-             uniqueIds.push('3918298');
         }
 
         // Check diff

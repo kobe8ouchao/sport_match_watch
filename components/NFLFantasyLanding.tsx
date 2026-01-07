@@ -93,6 +93,20 @@ const NFLFantasyLanding: React.FC<NFLFantasyLandingProps> = ({ darkMode, toggleT
                 </div>
             </Link>
 
+            {/* Schedule Difficulty Card */}
+            <Link to="/game-tools/fantasy-nfl/schedule-difficulty" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-green-500/30 dark:hover:border-green-500/30 transition-all hover:shadow-xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10">
+                    <div className="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-500/20 flex items-center justify-center text-green-600 dark:text-green-400 mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <Calendar size={24} />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3">Schedule Difficulty (SOS)</h3>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Visualize defensive strength with our SOS Heatmap. Identify favorable matchups, regression warnings, and sleepers for the next 3 weeks.
+                    </p>
+                </div>
+            </Link>
+
             {/* Official NFL Card (External) */}
             <a href="https://www.nfl.com/" target="_blank" rel="noopener noreferrer" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-red-500/30 dark:hover:border-red-500/30 transition-all hover:shadow-xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

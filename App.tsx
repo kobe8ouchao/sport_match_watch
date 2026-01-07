@@ -466,6 +466,7 @@ import NBAFantasyDashboard from './components/NBAFantasyDashboard';
 import NBASleeperPicker from './components/NBASleeperPicker';
 import NFLToolsLayout from './components/NFLToolsLayout';
 import NFLPlayerCompare from './components/NFLPlayerCompare';
+import NFLScheduleDifficulty from './components/NFLScheduleDifficulty';
 import NFLFantasyLanding from './components/NFLFantasyLanding';
 
 const App: React.FC = () => {
@@ -529,6 +530,7 @@ const App: React.FC = () => {
         <Route path="/game-tools/fantasy-nfl" element={<NFLToolsLayout darkMode={darkMode} toggleTheme={toggleTheme} />}>
             <Route index element={<Navigate to="player-compare" replace />} />
             <Route path="player-compare" element={<NFLPlayerCompare />} />
+            <Route path="schedule-difficulty" element={<NFLScheduleDifficulty />} />
         </Route>
         <Route path="/nfl-fantasy" element={<NFLFantasyLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
