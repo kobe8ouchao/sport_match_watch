@@ -25,8 +25,8 @@ const NBAFantasyLanding: React.FC<NBAFantasyLandingProps> = ({ darkMode, toggleT
         element.setAttribute('content', content);
     };
 
-    setMeta('description', 'The official NBA Fantasy Basketball game. Create or join a league, draft your team, and compete against friends. Access advanced player comparison tools and stats.');
-    setMeta('keywords', 'NBA Fantasy, Fantasy Basketball, NBA Fantasy League, Fantasy Draft, NBA Player Stats, Fantasy Basketball Tools, Waiver Wire, Sleeper Picks, NBA Commish');
+    setMeta('description', 'The official NBA Fantasy Basketball game. Create or join a league, draft your team, and compete against friends. Access advanced player comparison, sleeper picker, and playoff schedule analysis tools.');
+    setMeta('keywords', 'NBA Fantasy, Fantasy Basketball, NBA Fantasy League, Fantasy Draft, NBA Player Stats, Fantasy Basketball Tools, Waiver Wire, Sleeper Picks, NBA Commish, Playoff Schedule, Schedule Analysis, Fantasy Playoffs');
   }, []);
 
   return (
@@ -78,7 +78,7 @@ const NBAFantasyLanding: React.FC<NBAFantasyLandingProps> = ({ darkMode, toggleT
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto w-full mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto w-full mb-20">
             {/* Player Comparison Card */}
             <Link to="/game-tools/fantasy-nba/player-compare" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-all hover:shadow-xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -89,6 +89,20 @@ const NBAFantasyLanding: React.FC<NBAFantasyLandingProps> = ({ darkMode, toggleT
                     <h3 className="text-2xl font-bold mb-3">Head-to-Head Comparison</h3>
                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                         Compare NBA players side-by-side. Analyze usage rates, shooting efficiency, and fantasy points per game to make the smartest trade and waiver wire decisions.
+                    </p>
+                </div>
+            </Link>
+
+            {/* Playoff Schedule Analysis Card */}
+            <Link to="/game-tools/fantasy-nba/dashboard" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-purple-500/30 dark:hover:border-purple-500/30 transition-all hover:shadow-xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <Trophy size={24} />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3">Playoff Schedule Analysis</h3>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Plan your championship run. Visualize schedule density, identify off-night advantages, and maximize games played during the fantasy playoffs.
                     </p>
                 </div>
             </Link>

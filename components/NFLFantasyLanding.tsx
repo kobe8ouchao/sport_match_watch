@@ -25,8 +25,8 @@ const NFLFantasyLanding: React.FC<NFLFantasyLandingProps> = ({ darkMode, toggleT
         element.setAttribute('content', content);
     };
 
-    setMeta('description', 'The official home of NFL Fantasy Football. Get the latest fantasy news, rankings, projections, and start/sit advice. Use our advanced player comparison tools to dominate your league.');
-    setMeta('keywords', 'NFL Fantasy, Fantasy Football, NFL Fantasy Football, Fantasy News, Player Rankings, Start Sit Advice, Waiver Wire, Fantasy Sleepers, NFL Draft, Mock Draft, PPR Rankings, Dynasty Fantasy Football');
+    setMeta('description', 'The official home of NFL Fantasy Football. Get the latest fantasy news, rankings, projections, and start/sit advice. Use our advanced player comparison and schedule difficulty tools to dominate your league.');
+    setMeta('keywords', 'NFL Fantasy, Fantasy Football, NFL Fantasy Football, Fantasy News, Player Rankings, Start Sit Advice, Waiver Wire, Fantasy Sleepers, NFL Draft, Mock Draft, PPR Rankings, Dynasty Fantasy Football, Schedule Difficulty, SOS, Strength of Schedule, Fantasy Playoffs');
   }, []);
 
   return (
@@ -78,7 +78,7 @@ const NFLFantasyLanding: React.FC<NFLFantasyLandingProps> = ({ darkMode, toggleT
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto w-full mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto w-full mb-20">
             {/* Player Comparison Card */}
             <Link to="/game-tools/fantasy-nfl/player-compare" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all hover:shadow-xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
