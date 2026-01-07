@@ -110,7 +110,6 @@ const NBASleeperPicker: React.FC = () => {
         players: {
           limit: 1500, // Fetch a large pool
           sortPercOwned: { sortPriority: 1, sortAsc: false },
-          filterStatus: { value: ["ACTIVE"] },
           filterSlotIds: { value: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }
         }
       };
