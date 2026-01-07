@@ -37,6 +37,8 @@ interface PlayerProfile {
   last5Games: PlayerStats & {
     minutes: number[]; // Trend for last 5 games
   };
+  last3Games: PlayerStats;
+  last1Game: PlayerStats;
   evaluation: {
     trend: 'Rising' | 'Falling' | 'Stable';
     breakout: boolean;
@@ -266,8 +268,8 @@ const fetchPlayerById = async (playerId: string): Promise<PlayerProfile | null> 
         const tov = getStat('TO');
         const mpg = getStat('MPG');
 
-        // Helper to get last 5 average for any stat
-        const calcLast5Avg = (statName: string, seasonAvg: number) => {
+        // Helper to get last N average for any stat
+        const calcLastNAvg = (statName: string, seasonAvg: number, n: number) => {
             if (gameLog.length === 0) return seasonAvg;
             
             // Map stat names to indices for the array-based game log format
@@ -288,7 +290,8 @@ const fetchPlayerById = async (playerId: string): Promise<PlayerProfile | null> 
                 'PTS': 13
             };
 
-            const values = gameLog.slice(0, 5).map((g: any) => {
+            const recentGames = gameLog.slice(0, n);
+            const values = recentGames.map((g: any) => {
                 // Handle array of strings format (from gamelog API)
                 if (Array.isArray(g.stats) && typeof g.stats[0] === 'string') {
                     const idx = indexMap[statName];
@@ -314,22 +317,29 @@ const fetchPlayerById = async (playerId: string): Promise<PlayerProfile | null> 
              return minStat ? parseFloat(minStat.value) : 0;
         });
 
-        const last5Stats: PlayerStats = {
-            pts: calcLast5Avg('PTS', pts),
-            reb: calcLast5Avg('REB', reb),
-            ast: calcLast5Avg('AST', ast),
-            stl: calcLast5Avg('STL', stl),
-            blk: calcLast5Avg('BLK', blk),
-            tpm: calcLast5Avg('3PM', tpm),
-            fg_pct: calcLast5Avg('FG%', fg_pct),
-            ft_pct: calcLast5Avg('FT%', ft_pct),
-            tov: calcLast5Avg('TO', tov),
-            mpg: calcLast5Avg('MIN', mpg),
-            ppm: 0,
-            usage_est: 0
+        const getStatsForN = (n: number): PlayerStats => {
+            const stats: PlayerStats = {
+                pts: calcLastNAvg('PTS', pts, n),
+                reb: calcLastNAvg('REB', reb, n),
+                ast: calcLastNAvg('AST', ast, n),
+                stl: calcLastNAvg('STL', stl, n),
+                blk: calcLastNAvg('BLK', blk, n),
+                tpm: calcLastNAvg('3PM', tpm, n),
+                fg_pct: calcLastNAvg('FG%', fg_pct, n),
+                ft_pct: calcLastNAvg('FT%', ft_pct, n),
+                tov: calcLastNAvg('TO', tov, n),
+                mpg: calcLastNAvg('MIN', mpg, n),
+                ppm: 0,
+                usage_est: 0
+            };
+            stats.ppm = stats.mpg > 0 ? stats.pts / stats.mpg : 0;
+            stats.usage_est = parseFloat((stats.pts + stats.ast + stats.tov).toFixed(1));
+            return stats;
         };
-        last5Stats.ppm = last5Stats.mpg > 0 ? last5Stats.pts / last5Stats.mpg : 0;
-        last5Stats.usage_est = parseFloat((last5Stats.pts + last5Stats.ast + last5Stats.tov).toFixed(1));
+
+        const last5Stats = getStatsForN(5);
+        const last3Stats = getStatsForN(3);
+        const last1Stats = getStatsForN(1);
         
         const last5Avg = last5Stats.mpg;
 
@@ -374,6 +384,8 @@ const fetchPlayerById = async (playerId: string): Promise<PlayerProfile | null> 
                 ...last5Stats,
                 minutes: last5Minutes.reverse()
             },
+            last3Games: last3Stats,
+            last1Game: last1Stats,
             evaluation: {
                 trend,
                 breakout,
@@ -409,6 +421,7 @@ const NBAPlayerCompare: React.FC = () => {
   
   const [players, setPlayers] = useState<PlayerProfile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<'season' | 'last5' | 'last3' | 'last1'>('season');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -569,12 +582,17 @@ const NBAPlayerCompare: React.FC = () => {
   // --- Render Helpers ---
 
   const renderStatRow = (label: string, key: keyof PlayerStats, inverse: boolean = false) => {
-     // Find best value
+     // Find best value based on current viewMode
      let bestVal = -Infinity;
      let worstVal = Infinity;
      
      players.forEach(p => {
-         const val = p.seasonStats[key];
+         let val = 0;
+         if (viewMode === 'season') val = p.seasonStats[key];
+         else if (viewMode === 'last5') val = p.last5Games[key];
+         else if (viewMode === 'last3') val = p.last3Games[key];
+         else if (viewMode === 'last1') val = p.last1Game[key];
+
          if (val > bestVal) bestVal = val;
          if (val < worstVal) worstVal = val;
      });
@@ -588,26 +606,46 @@ const NBAPlayerCompare: React.FC = () => {
                 <span className="font-bold text-gray-500 text-sm uppercase tracking-wide">{label}</span>
             </td>
             {players.map(p => {
-                const val = p.seasonStats[key];
+                let val = 0;
+                let contextVal = 0;
+                let contextLabel = '';
+
+                if (viewMode === 'season') {
+                    val = p.seasonStats[key];
+                    contextVal = p.last5Games[key];
+                    contextLabel = 'L5';
+                } else if (viewMode === 'last5') {
+                    val = p.last5Games[key];
+                    contextVal = p.seasonStats[key];
+                    contextLabel = 'Sea';
+                } else if (viewMode === 'last3') {
+                    val = p.last3Games[key];
+                    contextVal = p.seasonStats[key];
+                    contextLabel = 'Sea';
+                } else if (viewMode === 'last1') {
+                    val = p.last1Game[key];
+                    contextVal = p.seasonStats[key];
+                    contextLabel = 'Sea';
+                }
+
                 const isBest = val === targetVal;
                 
-                // Hot Streak Logic
-                const last5Val = p.last5Games[key];
-                const isHot = !inverse && p.seasonStats[key] > 0 && ((last5Val - p.seasonStats[key]) / p.seasonStats[key] > 0.25);
+                // Hot Streak Logic (Only relevant for Season view usually, or if Recent > Season)
+                const isHot = !inverse && p.seasonStats[key] > 0 && ((p.last5Games[key] - p.seasonStats[key]) / p.seasonStats[key] > 0.25);
 
                 return (
                     <td key={p.id} className={`py-4 px-4 text-center relative ${isBest ? 'bg-green-50/30 dark:bg-green-900/10' : ''}`}>
                         <div className="flex flex-col items-center">
                             <span className={`text-lg font-bold ${isBest ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
-                                {key.includes('pct') ? `${val.toFixed(1)}%` : val}
+                                {key.includes('pct') ? `${val.toFixed(1)}%` : (Number.isInteger(val) && viewMode === 'last1' ? val : parseFloat(val.toFixed(1)))}
                             </span>
                             <span className="text-xs text-gray-400 font-medium mt-0.5">
-                                L5: <span className={isHot ? 'text-amber-500 font-bold' : ''}>
-                                    {key.includes('pct') ? `${last5Val.toFixed(1)}%` : last5Val}
+                                {contextLabel}: <span className={isHot && contextLabel === 'L5' ? 'text-amber-500 font-bold' : ''}>
+                                    {key.includes('pct') ? `${contextVal.toFixed(1)}%` : contextVal.toFixed(1)}
                                 </span>
                             </span>
                         </div>
-                        {isHot && (
+                        {isHot && viewMode === 'season' && (
                              <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" title="Hot Streak!"></span>
                         )}
                     </td>
@@ -788,6 +826,25 @@ const NBAPlayerCompare: React.FC = () => {
                           )}
                       </div>
                   ))}
+              </div>
+
+              {/* View Mode Selector */}
+              <div className="flex justify-center">
+                <div className="inline-flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl">
+                  {(['season', 'last5', 'last3', 'last1'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setViewMode(mode)}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                        viewMode === mode 
+                          ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm' 
+                          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                      }`}
+                    >
+                      {mode === 'season' ? 'Season Avg' : mode === 'last5' ? 'Last 5 Games' : mode === 'last3' ? 'Last 3 Games' : 'Last 1 Game'}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Comparison Table */}

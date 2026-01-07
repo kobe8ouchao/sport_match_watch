@@ -68,6 +68,7 @@ const NBASleeperPicker: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [players, setPlayers] = useState<PlayerData[]>([]);
+  const [selectedPosition, setSelectedPosition] = useState('All');
   const [ownershipLimit, setOwnershipLimit] = useState(40);
   const [analyzedCount, setAnalyzedCount] = useState(0);
   const [totalToAnalyze, setTotalToAnalyze] = useState(0);
@@ -262,6 +263,10 @@ const NBASleeperPicker: React.FC = () => {
     }
   };
 
+  const displayedPlayers = selectedPosition === 'All' 
+    ? players 
+    : players.filter(p => p.position === selectedPosition);
+
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-2">
@@ -274,9 +279,9 @@ const NBASleeperPicker: React.FC = () => {
             <div className="flex-1 w-full">
             <div className="flex justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Max Ownership: <span className="text-blue-600 font-bold">{ownershipLimit}%</span>
+                    Max Ownership: <span className="text-black font-bold">{ownershipLimit}%</span>
                 </label>
-                <span className="text-xs text-gray-500">Found: {players.length} players</span>
+                <span className="text-xs text-gray-500">Found: {displayedPlayers.length} players</span>
             </div>
             <input 
                 type="range" 
@@ -284,14 +289,30 @@ const NBASleeperPicker: React.FC = () => {
                 max="100" 
                 value={ownershipLimit} 
                 onChange={(e) => setOwnershipLimit(parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 dark:bg-gray-700"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black dark:bg-gray-700"
             />
+            </div>
+
+            <div className="w-full md:w-32">
+                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Position</label>
+                 <select 
+                    value={selectedPosition}
+                    onChange={(e) => setSelectedPosition(e.target.value)}
+                    className="w-full h-10 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-black focus:border-black block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                 >
+                    <option value="All">All</option>
+                    <option value="PG">PG</option>
+                    <option value="SG">SG</option>
+                    <option value="SF">SF</option>
+                    <option value="PF">PF</option>
+                    <option value="C">C</option>
+                 </select>
             </div>
 
             <button 
                 onClick={loadData}
                 disabled={loading}
-                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 h-10"
+                className="w-full md:w-auto bg-black hover:bg-gray-800 text-white font-bold py-2 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 h-10"
             >
                 {loading ? (
                 <>
@@ -303,7 +324,7 @@ const NBASleeperPicker: React.FC = () => {
                 )}
             </button>
         </div>
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md text-xs text-blue-800 dark:text-blue-200">
+        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700/50 rounded-md text-xs text-gray-800 dark:text-gray-200">
             <strong>Filtering Logic (Surge Score):</strong> Players must have &gt;15 min/game recently AND either (1) Last 3 games minutes &gt; Season Avg + 5 (Minutes Surge) OR (2) at least 2 categories &gt; 15% better than Season Avg.
             <br/>
             <strong>Table Legend:</strong> <span className="font-bold">Bold Value</span> = Last 3 Games Avg, <span className="text-gray-500">(Value)</span> = Season Avg.
@@ -311,7 +332,7 @@ const NBASleeperPicker: React.FC = () => {
       </div>
 
       {/* Results Table */}
-      {players.length > 0 ? (
+      {displayedPlayers.length > 0 ? (
         <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <table className="w-full text-xs text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -319,7 +340,7 @@ const NBASleeperPicker: React.FC = () => {
                 <th className="px-4 py-3 sticky left-0 bg-gray-50 dark:bg-gray-700 z-10">Player</th>
                 <th className="px-2 py-3 text-center">Owned</th>
                 <th className="px-2 py-3 text-center">Next Wk</th>
-                <th className="px-2 py-3 text-center bg-blue-50 dark:bg-blue-900/20" title="Minutes">MIN</th>
+                <th className="px-2 py-3 text-center bg-gray-100 dark:bg-gray-700/50" title="Minutes">MIN</th>
                 <th className="px-2 py-3 text-center" title="Points">PTS</th>
                 <th className="px-2 py-3 text-center" title="Rebounds">REB</th>
                 <th className="px-2 py-3 text-center" title="Assists">AST</th>
@@ -332,7 +353,7 @@ const NBASleeperPicker: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {players.map((p) => {
+              {displayedPlayers.map((p) => {
                   const isSurge = (cat: keyof Stats9Cat) => p.last3Games[cat] > p.seasonStats[cat] * 1.1;
                   return (
                     <tr key={p.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
