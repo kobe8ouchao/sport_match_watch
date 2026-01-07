@@ -415,7 +415,7 @@ const NBAPlayerCompare: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  // Sync from URL on mount
+  // Sync from URL
   useEffect(() => {
     const loadPlayers = async () => {
         const ids: string[] = [];
@@ -433,33 +433,56 @@ const NBAPlayerCompare: React.FC = () => {
         }
 
         // Deduplicate
-        const uniqueIds = Array.from(new Set(ids));
+        let uniqueIds = Array.from(new Set(ids));
         
-        if (uniqueIds.length === 0) {
-            // Default players if none specified
+        // If no params, and we have no players, load default.
+        // If we have players, and params are empty, it might mean we cleared them? 
+        // Or it's initial load. 
+        // Let's assume if params are empty, we load default ONLY if players are also empty.
+        if (uniqueIds.length === 0 && players.length === 0) {
             uniqueIds.push('1966'); // LeBron
             uniqueIds.push('6450'); // Kawhi
+        } else if (uniqueIds.length === 0 && players.length > 0) {
+            // User cleared URL manually? Or we are in a state where we want to clear?
+            // If URL is empty, we should probably clear players.
+            // But let's check if this is a "clear" action.
+            // For now, if URL is empty, we probably want default or empty.
+            // Let's stick to default if empty.
+             uniqueIds.push('1966'); 
+             uniqueIds.push('6450');
         }
+
+        // Check if sync is needed
+        const currentIds = players.map(p => p.id).sort().join(',');
+        const targetIds = uniqueIds.slice().sort().join(',');
+
+        if (currentIds === targetIds) return;
 
         if (uniqueIds.length > 0) {
             setLoading(true);
             const loadedPlayers: PlayerProfile[] = [];
+            // Optimize: Reuse existing players if available
             for (const id of uniqueIds) {
-                // Check if already loaded to avoid refetch? 
-                // For simplicity, just fetch. In real app, we might want to check current state.
-                const p = await fetchPlayerById(id);
-                if (p) loadedPlayers.push(p);
+                const existing = players.find(p => p.id === id);
+                if (existing) {
+                    loadedPlayers.push(existing);
+                } else {
+                    const p = await fetchPlayerById(id);
+                    if (p) loadedPlayers.push(p);
+                }
             }
-            setPlayers(loadedPlayers);
+            // Preserve order from URL
+            const orderedPlayers = uniqueIds.map(id => loadedPlayers.find(p => p.id === id)).filter(Boolean) as PlayerProfile[];
+            
+            setPlayers(orderedPlayers);
             setLoading(false);
+        } else {
+             setPlayers([]);
         }
     };
     
-    // Only load if players state is empty (initial load) to avoid overwriting on every URL change if we sync back
-    if (players.length === 0) {
-        loadPlayers();
-    }
-  }, []); // Run once on mount
+    loadPlayers();
+  }, [searchParams]); // Run on URL change
 
   // Sync to URL when players change
   useEffect(() => {
@@ -472,10 +495,21 @@ const NBAPlayerCompare: React.FC = () => {
         
         const names = players.map(p => p.name).join(' vs ');
         document.title = `Compare ${names} - NBA Stats | Sport Match Watch`;
+
+        // Update Meta Description
+        const desc = `Compare NBA stats for ${names}. Analyze points, rebounds, assists, efficiency, and fantasy value to make winning lineup decisions.`;
+        let metaDesc = document.querySelector("meta[name='description']");
+        if (!metaDesc) {
+          metaDesc = document.createElement('meta');
+          metaDesc.setAttribute('name', 'description');
+          document.head.appendChild(metaDesc);
+        }
+        metaDesc.setAttribute('content', desc);
+
     } else {
         document.title = 'NBA Player Comparison Tool - Sport Match Watch';
     }
-  }, [players, setSearchParams]);
+  }, [players, setSearchParams, searchParams]);
 
   // Fetch Suggestions
   useEffect(() => {

@@ -5,6 +5,10 @@
       "destination": "/api/proxy?endpoint=$1"
     },
     {
+      "source": "/api/espn/fantasy/(.*)",
+      "destination": "/api/espn_fantasy_proxy?path=$1"
+    },
+    {
       "source": "/api/espn/site/(.*)",
       "destination": "https://site.api.espn.com/apis/site/v2/$1"
     },

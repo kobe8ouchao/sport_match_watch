@@ -8,7 +8,7 @@
  * @LastEditTime: 2025-12-27 16:27:26
  */
 import React from 'react';
-import { Menu, X, Calendar, Search, Sun, Moon, BarChart2, Gamepad2, Shield, CalendarDays } from 'lucide-react';
+import { Menu, X, Calendar, Search, Sun, Moon, BarChart2, Gamepad2, Shield, CalendarDays, Activity } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
@@ -72,6 +72,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
                 <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="w-6 h-6 object-contain" />
                 <span className="text-sm font-bold">Fantasy</span>
             </Link>
+           
 
           <button 
               onClick={toggleTheme}

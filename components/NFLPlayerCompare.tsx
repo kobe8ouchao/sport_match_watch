@@ -98,10 +98,29 @@ const NFLPlayerCompare: React.FC = () => {
   // Initial Sync Logic
   const initialized = React.useRef(false);
 
+  // SEO: Update Title and Description based on players
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    if (players.length > 0) {
+      const names = players.map(p => p.name).join(' vs ');
+      const title = `${names} | NFL Fantasy Comparison`;
+      document.title = title;
+      
+      // Update Meta Description
+      const desc = `Compare NFL stats for ${names}. Analyze targets, red zone usage, efficiency, and fantasy points to make the best lineup decisions.`;
+      let metaDesc = document.querySelector("meta[name='description']");
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', desc);
+    } else {
+       // Default Title/Desc when no players selected
+       document.title = 'NFL Fantasy Player Comparison Tool | Sports Match';
+    }
+  }, [players, searchParams]);
 
+  useEffect(() => {
     const init = async () => {
         const ids: string[] = [];
         for (let i = 1; i <= 5; i++) {
@@ -112,30 +131,91 @@ const NFLPlayerCompare: React.FC = () => {
         if (playersParam) {
             ids.push(...playersParam.split(','));
         }
-        const uniqueIds = Array.from(new Set(ids));
+        let uniqueIds = Array.from(new Set(ids));
+
+        if (uniqueIds.length === 0 && players.length === 0) {
+             // Defaults: Lamar Jackson, Josh Allen
+             uniqueIds.push('3916387'); 
+             uniqueIds.push('3918298'); 
+        } else if (uniqueIds.length === 0 && players.length > 0) {
+             // Defaults if empty URL? Or keep existing?
+             // Let's stick to defaults for now to be safe.
+             uniqueIds.push('3916387'); 
+             uniqueIds.push('3918298');
+        }
+
+        // Check diff
+        const currentIds = players.map(p => p.id).sort().join(',');
+        const targetIds = uniqueIds.slice().sort().join(',');
+
+        if (currentIds === targetIds) return;
 
         if (uniqueIds.length > 0) {
-            if (players.length === 0) {
-                 for (const id of uniqueIds) {
-                     await addPlayer(id);
-                 }
-            }
-        } else {
-            if (players.length > 0) {
-                const params: Record<string, string> = {};
-                players.forEach((p, idx) => {
-                    params[`p${idx + 1}`] = p.id;
-                });
-                setSearchParams(params, { replace: true });
-            } else {
-                // Defaults: Lamar Jackson, Josh Allen
-                await addPlayer('3916387'); 
-                await addPlayer('3918298'); 
+            // We can't use addPlayer one by one efficiently if we want to set state once.
+            // But we can construct the list and use setPlayers.
+            // We need to fetch player data manually here or use addPlayer helper logic?
+            // addPlayer likely fetches and appends.
+            // Let's assume we can fetch and setPlayers like in NBA component.
+            // Wait, does `addPlayer` return the player object?
+            // The context might not expose a "fetchPlayer" function directly?
+            // Line 79 has `fetchPlayerPosition`.
+            // Let's check context usage.
+            // If I use `clearPlayers` then `addPlayer` loop?
+            
+            // To be safe and consistent with context, let's use a clear + add loop 
+            // OR if the context exposes a way to batch load.
+            // It exposes `setPlayers`.
+            // So I can fetch manually here.
+            
+            // Re-implement fetch logic or import it?
+            // The context usually handles fetching.
+            // Let's peek at NFLComparisonContext.tsx to see if we can just use setPlayers with fetched data.
+            // Or if we should use `addPlayer` sequentially.
+            // `addPlayer` might trigger state updates each time.
+            
+            // Let's try to do it manually here to avoid multiple renders.
+            // Actually, I don't have the fetch logic here (it's in context?).
+            // Let's assume I can call `addPlayer` in parallel?
+            
+            // Better: use `setPlayers` but I need the `fetchPlayer` logic.
+            // Line 66 shows `addPlayer` is available.
+            
+            // Let's rely on `clearPlayers` then `addPlayer` loop?
+            // But `clearPlayers` might be async/state update.
+            
+            // Let's look at what `addPlayer` does.
+            // If I can't easily fetch, I might need to import the fetcher.
+            // Line 85: `fetch(/api/espn/common/sports/football/nfl/athletes/${playerId})`
+            // That's just position.
+            
+            // I'll stick to `addPlayer` for now, but I need to handle the "diff".
+            // If I just call `addPlayer` for missing ones and `removePlayer` for extras?
+            
+            // Simpler:
+            // 1. Identify toAdd and toRemove.
+            // 2. Execute.
+            
+            const toAdd = uniqueIds.filter(id => !players.some(p => p.id === id));
+            const toRemove = players.filter(p => !uniqueIds.includes(p.id));
+            
+            if (toAdd.length === 0 && toRemove.length === 0) return;
+
+            // Note: This might trigger multiple re-renders. 
+            // Ideally we want batch update.
+            // If `setPlayers` is available, maybe I can fetch here.
+            // I need `fetchPlayerById` equivalent.
+            // It is NOT defined in this file (unlike NBA component).
+            
+            // So I must use `addPlayer` / `removePlayer`.
+            
+            toRemove.forEach(p => removePlayer(p.id));
+            for (const id of toAdd) {
+                await addPlayer(id);
             }
         }
     };
     init();
-  }, []);
+  }, [searchParams]);
 
   // Sync to URL
   useEffect(() => {

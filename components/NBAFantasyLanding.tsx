@@ -118,6 +118,16 @@ const NBAFantasyLanding: React.FC<NBAFantasyLandingProps> = ({ darkMode, toggleT
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <Link to="/game-tools/fantasy-nba/sleeper" className="group flex flex-col items-center text-center hover:transform hover:scale-105 transition-all duration-300">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/20 transition-colors">
+                        <TrendingUp size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Sleeper Picker</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                        Find hidden gems before your opponents. Filter by ownership % and identify players with recent minutes surges.
+                    </p>
+                </Link>
+
                 <div className="flex flex-col items-center text-center">
                     <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-600 dark:text-red-400 mb-6">
                         <BarChart3 size={32} />
@@ -135,16 +145,6 @@ const NBAFantasyLanding: React.FC<NBAFantasyLandingProps> = ({ darkMode, toggleT
                     <h3 className="text-xl font-bold mb-3">Daily Action</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                         With games almost every night, the action never stops. Set your lineup daily or weekly and watch the points pile up.
-                    </p>
-                </div>
-
-                <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-500/10 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-6">
-                        <Target size={32} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">Draft & Trade</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                        Build your dynasty through the draft or pull off a blockbuster trade. Manage your roster spots and work the waiver wire to find hidden gems.
                     </p>
                 </div>
             </div>

@@ -463,6 +463,7 @@ import NBAPlayerCompare from './components/NBAPlayerCompare';
 import NBAToolsLayout from './components/NBAToolsLayout';
 import NBAFantasyLanding from './components/NBAFantasyLanding';
 import NBAFantasyDashboard from './components/NBAFantasyDashboard';
+import NBASleeperPicker from './components/NBASleeperPicker';
 import NFLToolsLayout from './components/NFLToolsLayout';
 import NFLPlayerCompare from './components/NFLPlayerCompare';
 import NFLFantasyLanding from './components/NFLFantasyLanding';
@@ -521,6 +522,7 @@ const App: React.FC = () => {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<NBAFantasyDashboard />} />
             <Route path="player-compare" element={<NBAPlayerCompare />} />
+            <Route path="sleeper" element={<NBASleeperPicker />} />
         </Route>
 
         {/* NFL Tools Routes */}

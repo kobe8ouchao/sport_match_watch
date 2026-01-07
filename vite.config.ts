@@ -48,6 +48,20 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api\/espn\/web-site/, ''),
           },
+          '/api/espn/fantasy': {
+            target: 'https://fantasy.espn.com/apis/v3',
+            changeOrigin: true,
+            secure: false,
+            rewrite: (path) => path.replace(/^\/api\/espn\/fantasy/, ''),
+            configure: (proxy, _options) => {
+              proxy.on('proxyReq', (proxyReq, _req, _res) => {
+                proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+                proxyReq.setHeader('Accept', 'application/json');
+                proxyReq.setHeader('Referer', 'https://fantasy.espn.com/');
+                proxyReq.setHeader('Origin', 'https://fantasy.espn.com');
+              });
+            },
+          },
         },
       },
       plugins: [react()],

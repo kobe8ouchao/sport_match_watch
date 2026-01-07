@@ -25,6 +25,12 @@ const NBAToolsLayout: React.FC<NBAToolsLayoutProps> = ({ darkMode, toggleTheme }
       name: 'Player Comparison',
       path: '/game-tools/fantasy-nba/player-compare',
       icon: <BarChart2 size={16} />
+    },
+    {
+      id: 'sleeper',
+      name: 'Sleeper Picker',
+      path: '/game-tools/fantasy-nba/sleeper',
+      icon: <Radar size={16} />
     }
   ];
 

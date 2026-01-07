@@ -154,7 +154,7 @@ export const fetchWeeklySchedule = async (): Promise<{ teamSchedules: TeamSchedu
 };
 
 // Generic Fetch Helper
-const fetchFantasyPlayers = async (leagueId: string, filter: any): Promise<any[]> => {
+export const fetchFantasyPlayers = async (leagueId: string, filter: any): Promise<any[]> => {
   try {
     // If no league ID, use a default public one for generic data (e.g. ESPN's challenge league or similar)
     // Or just fail gracefully. For now, assume generic access might work with a dummy ID or user provided one.
@@ -384,6 +384,86 @@ export const fetchScheduleForWeeks = async (weeks: number[]): Promise<{ teamSche
     });
 
     return { teamSchedules };
+};
+
+// 9. Fetch Global Player Pool (No League ID) - Updated with League Defaults
+export const fetchGlobalFantasyPlayers = async (filter: any): Promise<any[]> => {
+  try {
+    // Check if we should use local mock data (for dev/debugging)
+    // Set to false for Vercel deployment to use the real API via proxy
+    const useLocal = false; 
+    
+    let url = `/api/espn/fantasy/games/fba/seasons/2026/segments/0/leaguedefaults/1?view=kona_player_info`;
+     if (useLocal) {
+         url = '/mock_players.md';
+     }
+
+    const options: RequestInit = useLocal ? {} : {
+        headers: {
+          'X-Fantasy-Filter': JSON.stringify(filter)
+        }
+    };
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("API Error Details:", errorText);
+      throw new Error(`Global Player Access Error: ${response.status} - ${errorText.substring(0, 100)}`);
+    }
+
+    const data = await response.json();
+    return data.players || []; 
+  } catch (err: any) {
+    console.error("Error fetching global fantasy players:", err);
+    return [];
+  }
+};
+
+// 10. Fetch Schedule for Date Range
+export const fetchScheduleForDateRange = async (startDateStr: string, days: number): Promise<Record<string, { count: number, abbrev: string }>> => {
+    // startDateStr: YYYYMMDD
+    const allDates: string[] = [];
+    
+    // Parse YYYYMMDD
+    const y = parseInt(startDateStr.substring(0, 4));
+    const m = parseInt(startDateStr.substring(4, 6)) - 1;
+    const d = parseInt(startDateStr.substring(6, 8));
+    
+    const start = new Date(y, m, d);
+
+    for (let i = 0; i < days; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        allDates.push(formatDate(date));
+    }
+
+    const promises = allDates.map(date => 
+        fetch(`/api/espn/site/sports/basketball/nba/scoreboard?dates=${date}`)
+            .then(res => res.json())
+            .catch(() => ({ events: [] }))
+    );
+
+    const results = await Promise.all(promises);
+    
+    // Count games per team and get abbrev
+    const teamScheduleMap: Record<string, { count: number, abbrev: string }> = {};
+
+    results.forEach((data) => {
+        const events = data.events || [];
+        events.forEach((event: any) => {
+            const competitors = event.competitions[0].competitors;
+            competitors.forEach((c: any) => {
+                const teamId = c.team.id; // string
+                if (!teamScheduleMap[teamId]) {
+                    teamScheduleMap[teamId] = { count: 0, abbrev: c.team.abbreviation };
+                }
+                teamScheduleMap[teamId].count += 1;
+            });
+        });
+    });
+
+    return teamScheduleMap;
 };
 
 // 3. Analyze Player for Streaming (Restored)
