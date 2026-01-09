@@ -413,7 +413,7 @@ const NBAB2BOptimizer: React.FC = () => {
 
                                 {/* Last 5 Games Row */}
                                 <div className="flex items-center text-xs gap-2">
-                                    <span className="text-[10px] font-bold text-gray-400 w-8 uppercase tracking-wider">Last 5</span>
+                                    <span className="text-[10px] font-bold text-gray-400 w-10 uppercase tracking-wider">Last 5</span>
                                     <div className="flex items-center gap-3 bg-gray-50 dark:bg-white/5 px-2 py-1 rounded border border-gray-100 dark:border-white/5">
                                         <span className="font-bold text-gray-900 dark:text-white" title="Minutes">{player.last5Games.min.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">MIN</span></span>
                                         <span className="w-px h-3 bg-gray-200 dark:bg-white/10"></span>
@@ -424,7 +424,7 @@ const NBAB2BOptimizer: React.FC = () => {
                                 </div>
 
                                 {/* Season Stats Row */}
-                                <div className="flex items-center text-xs gap-2">
+                                {/* <div className="flex items-center text-xs gap-2">
                                     <span className="text-[10px] font-bold text-gray-400 w-8 uppercase tracking-wider">Season</span>
                                     <div className="flex items-center gap-3 px-2 py-1">
                                         <span className="font-medium text-gray-600 dark:text-gray-400" title="Minutes">{player.stats.min.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">MIN</span></span>
@@ -433,7 +433,7 @@ const NBAB2BOptimizer: React.FC = () => {
                                         <span className="font-medium text-gray-600 dark:text-gray-400" title="Rebounds">{player.stats.reb.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">REB</span></span>
                                         <span className="font-medium text-gray-600 dark:text-gray-400" title="Assists">{player.stats.ast.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">AST</span></span>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </div>
