@@ -188,6 +188,7 @@ const NBAB2BOptimizer: React.FC = () => {
                     fgPct: s.fieldGoalPct || 0,
                     ftPct: s.freeThrowPct || 0,
                     tpm: s.threePointPct || 0,
+                    min: s.minutes || 0,
                     fantasyPoints: fpSeason
                 },
                 last5Games: last5Stats,
@@ -402,28 +403,35 @@ const NBAB2BOptimizer: React.FC = () => {
                                 </span>
                             </div>
                             
-                            {/* Last 5 Games Stats Row */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                            {/* Stats Rows: Last 5 & Season */}
+                            <div className="mt-3 flex flex-col gap-1.5">
+                                {/* Ownership Line */}
                                 <div className="flex items-center gap-1 text-xs text-gray-500" title="Ownership">
                                     <Users size={12} />
-                                    <span>{player.percentOwned.toFixed(1)}%</span>
+                                    <span>{player.percentOwned.toFixed(1)}% Owned</span>
                                 </div>
-                                <div className="flex items-center gap-1 text-xs font-bold text-gray-900 dark:text-white" title="Last 5 Avg Minutes">
-                                    <Activity size={12} className="text-gray-400" />
-                                    <span>{player.last5Games.min.toFixed(1)} MIN</span>
+
+                                {/* Last 5 Games Row */}
+                                <div className="flex items-center text-xs gap-2">
+                                    <span className="text-[10px] font-bold text-gray-400 w-8 uppercase tracking-wider">Last 5</span>
+                                    <div className="flex items-center gap-3 bg-gray-50 dark:bg-white/5 px-2 py-1 rounded border border-gray-100 dark:border-white/5">
+                                        <span className="font-bold text-gray-900 dark:text-white" title="Minutes">{player.last5Games.min.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">MIN</span></span>
+                                        <span className="w-px h-3 bg-gray-200 dark:bg-white/10"></span>
+                                        <span className="font-bold text-gray-900 dark:text-white" title="Points">{player.last5Games.pts.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">PTS</span></span>
+                                        <span className="font-bold text-gray-900 dark:text-white" title="Rebounds">{player.last5Games.reb.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">REB</span></span>
+                                        <span className="font-bold text-gray-900 dark:text-white" title="Assists">{player.last5Games.ast.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">AST</span></span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-xs border-l border-gray-200 dark:border-white/10 pl-3">
-                                    <div className="flex flex-col leading-none">
-                                        <span className="text-[10px] text-gray-400">PTS</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">{player.last5Games.pts.toFixed(1)}</span>
-                                    </div>
-                                    <div className="flex flex-col leading-none">
-                                        <span className="text-[10px] text-gray-400">REB</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">{player.last5Games.reb.toFixed(1)}</span>
-                                    </div>
-                                    <div className="flex flex-col leading-none">
-                                        <span className="text-[10px] text-gray-400">AST</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">{player.last5Games.ast.toFixed(1)}</span>
+
+                                {/* Season Stats Row */}
+                                <div className="flex items-center text-xs gap-2">
+                                    <span className="text-[10px] font-bold text-gray-400 w-8 uppercase tracking-wider">Season</span>
+                                    <div className="flex items-center gap-3 px-2 py-1">
+                                        <span className="font-medium text-gray-600 dark:text-gray-400" title="Minutes">{player.stats.min.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">MIN</span></span>
+                                        <span className="w-px h-3 bg-gray-200 dark:bg-white/10"></span>
+                                        <span className="font-medium text-gray-600 dark:text-gray-400" title="Points">{player.stats.pts.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">PTS</span></span>
+                                        <span className="font-medium text-gray-600 dark:text-gray-400" title="Rebounds">{player.stats.reb.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">REB</span></span>
+                                        <span className="font-medium text-gray-600 dark:text-gray-400" title="Assists">{player.stats.ast.toFixed(1)} <span className="text-[9px] text-gray-400 font-normal">AST</span></span>
                                     </div>
                                 </div>
                             </div>
