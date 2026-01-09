@@ -8,6 +8,15 @@ import {
   ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis 
 } from 'recharts';
 
+// --- Components ---
+const SkeletonCard = () => (
+  <div className="relative bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm animate-pulse flex flex-col items-center justify-center min-h-[160px]">
+    <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-white/10 mb-3" />
+    <div className="h-4 w-24 bg-gray-200 dark:bg-white/10 rounded mb-2" />
+    <div className="h-3 w-16 bg-gray-200 dark:bg-white/10 rounded" />
+  </div>
+);
+
 // --- Types ---
 
 interface PlayerStats {
@@ -674,14 +683,7 @@ const NBAPlayerCompare: React.FC = () => {
           </button>
       </div>
 
-      {loading && (
-          <div className="fixed inset-0 z-50 bg-white/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center">
-              <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-xl flex flex-col items-center animate-pulse border border-gray-100 dark:border-white/10">
-                  <Activity className="w-10 h-10 text-teal-500 mb-3" />
-                  <span className="font-bold text-gray-900 dark:text-white">Scouting Players...</span>
-              </div>
-          </div>
-      )}
+
 
       {/* Players Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
@@ -719,8 +721,14 @@ const NBAPlayerCompare: React.FC = () => {
               </div>
           ))}
 
+          {loading && (
+             players.length === 0 
+             ? Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)
+             : <SkeletonCard />
+          )}
+
           {/* Add Player Button */}
-          {players.length < 5 && (
+          {!loading && players.length < 5 && (
               <button 
                   onClick={() => setIsSearchOpen(true)}
                   className="flex flex-col items-center justify-center min-h-[160px] rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 text-gray-400 hover:text-teal-600 hover:border-teal-500 hover:bg-teal-50/10 transition-all group"

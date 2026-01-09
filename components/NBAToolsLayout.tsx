@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { BarChart2, LayoutDashboard, Radar } from 'lucide-react';
+import { BarChart2, LayoutDashboard, Radar, Zap } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 import ToolsNav, { ToolItem } from './ToolsNav';
@@ -31,6 +31,12 @@ const NBAToolsLayout: React.FC<NBAToolsLayoutProps> = ({ darkMode, toggleTheme }
       name: 'Sleeper Picker',
       path: '/game-tools/fantasy-nba/sleeper',
       icon: <Radar size={16} />
+    },
+    {
+      id: 'b2b',
+      name: 'B2B Optimizer',
+      path: '/game-tools/fantasy-nba/b2b',
+      icon: <Zap size={16} />
     }
   ];
 
