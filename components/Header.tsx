@@ -85,33 +85,6 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
 
       {/* Mobile Actions */}
       <div className="md:hidden flex items-center space-x-2 z-20">
-          <Link
-              to="/game-tools/fantasy-premier-league"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-              title="Fantasy Premier League Tools"
-          >
-              <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" alt="FPL" className="w-5 h-5 object-contain" />
-          </Link>
-          <Link
-              to="/game-tools/fantasy-nba"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-              title="NBA Fantasy Tools"
-          >
-              <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="w-5 h-5 object-contain" />
-          </Link>
-          <Link
-              to="/game-tools/fantasy-nfl"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-              title="NFL Fantasy Tools"
-          >
-              <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="w-5 h-5 object-contain" />
-          </Link>
           <button
               onClick={toggleTheme}
               className="p-2 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300"
