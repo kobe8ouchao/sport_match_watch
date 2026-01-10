@@ -138,13 +138,16 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
 
                         <div className="flex flex-wrap gap-2">
                              <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                Schedule View
+                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
                                 Player Comparison
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Radar Charts
+                                Sleeper Picker
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Trend Analysis
+                                B2B Optimizer
                             </span>
                         </div>
                     </div>
@@ -174,10 +177,7 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                                 Player Comparison
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Fantasy Points
-                            </span>
-                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Trend Analysis
+                                Schedule Difficulty
                             </span>
                         </div>
                     </div>

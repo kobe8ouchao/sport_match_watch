@@ -52,8 +52,8 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
             <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" alt="Fantasy Premier League Logo" className="w-7 h-7 object-contain" />
               <span className="text-sm font-bold">Fantasy</span>
         </Link>
-           <Link 
-              to="/game-tools/fantasy-nba/player-compare?p1=1966&p2=6450"
+           <Link
+              to="/game-tools/fantasy-nba"
               target="_blank"
               rel="noopener noreferrer"
               className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
@@ -85,6 +85,24 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
 
       {/* Mobile Actions */}
       <div className="md:hidden flex items-center space-x-2 z-20">
+          <Link
+              to="/game-tools/fantasy-premier-league"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
+              title="Fantasy Premier League Tools"
+          >
+              <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" alt="FPL" className="w-5 h-5 object-contain" />
+          </Link>
+          <Link
+              to="/game-tools/fantasy-nba"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
+              title="NBA Fantasy Tools"
+          >
+              <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nba.png" alt="NBA" className="w-5 h-5 object-contain" />
+          </Link>
           <Link
               to="/game-tools/fantasy-nfl"
               target="_blank"
@@ -131,8 +149,8 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
                 <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" alt="FPL" className="w-6 h-6 object-contain" />
                 <span className="text-sm font-bold text-gray-700 dark:text-gray-200">FPL Tools</span>
             </Link>
-            <Link 
-                to="/game-tools/fantasy-nba/player-compare?p1=1966&p2=6450"
+            <Link
+                to="/game-tools/fantasy-nba"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsMenuOpen(false)}
