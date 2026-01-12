@@ -67,26 +67,7 @@ const Footer: React.FC = () => {
                     News
                   </Link>
               </li>
-              <li>
-                  <Link to="/game-tools" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-                    Fantasy Game Tools
-                  </Link>
-              </li>
-              <li>
-                  <Link alt="Fantasy Premier League Tools" to="/game-tools/fantasy-premier-league" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-                    Fantasy Premier League Tools
-                  </Link>
-              </li>
-              <li>
-                  <Link to="/nba-fantasy" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-                    NBA Fantasy
-                  </Link>
-              </li>
-              <li>
-                  <Link to="/game-tools/fantasy-nfl" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
-                    NFL Fantasy Tools
-                  </Link>
-              </li>
+             
               <li>
                   <Link to="/world-cup-2026" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-blue-300 transition-colors flex items-center gap-1">
                     FIFA World Cup 2026™
@@ -108,7 +89,7 @@ const Footer: React.FC = () => {
 
           {/* Partners & External */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Partners</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Official External</h3>
             <ul className="space-y-2.5">
               <li>
                 <a href="https://www.nba.com" target="_blank" rel="noopener noreferrer" title="Visit NBA Official Site" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1">
@@ -168,9 +149,29 @@ const Footer: React.FC = () => {
                <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Website</h3>
             <ul className="space-y-2.5">
               <li>
-                  <Link to="/sitemap" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                  <Link to="/sitemap" target="_blank" onClick={scrollToTop} rel="noopener noreferrer" className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
                     Sitemap
                   </Link>
+                 <li>
+                  <Link to="/game-tools" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    Fantasy Game Tools
+                  </Link>
+              </li>
+              <li>
+                  <Link alt="Fantasy Premier League Tools" to="/game-tools/fantasy-premier-league" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    Fantasy Premier League Tools
+                  </Link>
+              </li>
+              <li>
+                  <Link to="/nba-fantasy" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    NBA Fantasy
+                  </Link>
+              </li>
+              <li>
+                  <Link to="/game-tools/fantasy-nfl" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                    NFL Fantasy Tools
+                  </Link>
+              </li>
               </li>
               </ul>
            </div>
