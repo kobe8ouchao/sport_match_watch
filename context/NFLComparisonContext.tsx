@@ -527,14 +527,14 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
 
         const boom_potential = last5Fantasy.some(fp => fp >= 25);
 
-        return {
+        const profile: NFLPlayerProfile = {
             id: playerId,
-            name: athlete.displayName,
+            name: athlete.displayName || 'Unknown Player',
             team: athlete.team?.displayName || 'FA',
             teamId: athlete.team?.id,
             position: position,
             avatar: athlete.headshot?.href || `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${playerId}.png&w=350&h=254`,
-            status: athlete.injuries?.length > 0 ? athlete.injuries[0].status : 'Active',
+            status: (athlete.injuries?.length > 0 ? athlete.injuries[0].status : 'Active') || 'Active',
             seasonStats: seasonStats,
             last5Games: {
                 ...last5Avg,
@@ -545,6 +545,8 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
                 boom_potential
             }
         };
+
+        return profile;
     } catch (e) {
         console.error("ESPN API Error:", e);
         return null;

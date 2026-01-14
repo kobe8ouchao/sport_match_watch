@@ -468,6 +468,7 @@ import NBAB2BOptimizer from './components/NBAB2BOptimizer';
 import NFLToolsLayout from './components/NFLToolsLayout';
 import NFLPlayerCompare from './components/NFLPlayerCompare';
 import NFLScheduleDifficulty from './components/NFLScheduleDifficulty';
+import NFLTrending from './components/NFLTrending';
 import NFLFantasyLanding from './components/NFLFantasyLanding';
 
 const App: React.FC = () => {
@@ -499,7 +500,7 @@ const App: React.FC = () => {
         <Route path="/world-cup-2026" element={<WorldCupPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/schedule" element={<SchedulePage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/sitemap" element={<SitemapPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
-        <Route path="/player-comparison" element={<PlayerComparisonPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/player-compare" element={<PlayerComparisonPage darkMode={darkMode} toggleTheme={toggleTheme} />} />   
         <Route path="/fixture-difficulty" element={<FixtureDifficulty darkMode={darkMode} toggleTheme={toggleTheme} />} />
         {/* Redirect old route to new one */}
         <Route path="/fantasy-nba/player-compare" element={<Navigate to="/game-tools/fantasy-nba/player-compare" replace />} />
@@ -532,6 +533,7 @@ const App: React.FC = () => {
         <Route path="/game-tools/fantasy-nfl" element={<NFLToolsLayout darkMode={darkMode} toggleTheme={toggleTheme} />}>
             <Route index element={<Navigate to="player-compare" replace />} />
             <Route path="player-compare" element={<NFLPlayerCompare />} />
+            <Route path="trending" element={<NFLTrending />} />
             <Route path="schedule-difficulty" element={<NFLScheduleDifficulty />} />
         </Route>
         <Route path="/nfl-fantasy" element={<NFLFantasyLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />

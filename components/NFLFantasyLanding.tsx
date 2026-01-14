@@ -110,6 +110,20 @@ const NFLFantasyLanding: React.FC<NFLFantasyLandingProps> = ({ darkMode, toggleT
                 </div>
             </Link>
 
+            {/* Trending Players Card */}
+            <Link to="/game-tools/fantasy-nfl/trending" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-all hover:shadow-xl overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative z-10">
+                    <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <TrendingUp size={24} />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3">Trending Adds/Drops</h3>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        Track real-time waiver wire trends from Sleeper. See who's being added or dropped across thousands of leagues to spot breakouts early.
+                    </p>
+                </div>
+            </Link>
+
             {/* Schedule Difficulty Card */}
             <Link to="/game-tools/fantasy-nfl/schedule-difficulty" className="group relative p-8 rounded-3xl bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-green-500/30 dark:hover:border-green-500/30 transition-all hover:shadow-xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -148,3 +148,39 @@ export const getDifficultyColor = (rank: number): string => {
     if (rank >= 6) return '#FAD7A0';
     return '#E74C3C';
 };
+
+export interface NFLTrendingPlayer {
+  player_id: string;
+  count: number;
+  player: {
+    fullName: string;
+    team: string;
+    position: string;
+    avatar: string;
+  };
+}
+
+export const fetchTrendingPlayers = async (type: 'add' | 'drop' = 'add', hours: number = 24): Promise<NFLTrendingPlayer[]> => {
+  try {
+    const response = await fetch(`/api/trending?type=${type}&hours=${hours}`);
+    
+    const contentType = response.headers.get("content-type");
+    if (!response.ok || (contentType && contentType.includes("text/html"))) {
+        throw new Error('API not available, switching to mock mode');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn('Trending API unavailable (local dev?), using mock data.');
+    try {
+        const mockRes = await fetch('/mock_nfl_trending.json');
+        if (mockRes.ok) {
+            const mockData = await mockRes.json();
+            return mockData[type] || [];
+        }
+    } catch (mockError) {
+        console.error('Failed to load mock trending data:', mockError);
+    }
+    return [];
+  }
+};

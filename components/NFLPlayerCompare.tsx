@@ -131,12 +131,32 @@ const NFLPlayerCompare: React.FC = () => {
         if (playersParam) {
             ids.push(...playersParam.split(','));
         }
+
+        const playerByName = searchParams.get('player');
+        if (playerByName) {
+            try {
+                const res = await fetch(`/api/espn/common/search?region=us&lang=en&contentonly=true&plugin=isex&limit=1&mode=prefix&type=player&sport=football&league=nfl&query=${encodeURIComponent(playerByName)}`);
+                const data = await res.json();
+                const items = data.items || data.results?.[0]?.contents || [];
+                if (items.length > 0 && items[0].id) {
+                    ids.push(items[0].id);
+                }
+            } catch (e) {
+                console.error("Error resolving player name from URL:", e);
+            }
+        }
+
         let uniqueIds = Array.from(new Set(ids));
 
-        if (uniqueIds.length === 0 && players.length === 0) {
-             // Defaults: Lamar Jackson, Josh Allen
-             uniqueIds.push('3916387'); 
-             uniqueIds.push('3918298'); 
+        // Only apply defaults if NO player was specified (neither by ID nor by name)
+        // AND this is the first initialization (to avoid re-adding defaults when user clears list)
+        if (!initialized.current) {
+            if (uniqueIds.length === 0 && players.length === 0 && !playerByName) {
+                 // Defaults: Lamar Jackson, Josh Allen
+                 uniqueIds.push('3916387'); 
+                 uniqueIds.push('3918298'); 
+            }
+            initialized.current = true;
         }
 
         // Check diff
