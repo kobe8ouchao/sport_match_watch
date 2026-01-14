@@ -13,7 +13,11 @@ export default async function handler(request: any, response: any) {
     // 2. Fetch Player Map from KV
     let playerMap: Record<string, any> = {};
     try {
-        playerMap = (await kv.get('nfl_player_map')) || {};
+        if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+            playerMap = (await kv.get('nfl_player_map')) || {};
+        } else {
+            console.warn("KV_REST_API_URL or KV_REST_API_TOKEN missing. Skipping KV fetch.");
+        }
     } catch (e) {
         console.warn("Failed to fetch from KV:", e);
     }

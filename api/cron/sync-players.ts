@@ -25,9 +25,13 @@ export default async function handler(request: any, response: any) {
     }
     
     // 3. Save to KV
-    await kv.set('nfl_player_map', playerMap);
-    
-    return response.status(200).json({ success: true, count: Object.keys(playerMap).length });
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        await kv.set('nfl_player_map', playerMap);
+        return response.status(200).json({ success: true, count: Object.keys(playerMap).length, source: 'kv' });
+    } else {
+        console.warn("KV_REST_API_URL or KV_REST_API_TOKEN missing. Skipping KV save.");
+        return response.status(200).json({ success: true, count: Object.keys(playerMap).length, source: 'memory_only', warning: 'KV not configured' });
+    }
   } catch (error) {
     console.error(error);
     return response.status(500).json({ error: error.message });
