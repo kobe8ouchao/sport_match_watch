@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { getRedisClient } from '../../lib/redis';
 
 export default async function handler(request: any, response: any) {
   try {
@@ -24,13 +24,15 @@ export default async function handler(request: any, response: any) {
       }
     }
     
-    // 3. Save to KV
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-        await kv.set('nfl_player_map', playerMap);
-        return response.status(200).json({ success: true, count: Object.keys(playerMap).length, source: 'kv' });
+    // 3. Save to Redis
+    const redis = getRedisClient();
+    if (redis) {
+        // Use JSON.stringify because standard Redis stores strings
+        await redis.set('nfl_player_map', JSON.stringify(playerMap));
+        return response.status(200).json({ success: true, count: Object.keys(playerMap).length, source: 'redis' });
     } else {
-        console.warn("KV_REST_API_URL or KV_REST_API_TOKEN missing. Skipping KV save.");
-        return response.status(200).json({ success: true, count: Object.keys(playerMap).length, source: 'memory_only', warning: 'KV not configured' });
+        console.warn("Redis client not initialized. Skipping save.");
+        return response.status(200).json({ success: true, count: Object.keys(playerMap).length, source: 'memory_only', warning: 'Redis not configured' });
     }
   } catch (error) {
     console.error(error);

@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv';
+import { getRedisClient } from '../lib/redis';
 
 export default async function handler(request: any, response: any) {
   const { type = 'add', hours = '24' } = request.query;
@@ -10,16 +10,20 @@ export default async function handler(request: any, response: any) {
     
     const trendingData = await trendingRes.json();
     
-    // 2. Fetch Player Map from KV
+    // 2. Fetch Player Map from Redis
     let playerMap: Record<string, any> = {};
     try {
-        if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-            playerMap = (await kv.get('nfl_player_map')) || {};
+        const redis = getRedisClient();
+        if (redis) {
+            const data = await redis.get('nfl_player_map');
+            if (data) {
+                playerMap = JSON.parse(data);
+            }
         } else {
-            console.warn("KV_REST_API_URL or KV_REST_API_TOKEN missing. Skipping KV fetch.");
+            console.warn("Redis client not initialized. Skipping fetch.");
         }
     } catch (e) {
-        console.warn("Failed to fetch from KV:", e);
+        console.warn("Failed to fetch from Redis:", e);
     }
     
     // 3. Enrich Data (Map keys n/t/p -> fullName/team/position)
