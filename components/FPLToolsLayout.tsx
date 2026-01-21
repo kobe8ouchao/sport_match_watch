@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { BarChart2, Shield, Calendar, Target, Calculator } from 'lucide-react';
+import { BarChart2, Shield, Calendar, Target, Calculator, Radar } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 import ToolsNav, { ToolItem } from './ToolsNav';
@@ -18,6 +18,12 @@ const FPLToolsLayout: React.FC<FPLToolsLayoutProps> = ({ darkMode, toggleTheme }
       name: 'Player Comparison',
       path: '/game-tools/fantasy-premier-league/comparison',
       icon: <BarChart2 size={16} />
+    },
+    {
+      id: 'radar',
+      name: 'Differential Radar',
+      path: '/game-tools/fantasy-premier-league/radar',
+      icon: <Radar size={16} />
     },
     {
       id: 'differential',

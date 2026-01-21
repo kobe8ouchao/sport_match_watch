@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { BarChart2, Calendar, TrendingUp } from 'lucide-react';
+import { BarChart2 } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
 import ToolsNav, { ToolItem } from './ToolsNav';
@@ -18,18 +18,6 @@ const NFLToolsLayout: React.FC<NFLToolsLayoutProps> = ({ darkMode, toggleTheme }
       name: 'Player Comparison',
       path: '/game-tools/fantasy-nfl/player-compare',
       icon: <BarChart2 size={16} />
-    },
-    {
-      id: 'trending',
-      name: 'Trending Players',
-      path: '/game-tools/fantasy-nfl/trending',
-      icon: <TrendingUp size={16} />
-    },
-    {
-      id: 'schedule',
-      name: 'Schedule Difficulty',
-      path: '/game-tools/fantasy-nfl/schedule-difficulty',
-      icon: <Calendar size={16} />
     }
   ];
 

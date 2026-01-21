@@ -453,6 +453,7 @@ import { SEO_PAGES } from './constants/seoPages';
 import PlayerComparisonPage from './components/PlayerComparisonPage';
 import FixtureDifficulty from './components/FixtureDifficulty';
 import DifferentialFinder from './components/DifferentialFinder';
+import DifferentialRadar from './components/DifferentialRadar';
 import BudgetAlternativeFinder from './components/BudgetAlternativeFinder';
 import CaptaincyDecider from './components/CaptaincyDecider';
 import FantasyToolsPage from './components/FantasyToolsPage';
@@ -514,6 +515,7 @@ const App: React.FC = () => {
             <Route index element={<Navigate to="comparison" replace />} />
             <Route path="comparison" element={<PlayerComparisonPage darkMode={darkMode} toggleTheme={toggleTheme} hideLayout={true} />} />
             <Route path="differential" element={<DifferentialFinder />} />
+            <Route path="radar" element={<DifferentialRadar />} />
             <Route path="budget-finder" element={<BudgetAlternativeFinder />} />
             <Route path="captaincy" element={<CaptaincyDecider />} />
             <Route path="standings" element={<StandingsPage darkMode={darkMode} toggleTheme={toggleTheme} leagueId="eng.1" hideLayout={true} />} />
