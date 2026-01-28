@@ -77,7 +77,7 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
                 {/* FPL Tool Card */}
                 <Link to="/game-tools/fantasy-premier-league" className="group relative overflow-hidden rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 dark:from-purple-500/10 dark:to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -94,7 +94,7 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                             Fantasy Premier League
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-                            Comprehensive tools for FPL managers including Player Comparison Radar, Differential Finder, Budget Finder, Captaincy Decider, and Fixture Difficulty Planner.
+                            Comprehensive tools for FPL managers including Player Comparison Radar, Differential Finder, and more.
                         </p>
 
                         <div className="flex flex-wrap gap-2">
@@ -102,16 +102,10 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                                 Player Comparison
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Captaincy Decider
+                                Captaincy
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Differential Finder
-                            </span>
-                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Budget Finder
-                            </span>
-                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Team Stats
+                                Differentials
                             </span>
                         </div>
                     </div>
@@ -133,7 +127,7 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                             NBA Fantasy Tool
                         </h2>
                         <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
-                            Advanced player comparison for NBA Fantasy. Compare stats, visualize strengths with radar charts, and discover hidden value with deep analysis.
+                            Advanced player comparison for NBA Fantasy. Compare stats and discover hidden value.
                         </p>
 
                         <div className="flex flex-wrap gap-2">
@@ -141,10 +135,43 @@ const GameToolsMenu: React.FC<GameToolsMenuProps> = ({ darkMode, toggleTheme }) 
                                 Player Comparison
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Radar Charts
+                                Sleeper Picker
                             </span>
                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
-                                Trend Analysis
+                                Playoff Schedule
+                            </span>
+                        </div>
+                    </div>
+                </Link>
+
+                {/* NFL Tool Card */}
+                <Link to="/game-tools/fantasy-nfl" className="group relative overflow-hidden rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                     <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-indigo-600/5 dark:from-blue-600/10 dark:to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                     
+                     <div className="p-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="p-4 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                <Gamepad2 size={32} />
+                            </div>
+                            <ArrowRight className="text-gray-300 dark:text-gray-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" />
+                        </div>
+                        
+                        <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            NFL Fantasy Tool
+                        </h2>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                            Dominate your league with real-time stats, player comparisons, and schedule difficulty analysis.
+                        </p>
+
+                        <div className="flex flex-wrap gap-2">
+                             <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                Player Comparison
+                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                Trending
+                            </span>
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+                                Schedule Difficulty
                             </span>
                         </div>
                     </div>

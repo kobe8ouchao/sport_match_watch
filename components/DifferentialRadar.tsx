@@ -192,8 +192,8 @@ const DifferentialRadar: React.FC = () => {
                                            (p.total_points > 50 || p.now_cost > 60 );
                         
                         // 2. The Fresh Blood Factor (新援首秀因子)
-                        // Logic: 0 Total Minutes (Season), Status 'a', Cost > 5.0m
-                        const isNew = p.minutes === 0 && p.status === 'a' && p.now_cost > 50;
+                        // Logic: <= 60 Total Minutes (Season), Status 'a', Cost >= 4.5m
+                        const isNew = p.minutes <= 60 && p.status === 'a' && p.now_cost >= 45;
 
                         // Filter: Must have minutes OR be a special category
                         if (recentMinutes < MIN_MINUTES_LAST_3 && !isComeback && !isNew) return null;
