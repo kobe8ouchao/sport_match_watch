@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   Search, TrendingUp, AlertTriangle, Flame, Activity, 
-  X, Plus, Trash2, Loader2, RefreshCw
+  X, Plus, Trash2, Loader2, RefreshCw, Calendar
 } from 'lucide-react';
 import { 
   ResponsiveContainer, LineChart, Line 
@@ -63,7 +63,11 @@ function useDebounce<T>(value: T, delay: number): T {
 // --- Main Component ---
 
 const NFLPlayerCompare: React.FC = () => {
-  const { players, loading, addPlayer, removePlayer, clearPlayers, refreshPlayers, setPlayers } = useNFLComparison();
+  const { 
+    players, loading, addPlayer, removePlayer, 
+    clearPlayers, refreshPlayers, setPlayers,
+    updatePlayerSeason 
+  } = useNFLComparison();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -151,88 +155,76 @@ const NFLPlayerCompare: React.FC = () => {
         // Only apply defaults if NO player was specified (neither by ID nor by name)
         // AND this is the first initialization (to avoid re-adding defaults when user clears list)
         if (!initialized.current) {
+            initialized.current = true; // Mark as initialized immediately
+
             if (uniqueIds.length === 0 && players.length === 0 && !playerByName) {
                  // Defaults: Lamar Jackson, Josh Allen
-                 uniqueIds.push('3916387'); 
-                 uniqueIds.push('3918298'); 
+                 // Use async IIFE to avoid effect issues
+                 (async () => {
+                     // Check again inside async to be safe against race conditions?
+                     // Actually, since we set initialized.current = true synchronously above, 
+                     // this block runs only once.
+                     await addPlayer('3916387', 2025); 
+                     await addPlayer('3918298', 2025);
+                 })();
+                 return;
             }
-            initialized.current = true;
         }
 
         // Check diff
-        const currentIds = players.map(p => p.id).sort().join(',');
-        const targetIds = uniqueIds.slice().sort().join(',');
-
-        if (currentIds === targetIds) return;
-
+        // We use UUIDs now, so checking by ID is tricky for "sync to URL".
+        // URL syncing is one-way usually (URL -> State).
+        // But here we are syncing State -> URL? No, this effect is URL -> State (init).
+        
+        // If we are initialized, we generally don't want URL changes to override state 
+        // unless it's a deep link scenario.
+        
+        // For now, let's just handle the initial load logic properly.
+        // The above block handles empty case.
+        
+        // If URL has IDs and we haven't loaded them:
         if (uniqueIds.length > 0) {
-            // We can't use addPlayer one by one efficiently if we want to set state once.
-            // But we can construct the list and use setPlayers.
-            // We need to fetch player data manually here or use addPlayer helper logic?
-            // addPlayer likely fetches and appends.
-            // Let's assume we can fetch and setPlayers like in NBA component.
-            // Wait, does `addPlayer` return the player object?
-            // The context might not expose a "fetchPlayer" function directly?
-            // Line 79 has `fetchPlayerPosition`.
-            // Let's check context usage.
-            // If I use `clearPlayers` then `addPlayer` loop?
-            
-            // To be safe and consistent with context, let's use a clear + add loop 
-            // OR if the context exposes a way to batch load.
-            // It exposes `setPlayers`.
-            // So I can fetch manually here.
-            
-            // Re-implement fetch logic or import it?
-            // The context usually handles fetching.
-            // Let's peek at NFLComparisonContext.tsx to see if we can just use setPlayers with fetched data.
-            // Or if we should use `addPlayer` sequentially.
-            // `addPlayer` might trigger state updates each time.
-            
-            // Let's try to do it manually here to avoid multiple renders.
-            // Actually, I don't have the fetch logic here (it's in context?).
-            // Let's assume I can call `addPlayer` in parallel?
-            
-            // Better: use `setPlayers` but I need the `fetchPlayer` logic.
-            // Line 66 shows `addPlayer` is available.
-            
-            // Let's rely on `clearPlayers` then `addPlayer` loop?
-            // But `clearPlayers` might be async/state update.
-            
-            // Let's look at what `addPlayer` does.
-            // If I can't easily fetch, I might need to import the fetcher.
-            // Line 85: `fetch(/api/espn/common/sports/football/nfl/athletes/${playerId})`
-            // That's just position.
-            
-            // I'll stick to `addPlayer` for now, but I need to handle the "diff".
-            // If I just call `addPlayer` for missing ones and `removePlayer` for extras?
-            
-            // Simpler:
-            // 1. Identify toAdd and toRemove.
-            // 2. Execute.
-            
-            const toAdd = uniqueIds.filter(id => !players.some(p => p.id === id));
-            const toRemove = players.filter(p => !uniqueIds.includes(p.id));
-            
-            if (toAdd.length === 0 && toRemove.length === 0) return;
-
-            // Note: This might trigger multiple re-renders. 
-            // Ideally we want batch update.
-            // If `setPlayers` is available, maybe I can fetch here.
-            // I need `fetchPlayerById` equivalent.
-            // It is NOT defined in this file (unlike NBA component).
-            
-            // So I must use `addPlayer` / `removePlayer`.
-            
-            toRemove.forEach(p => removePlayer(p.id));
-            for (const id of toAdd) {
-                await addPlayer(id);
-            }
+             // Check if current players match these IDs
+             // We want to sync if the URL explicitly requests a different set of players
+             const currentIds = players.map(p => p.id);
+             
+             // Simple check: If counts differ or IDs differ
+             // We ignore order for now to avoid unnecessary reloads if user just reordered?
+             // Actually, URL order usually matters for p1, p2.
+             
+             const isMatch = uniqueIds.length === currentIds.length && 
+                             uniqueIds.every((id, index) => id === currentIds[index]);
+             
+             if (!isMatch) {
+                 console.log("URL/State mismatch. Syncing to URL...", uniqueIds);
+                 
+                 // If players list is not empty, we are replacing.
+                 if (players.length > 0) {
+                     clearPlayers();
+                 }
+                 
+                 (async () => {
+                     for (const id of uniqueIds) {
+                         await addPlayer(id, 2025);
+                     }
+                 })();
+             }
         }
     };
     init();
-  }, [searchParams]);
+  }, [searchParams]); // Dependency on searchParams implies it runs on URL change.
 
-  // Sync to URL
+  // Sync State to URL
+  useEffect(() => {
+      // Only sync if we have players (or if we explicitly cleared, but that's hard to distinguish)
+      // Actually, if players is empty, we might want to clear URL.
+      if (players.length > 0) {
+          const ids = players.map(p => p.id).join(',');
+          // Update URL without navigation if possible, or replace
+          // setSearchParams({ players: ids }, { replace: true });
+          // Note: This might cause loop if not careful.
+      }
+  }, [players]);
   useEffect(() => {
     if (players.length > 0) {
         const params: Record<string, string> = {};
@@ -343,17 +335,17 @@ const NFLPlayerCompare: React.FC = () => {
                 }
 
                 const isBest = !isPremium && players.length > 1 && val === targetVal && val !== 0 && typeof val === 'number';
-                
-                return (
-                    <td key={p.id} className={`py-4 px-4 text-center relative ${isBest ? 'bg-green-50/30 dark:bg-green-900/10' : ''}`}>
-                        <div className="flex flex-col items-center">
-                            <span className={`text-lg font-bold ${isBest ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'} ${val === undefined ? 'text-gray-300 dark:text-gray-600' : ''}`}>
-                                {displayVal}
-                            </span>
-                        </div>
-                    </td>
-                );
-            })}
+    
+    return (
+        <td key={p.uuid} className={`py-4 px-4 text-center relative ${isBest ? 'bg-green-50/30 dark:bg-green-900/10' : ''}`}>
+            <div className="flex flex-col items-center">
+                <span className={`text-lg font-bold ${isBest ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'} ${val === undefined ? 'text-gray-300 dark:text-gray-600' : ''}`}>
+                    {displayVal}
+                </span>
+            </div>
+        </td>
+    );
+})}
         </tr>
      );
   };
@@ -399,10 +391,15 @@ const NFLPlayerCompare: React.FC = () => {
       {/* Players Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           {players.map(p => (
-              <div key={p.id} className="relative bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm group hover:border-teal-500/30 transition-all">
+              <div key={p.uuid} className="relative bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm group hover:border-teal-500/30 transition-all">
                   <button 
-                      onClick={() => removePlayer(p.id)}
-                      className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors p-1"
+                      type="button"
+                      onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removePlayer(p.uuid);
+                      }}
+                      className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors p-1 z-10"
                   >
                       <X size={16} />
                   </button>
@@ -421,7 +418,19 @@ const NFLPlayerCompare: React.FC = () => {
                       <h3 className="font-bold text-gray-900 dark:text-white leading-tight mb-1">{p.name}</h3>
                       <div className="text-xs text-gray-500 mb-2">{p.team} • {p.position}</div>
                       
-                      {/* Mini Badges */}
+                      {/* Season Selector */}
+                      <div className="mb-3 relative" onClick={(e) => e.stopPropagation()}>
+                          <select
+                              value={p.season}
+                              onChange={(e) => updatePlayerSeason(p.uuid, Number(e.target.value))}
+                              className="appearance-none pl-2 pr-6 py-1 rounded-md bg-gray-50 dark:bg-white/10 border border-gray-200 dark:border-white/10 text-xs font-bold cursor-pointer outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 dark:text-white"
+                          >
+                              {[2025, 2024, 2023, 2022].map(year => (
+                                  <option key={year} value={year} className="text-gray-900 bg-white dark:bg-zinc-800">{year}</option>
+                              ))}
+                          </select>
+                          <Calendar size={10} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
+                      </div>
                       <div className="flex flex-wrap justify-center gap-1">
                           {p.evaluation.trend === 'Rising' && <TrendingUp size={14} className="text-green-500" />}
                           {p.evaluation.trend === 'Falling' && <TrendingUp size={14} className="text-red-500 rotate-180" />}
@@ -521,10 +530,43 @@ const NFLPlayerCompare: React.FC = () => {
                               <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/5">
                                   <th className="py-4 px-4 text-left font-bold text-gray-400 text-xs uppercase tracking-wider w-32">Stat Category</th>
                                   {players.map(p => (
-                                      <th key={p.id} className="py-4 px-4 text-center font-bold text-gray-900 dark:text-white min-w-[120px]">
+                                      <th key={p.uuid} className="py-4 px-4 text-center font-bold text-gray-900 dark:text-white min-w-[140px]">
                                           <div className="flex flex-col items-center gap-2">
-                                              <img src={p.avatar} className="w-8 h-8 rounded-full" alt="" />
-                                              <span>{p.name.split(' ').pop()}</span>
+                                              <div className="relative group">
+                                                  <img src={p.avatar} className="w-16 h-16 rounded-full border-2 border-white dark:border-zinc-800 shadow-md object-cover" alt={p.name} />
+                                                  <button 
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                          e.preventDefault();
+                                                          e.stopPropagation();
+                                                          removePlayer(p.uuid);
+                                                      }}
+                                                      className="absolute -top-1 -right-1 z-10 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600 cursor-pointer"
+                                                      aria-label="Remove player"
+                                                  >
+                                                      <X size={12} />
+                                                  </button>
+                                              </div>
+                                              
+                                              <div className="text-sm font-black mt-1">{p.name.split(' ').pop()}</div>
+                                              <div className="text-xs text-gray-500 font-medium">{p.team} • {p.position}</div>
+                                              <div className="mt-1">
+                                                  <StatusBadge status={p.status} />
+                                              </div>
+
+                                              {/* Per-Player Season Selector */}
+                                              <div className="mt-2 relative">
+                                                  <select
+                                                      value={p.season}
+                                                      onChange={(e) => updatePlayerSeason(p.uuid, Number(e.target.value))}
+                                                      className="appearance-none pl-2 pr-6 py-1 rounded-md bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-xs font-bold cursor-pointer outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                                  >
+                                                      {[2025, 2024, 2023, 2022].map(year => (
+                                                          <option key={year} value={year} className="text-gray-900 bg-white dark:bg-zinc-800">{year}</option>
+                                                      ))}
+                                                  </select>
+                                                  <Calendar size={10} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
+                                              </div>
                                           </div>
                                       </th>
                                   ))}

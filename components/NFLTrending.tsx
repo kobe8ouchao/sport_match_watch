@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, RefreshCw, ChevronRight, Loader2 } from 'lucide-react';
 import { fetchTrendingPlayers, NFLTrendingPlayer } from '../services/nflFantasyService';
+import { useNFLComparison } from '../context/NFLComparisonContext';
 
 const PlayerList = ({ players, type, onPlayerClick, navigatingId }: { 
     players: NFLTrendingPlayer[], 
@@ -67,6 +68,7 @@ const NFLTrending: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'adds' | 'drops'>('adds');
   const [navigatingId, setNavigatingId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { addPlayer, players } = useNFLComparison();
 
   const loadData = async () => {
     setLoading(true);
@@ -101,15 +103,27 @@ const NFLTrending: React.FC = () => {
         const items = data.items || data.results?.[0]?.contents || [];
         
         if (items.length > 0 && items[0].id) {
-            navigate(`/game-tools/fantasy-nfl/player-compare?p1=${items[0].id}`);
+            // Add player to context BEFORE navigating
+            await addPlayer(items[0].id, 2025);
+            navigate(`/game-tools/fantasy-nfl/player-compare`);
         } else {
-             // Fallback to name search if ID not found (let the comparison page handle it or show error)
+             // Fallback to name search if ID not found
              console.warn(`Could not resolve ESPN ID for ${player.player.fullName}`);
-             navigate(`/game-tools/fantasy-nfl/player-compare?player=${encodeURIComponent(player.player.fullName)}`);
+             
+             // Construct params with EXISTING players to avoid overwriting
+             const params = new URLSearchParams();
+             players.forEach((p, i) => params.append(`p${i+1}`, p.id));
+             params.append('player', player.player.fullName);
+             
+             navigate(`/game-tools/fantasy-nfl/player-compare?${params.toString()}`);
         }
     } catch (e) {
         console.error("Error resolving player:", e);
-        navigate(`/game-tools/fantasy-nfl/player-compare?player=${encodeURIComponent(player.player.fullName)}`);
+        // Same fallback logic for error case
+        const params = new URLSearchParams();
+        players.forEach((p, i) => params.append(`p${i+1}`, p.id));
+        params.append('player', player.player.fullName);
+        navigate(`/game-tools/fantasy-nfl/player-compare?${params.toString()}`);
     } finally {
         setNavigatingId(null);
     }

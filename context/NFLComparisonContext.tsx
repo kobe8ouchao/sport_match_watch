@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+
+// Helper for safe UUID generation
+const generateUUID = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+};
 
 // --- Types ---
 
@@ -44,6 +52,8 @@ export interface NFLPlayerStats {
 
 export interface NFLPlayerProfile {
   id: string;
+  uuid: string; // Unique instance ID for handling same player multiple times
+  season: number; // Season for this specific instance
   name: string;
   team: string;
   teamId?: string;
@@ -165,16 +175,16 @@ const calculateDerivedStats = (stats: NFLPlayerStats, teamTotals: TeamTotals, po
     return derived;
 };
 
-const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | null> => {
+const fetchPlayerById = async (playerId: string, season: number = 2025): Promise<NFLPlayerProfile | null> => {
     try {
         // 1. Fetch Overview (Profile + Stats)
-        const overviewRes = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}/overview`);
+        const overviewRes = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}/overview?season=${season}`);
         if (!overviewRes.ok) {
              console.error(`[Error] Overview fetch failed for ${playerId}: ${overviewRes.status}`);
              return null;
         }
         const overviewData = await overviewRes.json();
-        console.log(`[Debug] Overview Data for ${playerId}:`, overviewData);
+        console.log(`[Debug] Overview Data for ${playerId} (Season ${season}):`, overviewData);
         
         // Handle different response structures:
         // 1. Standard: wrapped in 'athlete'
@@ -197,7 +207,8 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
                             displayName: teamNode?.description || 'Free Agent',
                             id: teamNode?.team?.id
                         },
-                        position: { abbreviation: 'N/A' } // Inferred later
+                        position: { abbreviation: 'N/A' }, // Inferred later
+                        season // Add season to fallback
                     };
                     
                     // Infer position from statistics title
@@ -220,12 +231,12 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
              return null;
         }
 
-        // 2. Fetch Game Log (Season 2025)
+        // 2. Fetch Game Log (Specific Season)
         const gameMap = new Map<string, any>();
         let gameLogList: any[] = [];
 
         try {
-            const gamelogRes = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}/gamelog?season=2025`);
+            const gamelogRes = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}/gamelog?season=${season}`);
             const gamelogData = await gamelogRes.json();
             console.log(`[Debug] Gamelog Data for ${playerId}:`, gamelogData);
             
@@ -317,7 +328,7 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
         if (!statsRoot) {
              try {
                  console.log(`[Debug] No stats in overview for ${playerId}, fetching stats endpoint...`);
-                 const statsRes = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}/stats`);
+                 const statsRes = await fetch(`/api/espn/common/sports/football/nfl/athletes/${playerId}/stats?season=${season}`);
                  if (statsRes.ok) {
                      const statsData = await statsRes.json();
                      console.log(`[Debug] Stats Data for ${playerId}:`, statsData);
@@ -529,6 +540,8 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
 
         const profile: NFLPlayerProfile = {
             id: playerId,
+            uuid: generateUUID(), // Generate unique ID
+            season,
             name: athlete.displayName || 'Unknown Player',
             team: athlete.team?.displayName || 'FA',
             teamId: athlete.team?.id,
@@ -558,10 +571,11 @@ const fetchPlayerById = async (playerId: string): Promise<NFLPlayerProfile | nul
 interface NFLComparisonContextType {
   players: NFLPlayerProfile[];
   loading: boolean;
-  addPlayer: (id: string) => Promise<void>;
-  removePlayer: (id: string) => void;
+  addPlayer: (id: string, season?: number) => Promise<void>;
+  removePlayer: (uuid: string) => void;
   clearPlayers: () => void;
   refreshPlayers: () => Promise<void>;
+  updatePlayerSeason: (uuid: string, newSeason: number) => Promise<void>;
   setPlayers: (players: NFLPlayerProfile[]) => void;
 }
 
@@ -579,24 +593,43 @@ export const NFLComparisonProvider: React.FC<{ children: ReactNode }> = ({ child
   const [players, setPlayers] = useState<NFLPlayerProfile[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const addPlayer = useCallback(async (id: string) => {
-    if (players.some(p => p.id === id)) return;
-
+  const addPlayer = useCallback(async (id: string, season: number = 2025) => {
+    // Check if exactly same player+season exists? 
+    // Or allow duplicates? User might want to compare same player same season?
+    // Let's allow duplicates for now since we have UUIDs.
+    
     setLoading(true);
-    const player = await fetchPlayerById(id);
+    const player = await fetchPlayerById(id, season);
     if (player) {
       setPlayers(prev => [...prev, player]);
     }
     setLoading(false);
-  }, [players]);
+  }, []);
 
-  const removePlayer = useCallback((id: string) => {
-    setPlayers(prev => prev.filter(p => p.id !== id));
+  const removePlayer = useCallback((uuid: string) => {
+    setPlayers(prev => prev.filter(p => p.uuid !== uuid));
   }, []);
 
   const clearPlayers = useCallback(() => {
     setPlayers([]);
   }, []);
+
+  const updatePlayerSeason = useCallback(async (uuid: string, newSeason: number) => {
+      setLoading(true);
+      const currentPlayer = players.find(p => p.uuid === uuid);
+      if (!currentPlayer) {
+          setLoading(false);
+          return;
+      }
+      
+      const updated = await fetchPlayerById(currentPlayer.id, newSeason);
+      if (updated) {
+          // Preserve the UUID of the slot
+          updated.uuid = uuid; 
+          setPlayers(prev => prev.map(p => p.uuid === uuid ? updated : p));
+      }
+      setLoading(false);
+  }, [players]);
 
   const refreshPlayers = useCallback(async () => {
     if (players.length === 0) return;
@@ -605,8 +638,10 @@ export const NFLComparisonProvider: React.FC<{ children: ReactNode }> = ({ child
     const updatedPlayers: NFLPlayerProfile[] = [];
     for (const p of players) {
         try {
-            const freshData = await fetchPlayerById(p.id);
+            // Refresh with same season
+            const freshData = await fetchPlayerById(p.id, p.season);
             if (freshData) {
+                freshData.uuid = p.uuid; // Preserve UUID
                 updatedPlayers.push(freshData);
             } else {
                 updatedPlayers.push(p);
@@ -622,8 +657,20 @@ export const NFLComparisonProvider: React.FC<{ children: ReactNode }> = ({ child
   }, [players]);
 
   return (
-    <NFLComparisonContext.Provider value={{ players, loading, addPlayer, removePlayer, clearPlayers, refreshPlayers, setPlayers }}>
+    <NFLComparisonContext.Provider value={{ 
+        players, 
+        loading, 
+        addPlayer, 
+        removePlayer, 
+        clearPlayers, 
+        refreshPlayers, 
+        updatePlayerSeason,
+        setPlayers
+    }}>
       {children}
     </NFLComparisonContext.Provider>
   );
 };
+
+
+
