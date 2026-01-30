@@ -8,6 +8,7 @@ import {
   Filter,
   Info
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { fetchWeeklySchedule, fetchGlobalFantasyPlayers, TeamScheduleInfo } from '../services/fantasyService';
 
 // Stat ID Mapping
@@ -385,10 +386,11 @@ const NBAB2BOptimizer: React.FC = () => {
                     )}
 
                     {/* Main Content */}
-                    <div className="flex-1 p-4 flex items-center gap-4">
+                    <div className="flex-1 p-4">
+                        <Link to={`/game-tools/fantasy-nba/player/${player.id}`} className="flex items-center gap-4 group">
                         {/* Avatar */}
                         <div className="relative shrink-0">
-                            <img src={player.avatar} alt={player.name} className="w-14 h-14 rounded-full bg-gray-100 object-cover border-2 border-white dark:border-zinc-800 shadow-sm" />
+                            <img src={player.avatar} alt={player.name} className="w-14 h-14 rounded-full bg-gray-100 object-cover border-2 border-white dark:border-zinc-800 shadow-sm group-hover:ring-2 ring-blue-500 transition-all" />
                             <div className="absolute -bottom-1 -right-1 bg-black text-white text-[10px] font-bold px-1.5 py-0.5 rounded border border-white dark:border-zinc-900">
                                 {player.position}
                             </div>
@@ -397,7 +399,7 @@ const NBAB2BOptimizer: React.FC = () => {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">{player.name}</h3>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-blue-500 transition-colors">{player.name}</h3>
                                 <span className="text-xs font-bold text-gray-500 bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">
                                     {player.team}
                                 </span>
@@ -436,6 +438,7 @@ const NBAB2BOptimizer: React.FC = () => {
                                 </div> */}
                             </div>
                         </div>
+                        </Link>
                     </div>
 
                     {/* Schedule (Right Side) */}

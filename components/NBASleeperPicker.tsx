@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchGlobalFantasyPlayers, fetchScheduleForDateRange } from '../services/fantasyService';
 
 interface PlayerData {
@@ -357,12 +358,14 @@ const NBASleeperPicker: React.FC = () => {
                   const isSurge = (cat: keyof Stats9Cat) => p.last3Games[cat] > p.seasonStats[cat] * 1.1;
                   return (
                     <tr key={p.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <td className="px-4 py-3 flex items-center gap-3 sticky left-0 bg-white dark:bg-gray-800 z-10 min-w-[150px]">
-                        <img src={p.avatar} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 object-cover border border-gray-200" />
+                    <td className="px-4 py-3 sticky left-0 bg-white dark:bg-gray-800 z-10 min-w-[150px]">
+                        <Link to={`/game-tools/fantasy-nba/player/${p.id}`} className="flex items-center gap-3 group">
+                        <img src={p.avatar} alt={p.name} className="w-8 h-8 rounded-full bg-gray-100 object-cover border border-gray-200 group-hover:ring-2 ring-blue-500 transition-all" />
                         <div>
-                        <div className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px]" title={p.name}>{p.name}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white truncate max-w-[120px] group-hover:text-blue-500 transition-colors" title={p.name}>{p.name}</div>
                         <div className="text-[10px] text-gray-500">{p.position} - {p.team}</div>
                         </div>
+                        </Link>
                     </td>
                     <td className="px-2 py-3 text-center">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-medium ${p.percentOwned < 10 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>

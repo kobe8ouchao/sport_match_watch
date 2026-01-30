@@ -690,24 +690,27 @@ const NBAPlayerCompare: React.FC = () => {
           {players.map(p => (
               <div key={p.id} className="relative bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm group hover:border-teal-500/30 transition-all">
                   <button 
-                      onClick={() => handleRemovePlayer(p.id)}
-                      className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors p-1"
+                      onClick={(e) => {
+                          e.preventDefault();
+                          handleRemovePlayer(p.id);
+                      }}
+                      className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors p-1 z-10"
                   >
                       <X size={16} />
                   </button>
                   
-                  <div className="flex flex-col items-center text-center">
+                  <Link to={`/game-tools/fantasy-nba/player/${p.id}`} className="flex flex-col items-center text-center">
                       <div className="relative mb-3">
                           <img 
                               src={p.avatar} 
                               alt={p.name} 
-                              className="w-16 h-16 rounded-full object-cover bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-700 shadow-md"
+                              className="w-16 h-16 rounded-full object-cover bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-700 shadow-md group-hover:ring-2 ring-blue-500 transition-all"
                           />
                           <div className="absolute -bottom-1 -right-1">
                              <StatusBadge status={p.status} />
                           </div>
                       </div>
-                      <h3 className="font-bold text-gray-900 dark:text-white leading-tight mb-1">{p.name}</h3>
+                      <h3 className="font-bold text-gray-900 dark:text-white leading-tight mb-1 group-hover:text-blue-500 transition-colors">{p.name}</h3>
                       <div className="text-xs text-gray-500 mb-2">{p.team} • {p.position}</div>
                       
                       {/* Mini Badges */}
@@ -717,7 +720,7 @@ const NBAPlayerCompare: React.FC = () => {
                           {p.evaluation.breakout && <Flame size={14} className="text-purple-500" />}
                           {p.evaluation.opportunity && <Activity size={14} className="text-amber-500" />}
                       </div>
-                  </div>
+                  </Link>
               </div>
           ))}
 
@@ -864,10 +867,10 @@ const NBAPlayerCompare: React.FC = () => {
                                   <th className="py-4 px-4 text-left w-32 font-bold text-gray-400 text-xs uppercase">Stat</th>
                                   {players.map(p => (
                                       <th key={p.id} className="py-4 px-4 text-center min-w-[120px]">
-                                          <div className="flex flex-col items-center gap-2">
-                                              <img src={p.avatar} className="w-8 h-8 rounded-full object-cover bg-gray-100" alt="" />
-                                              <span className="text-sm font-bold text-gray-900 dark:text-white">{p.name}</span>
-                                          </div>
+                                          <Link to={`/game-tools/fantasy-nba/player/${p.id}`} className="flex flex-col items-center gap-2 group cursor-pointer">
+                                              <img src={p.avatar} className="w-8 h-8 rounded-full object-cover bg-gray-100 group-hover:ring-2 ring-blue-500 transition-all" alt="" />
+                                              <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors underline decoration-dotted decoration-gray-300 dark:decoration-gray-700 underline-offset-4">{p.name}</span>
+                                          </Link>
                                       </th>
                                   ))}
                               </tr>

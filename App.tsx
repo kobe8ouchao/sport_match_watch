@@ -466,6 +466,7 @@ import NBAFantasyLanding from './components/NBAFantasyLanding';
 import NBAFantasyDashboard from './components/NBAFantasyDashboard';
 import NBASleeperPicker from './components/NBASleeperPicker';
 import NBAB2BOptimizer from './components/NBAB2BOptimizer';
+import NBAPlayerDetail from './components/NBAPlayerDetail';
 import NFLToolsLayout from './components/NFLToolsLayout';
 import NFLPlayerCompare from './components/NFLPlayerCompare';
 import NFLScheduleDifficulty from './components/NFLScheduleDifficulty';
@@ -529,6 +530,7 @@ const App: React.FC = () => {
             <Route path="player-compare" element={<NBAPlayerCompare />} />
             <Route path="sleeper" element={<NBASleeperPicker />} />
             <Route path="b2b" element={<NBAB2BOptimizer />} />
+            <Route path="player/:playerId" element={<NBAPlayerDetail />} />
         </Route>
 
         {/* NFL Tools Routes */}
