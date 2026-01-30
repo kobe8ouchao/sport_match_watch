@@ -39,6 +39,34 @@ const NBAPlayerDetail: React.FC = () => {
     }
   }, [playerId]);
 
+  useEffect(() => {
+    if (player) {
+      // SEO Optimization
+      const title = `${player.fullName} Stats & Fantasy Profile | NBA | Sport Match Watch`;
+      document.title = title;
+
+      // Update meta description
+      const description = `Get detailed NBA fantasy stats, career averages, and season trends for ${player.fullName} (${player.team.name}). View points, rebounds, assists, and more for your fantasy basketball league.`;
+      let metaDesc = document.querySelector("meta[name='description']");
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', description);
+
+      // Update meta keywords
+      const keywords = `${player.fullName}, ${player.firstName} ${player.lastName}, NBA, Fantasy Basketball, ${player.team.name}, ${player.position.name}, Player Stats, Sport Match Watch, NBA Stats`;
+      let metaKeywords = document.querySelector("meta[name='keywords']");
+      if (!metaKeywords) {
+        metaKeywords = document.createElement('meta');
+        metaKeywords.setAttribute('name', 'keywords');
+        document.head.appendChild(metaKeywords);
+      }
+      metaKeywords.setAttribute('content', keywords);
+    }
+  }, [player]);
+
   const loadPlayer = async (id: string) => {
     setLoading(true);
     const data = await fetchNBAPlayerDetail(id);

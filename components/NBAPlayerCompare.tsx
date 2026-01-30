@@ -699,7 +699,7 @@ const NBAPlayerCompare: React.FC = () => {
                       <X size={16} />
                   </button>
                   
-                  <Link to={`/game-tools/fantasy-nba/player/${p.id}`} className="flex flex-col items-center text-center">
+                  <Link to={`/game-tools/fantasy-nba/player/${p.id}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-center">
                       <div className="relative mb-3">
                           <img 
                               src={p.avatar} 
@@ -867,7 +867,7 @@ const NBAPlayerCompare: React.FC = () => {
                                   <th className="py-4 px-4 text-left w-32 font-bold text-gray-400 text-xs uppercase">Stat</th>
                                   {players.map(p => (
                                       <th key={p.id} className="py-4 px-4 text-center min-w-[120px]">
-                                          <Link to={`/game-tools/fantasy-nba/player/${p.id}`} className="flex flex-col items-center gap-2 group cursor-pointer">
+                                          <Link to={`/game-tools/fantasy-nba/player/${p.id}/${p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 group cursor-pointer">
                                               <img src={p.avatar} className="w-8 h-8 rounded-full object-cover bg-gray-100 group-hover:ring-2 ring-blue-500 transition-all" alt="" />
                                               <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors underline decoration-dotted decoration-gray-300 dark:decoration-gray-700 underline-offset-4">{p.name}</span>
                                           </Link>

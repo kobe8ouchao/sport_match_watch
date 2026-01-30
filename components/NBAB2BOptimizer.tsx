@@ -387,7 +387,7 @@ const NBAB2BOptimizer: React.FC = () => {
 
                     {/* Main Content */}
                     <div className="flex-1 p-4">
-                        <Link to={`/game-tools/fantasy-nba/player/${player.id}`} className="flex items-center gap-4 group">
+                        <Link to={`/game-tools/fantasy-nba/player/${player.id}/${player.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group">
                         {/* Avatar */}
                         <div className="relative shrink-0">
                             <img src={player.avatar} alt={player.name} className="w-14 h-14 rounded-full bg-gray-100 object-cover border-2 border-white dark:border-zinc-800 shadow-sm group-hover:ring-2 ring-blue-500 transition-all" />

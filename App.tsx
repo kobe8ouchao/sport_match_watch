@@ -530,7 +530,7 @@ const App: React.FC = () => {
             <Route path="player-compare" element={<NBAPlayerCompare />} />
             <Route path="sleeper" element={<NBASleeperPicker />} />
             <Route path="b2b" element={<NBAB2BOptimizer />} />
-            <Route path="player/:playerId" element={<NBAPlayerDetail />} />
+            <Route path="player/:playerId/:playerName?" element={<NBAPlayerDetail />} />
         </Route>
 
         {/* NFL Tools Routes */}
