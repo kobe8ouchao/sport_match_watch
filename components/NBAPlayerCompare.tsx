@@ -5,7 +5,9 @@ import {
   ChevronLeft, Share2, Info, X, Plus, Trash2, Loader2
 } from 'lucide-react';
 import { 
-  ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis 
+  ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis,
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend,
+  BarChart, Bar, Cell
 } from 'recharts';
 
 // --- Components ---
@@ -161,6 +163,203 @@ const checkOpportunity = async (teamId: string, myPos: string, myId: string): Pr
 
 
 // --- Helper Components ---
+
+const ChartComparison = ({ players, viewMode }: { players: PlayerProfile[], viewMode: 'season' | 'last5' | 'last3' | 'last1' }) => {
+    const COLORS = [
+        '#6366f1', // Indigo 500
+        '#10b981', // Emerald 500
+        '#f43f5e', // Rose 500
+        '#f59e0b', // Amber 500
+        '#8b5cf6', // Violet 500
+        '#0ea5e9', // Sky 500
+        '#84cc16', // Lime 500
+        '#ec4899', // Pink 500
+        '#14b8a6', // Teal 500
+        '#f97316'  // Orange 500
+    ];
+
+    const getStats = (p: PlayerProfile) => {
+        if (viewMode === 'season') return p.seasonStats;
+        if (viewMode === 'last5') return p.last5Games;
+        if (viewMode === 'last3') return p.last3Games;
+        return p.last1Game;
+    };
+
+    // 1. Radar Data (Relative Profile)
+    const metrics = [
+        { key: 'pts', label: 'PTS' },
+        { key: 'reb', label: 'REB' },
+        { key: 'ast', label: 'AST' },
+        { key: 'stl', label: 'STL' },
+        { key: 'blk', label: 'BLK' },
+        { key: 'tpm', label: '3PM' },
+    ];
+
+    const radarData = metrics.map(m => {
+        const maxVal = Math.max(...players.map(p => {
+            const val = getStats(p)[m.key as keyof PlayerStats];
+            return typeof val === 'number' ? val : 0;
+        })) || 1;
+        
+        const item: any = { subject: m.label, fullMark: maxVal };
+        players.forEach(p => {
+            const val = getStats(p)[m.key as keyof PlayerStats];
+            const numVal = typeof val === 'number' ? val : 0;
+            item[p.id] = maxVal > 0 ? (numVal / maxVal) * 100 : 0;
+            item[`${p.id}_raw`] = numVal;
+        });
+        return item;
+    });
+
+    // 2. Bar Data (Key Stats)
+    const barData = metrics.slice(0, 3).map(m => { // Top 3 stats for bar chart
+         const item: any = { name: m.label };
+         players.forEach(p => {
+             const val = getStats(p)[m.key as keyof PlayerStats];
+             item[p.id] = typeof val === 'number' ? val : 0;
+         });
+         return item;
+    });
+
+    // 3. Grid Data (9 Stats)
+    const gridMetrics = [
+        { key: 'pts', label: 'Points (PTS)' },
+        { key: 'reb', label: 'Rebounds (REB)' },
+        { key: 'ast', label: 'Assists (AST)' },
+        { key: 'stl', label: 'Steals (STL)' },
+        { key: 'blk', label: 'Blocks (BLK)' },
+        { key: 'tpm', label: '3PM' },
+        { key: 'fg_pct', label: 'FG%' },
+        { key: 'ft_pct', label: 'FT%' },
+        { key: 'tov', label: 'Turnovers (TOV)' },
+    ];
+
+    return (
+        <div className="space-y-8 animate-in fade-in zoom-in duration-300">
+            {/* Summary Radar & Bar */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Radar Chart */}
+                <div className="bg-white dark:bg-white/5 rounded-3xl p-6 h-[400px] border border-gray-100 dark:border-white/5 shadow-sm">
+                    <h3 className="text-lg font-bold mb-4 text-center text-gray-900 dark:text-white">Profile Comparison (Relative)</h3>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                            <PolarGrid stroke="#e5e7eb" className="dark:stroke-white/10" />
+                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                            {players.map((p, idx) => (
+                                <Radar
+                                    key={p.id}
+                                    name={p.name}
+                                    dataKey={p.id}
+                                    stroke={COLORS[idx % COLORS.length]}
+                                    fill={COLORS[idx % COLORS.length]}
+                                    fillOpacity={0.3}
+                                />
+                            ))}
+                            <Legend />
+                            <Tooltip 
+                                content={({ active, payload, label }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-white dark:bg-zinc-900 p-3 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 text-xs">
+                                                <p className="font-bold mb-2 text-gray-900 dark:text-white">{label}</p>
+                                                {payload.map((entry: any) => (
+                                                    <div key={entry.name} className="flex items-center gap-2 mb-1" style={{ color: entry.color }}>
+                                                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                                        <span>{entry.name}:</span>
+                                                        <span className="font-bold">
+                                                            {entry.payload[`${entry.dataKey}_raw`]?.toFixed(1)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                        </RadarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                 {/* Bar Chart (Key Stats) - Keep this as summary */}
+                <div className="bg-white dark:bg-white/5 rounded-3xl p-6 h-[400px] border border-gray-100 dark:border-white/5 shadow-sm">
+                     <h3 className="text-lg font-bold mb-4 text-center text-gray-900 dark:text-white">Key Stats Summary</h3>
+                     <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af' }} />
+                            <Tooltip 
+                                cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            />
+                            <Legend />
+                            {players.map((p, idx) => (
+                                <Bar 
+                                    key={p.id} 
+                                    dataKey={p.id} 
+                                    name={p.name} 
+                                    fill={COLORS[idx % COLORS.length]} 
+                                    radius={[4, 4, 0, 0]} 
+                                    maxBarSize={60}
+                                />
+                            ))}
+                        </BarChart>
+                     </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Detailed 9-Grid Charts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {gridMetrics.map((m) => {
+                    // Prepare data for this specific metric
+                    const chartData = players.map(p => ({
+                        name: p.name,
+                        value: getStats(p)[m.key as keyof PlayerStats],
+                        fill: COLORS[players.indexOf(p) % COLORS.length]
+                    }));
+
+                    return (
+                        <div key={m.key} className="bg-white dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 shadow-sm h-[250px] flex flex-col">
+                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2 text-center">{m.label}</h4>
+                            <div className="flex-1 w-full min-h-0">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                        <XAxis dataKey="name" hide />
+                                        <YAxis 
+                                            axisLine={false} 
+                                            tickLine={false} 
+                                            tick={{ fill: '#9ca3af', fontSize: 10 }} 
+                                            domain={[0, 'auto']}
+                                        />
+                                        <Tooltip 
+                                            cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                                        />
+                                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                            {chartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                            {/* Legend for this chart (just names and colors) */}
+                            <div className="mt-2 flex flex-wrap justify-center gap-2">
+                                {players.map((p, idx) => (
+                                    <div key={p.id} className="flex items-center gap-1 text-[10px] text-gray-500">
+                                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                                        <span className="truncate max-w-[60px]">{p.name.split(' ').pop()}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
 
 const StatusBadge = ({ status }: { status: string }) => {
   const colors = {
@@ -431,6 +630,7 @@ const NBAPlayerCompare: React.FC = () => {
   const [players, setPlayers] = useState<PlayerProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'season' | 'last5' | 'last3' | 'last1'>('season');
+  const [displayMode, setDisplayMode] = useState<'table' | 'chart'>('table');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -839,27 +1039,57 @@ const NBAPlayerCompare: React.FC = () => {
                   ))}
               </div>
 
-              {/* View Mode Selector */}
-              <div className="flex justify-center">
-                <div className="inline-flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl">
+              {/* View & Display Mode Selectors */}
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+                {/* View Mode (Season/L5/etc) */}
+                <div className="inline-flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl overflow-x-auto max-w-full">
                   {(['season', 'last5', 'last3', 'last1'] as const).map((mode) => (
                     <button
                       key={mode}
                       onClick={() => setViewMode(mode)}
-                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                      className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                         viewMode === mode 
                           ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm' 
                           : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                       }`}
                     >
-                      {mode === 'season' ? 'Season Avg' : mode === 'last5' ? 'Last 5 Games' : mode === 'last3' ? 'Last 3 Games' : 'Last 1 Game'}
+                      {mode === 'season' ? 'Season' : mode === 'last5' ? 'Last 5' : mode === 'last3' ? 'Last 3' : 'Last 1'}
                     </button>
                   ))}
                 </div>
+
+                {/* Display Mode (Table/Chart) */}
+                 <div className="inline-flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl">
+                    <button
+                        onClick={() => setDisplayMode('table')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
+                            displayMode === 'table'
+                                ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                    >
+                        <span>Table</span>
+                    </button>
+                    <button
+                        onClick={() => setDisplayMode('chart')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
+                            displayMode === 'chart'
+                                ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                        }`}
+                    >
+                        <Activity size={16} />
+                        <span>Chart</span>
+                    </button>
+                 </div>
               </div>
 
-              {/* Comparison Table */}
-              <div className="bg-white dark:bg-white/5 rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/5">
+              {/* Content Area */}
+              {displayMode === 'chart' ? (
+                  <ChartComparison players={players} viewMode={viewMode} />
+              ) : (
+                  /* Comparison Table */
+                  <div className="bg-white dark:bg-white/5 rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/5">
                   <div className="overflow-x-auto">
                       <table className="w-full">
                           <thead>
@@ -902,6 +1132,7 @@ const NBAPlayerCompare: React.FC = () => {
                       </table>
                   </div>
               </div>
+              )}
           </div>
       )}
     </div>

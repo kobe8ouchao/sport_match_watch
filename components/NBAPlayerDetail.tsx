@@ -1,37 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Calendar, User, Ruler, Weight, Activity, 
+  ArrowLeft, Calendar, User, Ruler, Weight, Activity, Search, 
   TrendingUp, BarChart2, Table as TableIcon, Loader2 
 } from 'lucide-react';
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, 
-  CartesianGrid, Tooltip, Legend, AreaChart, Area 
+  CartesianGrid, Tooltip, Legend, BarChart, Bar, AreaChart, Area 
 } from 'recharts';
 import { fetchNBAPlayerDetail } from '../services/nbaService';
 import type { NBAPlayerDetail, NBASeasonStats } from '../services/nbaService';
 
-const STAT_LABELS: Record<string, string> = {
-  pts: 'Points',
-  reb: 'Rebounds',
-  ast: 'Assists',
-  stl: 'Steals',
-  blk: 'Blocks',
-  fg_pct: 'FG%',
-  ft_pct: 'FT%',
-  fg3_pct: '3P%',
-  fg3m: '3PM',
-  tov: 'Turnovers',
-  min: 'Minutes',
-  gp: 'Games Played'
-};
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  return debouncedValue;
+}
+
+const DASHBOARD_STATS: { key: keyof NBASeasonStats; label: string; color: string }[] = [
+  { key: 'pts', label: 'Points', color: '#3b82f6' },      // Blue
+  { key: 'reb', label: 'Rebounds', color: '#10b981' },    // Emerald
+  { key: 'ast', label: 'Assists', color: '#f59e0b' },     // Amber
+  { key: 'fg3m', label: '3-Pointers', color: '#06b6d4' }, // Cyan
+  { key: 'stl', label: 'Steals', color: '#ef4444' },      // Red
+  { key: 'blk', label: 'Blocks', color: '#8b5cf6' },      // Violet
+  { key: 'fg_pct', label: 'FG%', color: '#6366f1' },      // Indigo
+  { key: 'ft_pct', label: 'FT%', color: '#ec4899' },      // Pink
+  { key: 'tov', label: 'Turnovers', color: '#64748b' },   // Slate
+];
 
 const NBAPlayerDetail: React.FC = () => {
   const { playerId } = useParams<{ playerId: string }>();
+  const navigate = useNavigate();
   const [player, setPlayer] = useState<NBAPlayerDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'chart' | 'table'>('chart');
-  const [selectedStat, setSelectedStat] = useState<keyof NBASeasonStats>('pts');
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (debouncedQuery.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/espn/common/search?region=us&lang=en&contentonly=true&plugin=isex&limit=5&mode=prefix&type=player&sport=basketball&league=nba&query=${encodeURIComponent(debouncedQuery)}`);
+        const data = await res.json();
+        const items = data.items || data.results?.[0]?.contents || [];
+        setSuggestions(items);
+      } catch (e) {
+        console.error("Autocomplete Error:", e);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    if (debouncedQuery) {
+      fetchSuggestions();
+    } else {
+      setSuggestions([]);
+    }
+  }, [debouncedQuery]);
 
   useEffect(() => {
     if (playerId) {
@@ -93,8 +135,10 @@ const NBAPlayerDetail: React.FC = () => {
     );
   }
 
-  // Reverse seasons for chart (Oldest -> Newest)
-  const chartData = player.careerStats?.seasons ? [...player.careerStats.seasons].reverse() : [];
+  // Sort seasons for chart (Oldest -> Newest)
+  const chartData = player.careerStats?.seasons 
+    ? [...player.careerStats.seasons].sort((a, b) => (a.season || 0) - (b.season || 0)) 
+    : [];
   const hasStats = chartData.length > 0;
 
   return (
@@ -102,13 +146,58 @@ const NBAPlayerDetail: React.FC = () => {
       {/* Header / Banner */}
       <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link 
-            to="/game-tools/fantasy-nba/player-compare" 
-            className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to Tools
-          </Link>
+          <div className="relative mb-6">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={24} />
+              <input
+                type="text"
+                placeholder="Search player..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="w-full pl-14 pr-4 py-4 bg-gray-100 dark:bg-white/5 border-transparent focus:bg-white dark:focus:bg-zinc-900 border focus:border-blue-500 rounded-2xl text-lg transition-all outline-none text-gray-900 dark:text-white placeholder-gray-500 shadow-sm focus:shadow-md"
+              />
+              {isSearching && (
+                <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-500 animate-spin" size={20} />
+              )}
+            </div>
+            
+            {/* Suggestions Dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 z-50 overflow-hidden">
+                {suggestions.map((item) => (
+                  <button
+                    key={item.id}
+                    className="w-full text-left px-4 py-4 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-4 border-b border-gray-50 dark:border-white/5 last:border-0"
+                    onClick={() => {
+                      navigate(`/game-tools/fantasy-nba/player/${item.id}`);
+                      setSearchQuery('');
+                      setShowSuggestions(false);
+                    }}
+                  >
+                     <img 
+                        src={item.headshot?.href || (item.id ? `https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/${item.id}.png&w=350&h=254` : 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/0.png&w=350&h=254')}
+                        alt={item.displayName}
+                        className="w-12 h-12 rounded-full bg-gray-100 object-cover"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null; 
+                            target.src = 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/0.png&w=350&h=254';
+                        }}
+                    />
+                    <div>
+                      <div className="font-bold text-gray-900 dark:text-white text-base">{item.displayName}</div>
+                      <div className="text-sm text-gray-500">{item.team?.displayName || 'NBA'}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
             {/* Avatar */}
@@ -243,76 +332,78 @@ const NBAPlayerDetail: React.FC = () => {
                 <p className="text-gray-500 dark:text-gray-400">We couldn't find career statistics for this player.</p>
             </div>
         ) : activeTab === 'chart' && (
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-200 dark:border-white/5 shadow-sm">
-            <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <TrendingUp className="text-blue-500" />
-                Career Trend: {STAT_LABELS[selectedStat]}
-              </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {DASHBOARD_STATS.map((stat) => {
+              // Get the last value (most recent season)
+              const lastValue = chartData.length > 0 ? chartData[chartData.length - 1][stat.key] : 0;
+              // Get career average
+              const careerAvg = player.careerStats.avg[stat.key] || 0;
               
-              <div className="flex flex-wrap justify-center gap-2">
-                {Object.keys(STAT_LABELS).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedStat(key as keyof NBASeasonStats)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                      selectedStat === key
-                        ? 'bg-blue-500 text-white shadow-md'
-                        : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10'
-                    }`}
-                  >
-                    {key.toUpperCase().replace('_PCT', '%')}
-                  </button>
-                ))}
-              </div>
-            </div>
+              return (
+                <div key={stat.key} className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-200 dark:border-white/5 shadow-sm relative overflow-hidden group hover:border-blue-500/50 transition-colors">
+                   {/* Header */}
+                   <div className="flex justify-between items-start mb-4 relative z-10">
+                     <div>
+                       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                       <h3 className="text-3xl font-black text-gray-900 dark:text-white mt-1">
+                         {typeof lastValue === 'number' ? lastValue.toFixed(1) : '-'}
+                       </h3>
+                     </div>
+                     <div className="text-right">
+                       <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 block mb-1">Career Avg</span>
+                       <span className="text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/10 px-2 py-1 rounded-md">
+                         {typeof careerAvg === 'number' ? careerAvg.toFixed(1) : '-'}
+                       </span>
+                     </div>
+                   </div>
 
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorStat" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" strokeOpacity={0.2} />
-                  <XAxis 
-                    dataKey="seasonDisplay" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                    tickMargin={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
-                    domain={['auto', 'auto']}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(24, 24, 27, 0.9)', 
-                      borderColor: 'rgba(255,255,255,0.1)', 
-                      borderRadius: '8px',
-                      color: '#fff' 
-                    }}
-                    itemStyle={{ color: '#fff' }}
-                    labelStyle={{ color: '#9CA3AF', marginBottom: '4px' }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey={selectedStat} 
-                    stroke="#3b82f6" 
-                    strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#colorStat)" 
-                    activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
-                    animationDuration={1000}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+                   {/* Chart */}
+                   <div className="h-24 -mx-2 -mb-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                     <ResponsiveContainer width="100%" height="100%">
+                       <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                         <defs>
+                           <linearGradient id={`grad-${stat.key}`} x1="0" y1="0" x2="0" y2="1">
+                             <stop offset="0%" stopColor={stat.color} stopOpacity={0.25}/>
+                             <stop offset="100%" stopColor={stat.color} stopOpacity={0.05}/>
+                           </linearGradient>
+                         </defs>
+                         <XAxis 
+                           dataKey="seasonDisplay" 
+                           hide={false} 
+                           axisLine={false} 
+                           tickLine={false} 
+                           tick={{ fill: '#9CA3AF', fontSize: 10 }}
+                           interval="preserveStartEnd"
+                           minTickGap={20}
+                         />
+                         <Area 
+                           type="monotone" 
+                           dataKey={stat.key} 
+                           stroke={stat.color} 
+                           strokeWidth={2.5}
+                           fill={`url(#grad-${stat.key})`} 
+                           animationDuration={1500}
+                         />
+                         <Tooltip 
+                           cursor={{ stroke: 'white', strokeWidth: 1, strokeDasharray: '2 2' }}
+                           content={({ active, payload, label }) => {
+                             if (active && payload && payload.length) {
+                               return (
+                                 <div className="bg-zinc-900/90 backdrop-blur-sm text-white text-xs py-1.5 px-3 rounded-lg shadow-xl border border-white/10">
+                                   <div className="font-bold mb-0.5">{payload[0].value}</div>
+                                   <div className="text-gray-400 text-[10px]">{payload[0].payload.seasonDisplay}</div>
+                                 </div>
+                               );
+                             }
+                             return null;
+                           }}
+                         />
+                       </AreaChart>
+                     </ResponsiveContainer>
+                   </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
