@@ -41,7 +41,8 @@ const STATIC_ROUTES = [
     { loc: '/game-tools/fantasy-premier-league/comparison', changefreq: 'daily', priority: '0.8' },
     { loc: '/game-tools/fantasy-premier-league/standings', changefreq: 'daily', priority: '0.8' },
     { loc: '/game-tools/fantasy-premier-league/differential', changefreq: 'daily', priority: '0.8' },
-    { loc: '/nba-fantasy', changefreq: 'daily', priority: '0.9' }
+    { loc: '/nba-fantasy', changefreq: 'daily', priority: '0.9' },
+    { loc: '/match/nfl/seahawks-vs-patriots-super-bowl-lx-2026', changefreq: 'daily', priority: '1.0' }
 ];
 
 // Generate Schedule Pages for the next 14 days

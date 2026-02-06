@@ -472,6 +472,7 @@ import NFLPlayerCompare from './components/NFLPlayerCompare';
 import NFLScheduleDifficulty from './components/NFLScheduleDifficulty';
 import NFLTrending from './components/NFLTrending';
 import NFLFantasyLanding from './components/NFLFantasyLanding';
+import SuperBowlPage from './components/SuperBowlPage';
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -493,6 +494,10 @@ const App: React.FC = () => {
       <SEO />
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        {/* Super Bowl LX Landing Page */}
+        <Route path="/match/nfl/401772988" element={<SuperBowlPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        <Route path="/match/nfl/seahawks-vs-patriots-super-bowl-lx-2026" element={<SuperBowlPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+        
         <Route path="/match/:leagueId/:matchId" element={<MatchDetailPageWrapper />} />
         {/* Support SEO-friendly URLs: /match/[leagueId]/[slug]-[matchId] */}
         <Route path="/match/:leagueId/:slugAndId" element={<MatchDetailPageWrapper />} />
@@ -541,6 +546,9 @@ const App: React.FC = () => {
             <Route path="schedule-difficulty" element={<NFLScheduleDifficulty />} />
         </Route>
         <Route path="/nfl-fantasy" element={<NFLFantasyLanding darkMode={darkMode} toggleTheme={toggleTheme} />} />
+
+        {/* Super Bowl LX Landing Page */}
+        <Route path="/match/nfl/seahawks-vs-patriots-super-bowl-lx-2026" element={<SuperBowlPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
         {/* Dynamic SEO Landing Pages */}
         {SEO_PAGES.map((page) => (

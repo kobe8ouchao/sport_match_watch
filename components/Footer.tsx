@@ -80,6 +80,11 @@ const Footer: React.FC = () => {
                     FIFA World Cup 2026™
                   </Link>
               </li>
+              <li>
+                  <Link to="/match/nfl/seahawks-vs-patriots-super-bowl-lx-2026" onClick={scrollToTop} className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-teal-300 transition-colors flex items-center gap-1 font-semibold text-teal-600 dark:text-teal-400">
+                    Super Bowl LX 2026
+                  </Link>
+              </li>
             </ul>
           </div>
 
