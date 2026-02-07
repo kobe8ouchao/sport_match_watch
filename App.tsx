@@ -676,8 +676,8 @@ const App: React.FC = () => {
       <AuthProvider>
         <SEO />
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+          <Route path="/register" element={<RegisterPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
           <Route path="/following" element={<FollowingPage />} />
           <Route path="/" element={<Dashboard />} />
         {/* Super Bowl LX Landing Page */}

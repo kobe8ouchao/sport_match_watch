@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, Loader2, ArrowLeft } from 'lucide-react';
+import Header from '../Header';
+import Footer from '../Footer';
 
-const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  darkMode?: boolean;
+  toggleTheme?: () => void;
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({ darkMode = false, toggleTheme = () => {} }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -11,6 +18,29 @@ const LoginPage: React.FC = () => {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    document.title = 'Login - Sports Dashboard | Match Watch | Follow Teams';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Login to your Sports Dashboard account to follow your favorite teams and get personalized match updates.');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Login to your Sports Dashboard account to follow your favorite teams and get personalized match updates.';
+      document.head.appendChild(meta);
+    }
+
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (metaKeywords) {
+      metaKeywords.setAttribute('content', 'sports, dashboard, login, follow teams, match updates, soccer, football, basketball');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'keywords';
+      meta.content = 'sports, dashboard, login, follow teams, match updates, soccer, football, basketball';
+      document.head.appendChild(meta);
+    }
+  }, []);
 
   const from = location.state?.from?.pathname || '/following';
 
@@ -42,19 +72,31 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F0EEE9] dark:bg-zinc-950 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800">
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white mb-6 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
-          </Link>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back</h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Sign in to your account to manage your followed teams
-          </p>
-        </div>
+    <div className={`min-h-screen flex flex-col transition-colors duration-500 ${darkMode ? 'bg-zinc-950 text-white' : 'bg-[#F0EEE9] text-gray-900'}`}>
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+        <Header 
+          darkMode={darkMode} 
+          toggleTheme={toggleTheme} 
+          onOpenCalendar={() => {}} 
+          isCalendarOpen={false}
+          hideCalendarButton={true}
+        />
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      <div className="flex-grow flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800">
+          <div className="text-center">
+            <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white mb-6 transition-colors">
+              <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
+            </Link>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back</h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Sign in to your account to manage your followed teams
+            </p>
+          </div>
+
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg text-center">
               {error}
@@ -65,7 +107,7 @@ const LoginPage: React.FC = () => {
             <div>
               <label htmlFor="email" className="sr-only">Email address</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -84,7 +126,7 @@ const LoginPage: React.FC = () => {
             <div>
               <label htmlFor="password" className="sr-only">Password</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                   <Lock className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -161,6 +203,8 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 };
