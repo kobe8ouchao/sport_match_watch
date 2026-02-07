@@ -8,8 +8,9 @@
  * @LastEditTime: 2026-02-06 14:55:48
  */
 import React from 'react';
-import { Menu, X, Calendar, Search, Sun, Moon, BarChart2, Gamepad2, Shield, CalendarDays, Activity } from 'lucide-react';
+import { Menu, X, Calendar, Search, Sun, Moon, BarChart2, Gamepad2, Shield, CalendarDays, Activity, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // Discord Icon Component
 const DiscordIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -28,6 +29,7 @@ interface HeaderProps {
   
 const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, isCalendarOpen, hideCalendarButton }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="flex items-center justify-between py-5 mb-2 relative">
@@ -72,9 +74,9 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
           <Link
                 to="/game-tools/fantasy-nfl"
                 target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
-              title="NFL Fantasy Tools"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-full bg-white/50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow-md text-gray-600 dark:text-gray-300 flex items-center gap-1"
+                title="NFL Fantasy Tools"
             >
                 <img src="https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png" alt="NFL" className="w-6 h-6 object-contain" />
                 <span className="text-sm font-bold">Fantasy</span>
@@ -97,6 +99,24 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
           >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+
+          <Link
+            to={user ? "/following" : "/login"}
+            target={user ? "_blank" : undefined}
+            rel={user ? "noopener noreferrer" : undefined}
+            className={`p-2 rounded-full border transition-all shadow-sm hover:shadow-md flex items-center justify-center ${
+              user 
+                ? 'bg-black/5 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white' 
+                : 'bg-white/50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-white/10'
+            }`}
+            title={user ? "Manage Following" : "Sign In"}
+          >
+             {user && user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="w-5 h-5 rounded-full" />
+             ) : (
+                <User size={18} />
+             )}
+          </Link>
       </div>
 
       {/* Mobile Actions */}
@@ -137,6 +157,25 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
       {/* Mobile Menu Dropdown */}
       {isMenuOpen && (
           <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-2 z-50 flex flex-col gap-2 md:hidden animate-in slide-in-from-top-2 duration-200">
+             <Link
+                 to={user ? "/following" : "/login"}
+                 target={user ? "_blank" : undefined}
+                 rel={user ? "noopener noreferrer" : undefined}
+                 onClick={() => setIsMenuOpen(false)}
+                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+             >
+                 {user && user.avatar ? (
+                    <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-full" />
+                 ) : (
+                    <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10">
+                      <User size={14} className="text-gray-600 dark:text-gray-300" />
+                    </div>
+                 )}
+                 <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                   {user ? "Following" : "Sign In"}
+                 </span>
+             </Link>
+             <div className="h-px bg-gray-100 dark:bg-white/5 mx-2 my-1" />
             <Link
                 to="/game-tools/fantasy-premier-league"
                 target="_blank"

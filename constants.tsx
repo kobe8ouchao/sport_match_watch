@@ -1,5 +1,14 @@
+/*
+ * @Descripttion: 
+ * @Author: ouchao
+ * @Email: ouchao@sendpalm.com
+ * @version: 1.0
+ * @Date: 2025-12-20 17:02:17
+ * @LastEditors: ouchao
+ * @LastEditTime: 2026-02-07 12:28:48
+ */
 import { League, Match } from './types';
-import { Star } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 
 export interface MatchWithHot extends Match {
   isHot?: boolean;
@@ -14,6 +23,7 @@ export const DEFAULT_TEAM_LOGO = "https://a.espncdn.com/combiner/i?img=/i/teamlo
 
 export const LEAGUES: League[] = [
   { id: 'top', name: 'Top', logo: <Star size={16} /> }, 
+  { id: 'following', name: 'Following', logo: <Heart size={16} /> },
   { id: 'nba', name: 'NBA', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png' },
   { id: 'nfl', name: 'NFL', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png' },
   { id: 'uefa.champions', name: 'UEFA', logo: UCL_LOGO },

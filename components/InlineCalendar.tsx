@@ -13,7 +13,7 @@ interface InlineCalendarProps {
 const InlineCalendar: React.FC<InlineCalendarProps> = ({ 
   selectedDate, 
   onSelectDate,
-  matches,
+  matches = [],
   calendarEntries
 }) => {
   const [viewDate, setViewDate] = useState(new Date(selectedDate));
@@ -38,7 +38,11 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
       });
     } else {
       matches.forEach(m => {
-        if (isSameDay(m.startTime, day)) types.add('soccer'); // fallback assume soccer
+        if (isSameDay(m.startTime, day)) {
+            if (m.leagueId === 'nba') types.add('basketball');
+            else if (m.leagueId === 'nfl') types.add('football');
+            else types.add('soccer');
+        }
       });
     }
     return Array.from(types);
@@ -103,6 +107,9 @@ const InlineCalendar: React.FC<InlineCalendarProps> = ({
                           )}
                           {dayTypes.includes('basketball') && (
                             <span className={`${isSelected ? 'text-white dark:text-black' : 'text-orange-500'}`}>🏀</span>
+                          )}
+                          {dayTypes.includes('football') && (
+                            <span className={`${isSelected ? 'text-white dark:text-black' : 'text-amber-700'}`}>🏈</span>
                           )}
                         </div>
                       )}

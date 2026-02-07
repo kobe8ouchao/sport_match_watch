@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { fetchStandings } from '../services/api';
 import { StandingEntry } from '../types';
-import { Loader2, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronRight, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
 
 interface StandingsWidgetProps {
     leagueId: string;
+    highlightTeamIds?: Set<string>;
 }
 
-const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
+const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId, highlightTeamIds }) => {
     const navigate = useNavigate();
     const [standings, setStandings] = useState<StandingEntry[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const loadStandings = async () => {
-            if (leagueId === 'top') {
+            if (leagueId === 'top' || leagueId === 'following') {
                 setStandings([]);
                 return;
             }
@@ -38,6 +39,26 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
     const isNba = leagueId === 'nba';
     const isNfl = leagueId === 'nfl';
     const currentLeague = LEAGUES.find(l => l.id === leagueId);
+
+    if (leagueId === 'following' || leagueId === 'top') {
+        // We handle 'top' and 'following' in the parent by rendering multiple widgets
+        // But if this component is mistakenly called with those IDs, return null
+        return null;
+    }
+
+    const isHighlighted = (team: { id: string, name: string }) => {
+        if (!highlightTeamIds) return false;
+        if (highlightTeamIds.has(team.id)) return true;
+        
+        // Fallback: check by name (similar to match filtering logic)
+        // Check if any followed ID (which might be 'nba_lakers') contains part of the team ID
+        // or check name inclusion
+        for (const followedId of highlightTeamIds) {
+             const baseId = followedId.split('_')[1] || followedId;
+             if (team.id.includes(baseId)) return true;
+        }
+        return false;
+    };
 
     const renderTable = (data: StandingEntry[], title: string) => (
         <div key={title} className="bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-white/5 h-fit sticky top-24 mb-6 last:mb-0">
@@ -88,20 +109,29 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50/50 dark:divide-white/5">
-                            {data.map((entry, index) => (
-                                <tr key={entry.team.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                            {data.map((entry, index) => {
+                                const highlighted = isHighlighted(entry.team);
+                                return (
+                                <tr key={entry.team.id} className={`transition-colors ${highlighted ? 'bg-yellow-50 dark:bg-yellow-900/10' : 'hover:bg-gray-50 dark:hover:bg-white/5'}`}>
                                     <td className="py-2.5 pl-1 font-medium w-8 text-gray-500 dark:text-gray-400">
                                         {entry.stats.rank || index + 1}
                                     </td>
                                     <td className="py-2.5">
                                         <div className="flex items-center space-x-2">
-                                            <img
-                                                src={entry.team.logo || DEFAULT_TEAM_LOGO}
-                                                alt={entry.team.shortName}
-                                                className="w-6 h-6 object-contain"
-                                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
-                                            />
-                                            <span className="font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[120px]">
+                                            <div className="relative">
+                                                <img
+                                                    src={entry.team.logo || DEFAULT_TEAM_LOGO}
+                                                    alt={entry.team.shortName}
+                                                    className="w-6 h-6 object-contain"
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                />
+                                                {highlighted && (
+                                                    <div className="absolute -top-1 -right-1">
+                                                        <Star size={8} className="fill-yellow-400 text-yellow-400" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className={`font-semibold truncate max-w-[120px] ${highlighted ? 'text-yellow-700 dark:text-yellow-400' : 'text-gray-900 dark:text-gray-100'}`}>
                                                 {entry.team.shortName}
                                             </span>
                                         </div>
@@ -121,7 +151,7 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId }) => {
                                         }
                                     </td>
                                 </tr>
-                            ))}
+                            );})}
                         </tbody>
                     </table>
                 </div>

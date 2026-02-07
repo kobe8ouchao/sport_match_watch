@@ -1,4 +1,13 @@
-import { getRedisClient } from '../../lib/redis.js';
+/*
+ * @Descripttion: 
+ * @Author: ouchao
+ * @Email: ouchao@sendpalm.com
+ * @version: 1.0
+ * @Date: 2026-02-06 14:38:46
+ * @LastEditors: ouchao
+ * @LastEditTime: 2026-02-07 21:25:14
+ */
+import { getRedisClient } from '../_lib/redis.js';
 
 export default async function handler(request: any, response: any) {
   try {

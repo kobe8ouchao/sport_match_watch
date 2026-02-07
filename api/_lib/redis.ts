@@ -1,12 +1,3 @@
-/*
- * @Descripttion: 
- * @Author: ouchao
- * @Email: ouchao@sendpalm.com
- * @version: 1.0
- * @Date: 2026-02-07 15:15:42
- * @LastEditors: ouchao
- * @LastEditTime: 2026-02-07 16:02:26
- */
 import Redis from 'ioredis';
 
 // Use a singleton pattern to prevent multiple connections in serverless environment

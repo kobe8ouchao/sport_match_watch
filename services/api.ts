@@ -34,15 +34,15 @@ const transformEspnEvent = (event: any, leagueId: string): MatchWithHot => {
     leagueId: leagueId,
     homeTeam: {
       id: home.id,
-      name: home.team.shortDisplayName || home.team.displayName, // Use shortDisplayName
-      shortName: home.team.abbreviation,
+      name: home.team.displayName || home.team.shortDisplayName, // Use displayName for better matching
+      shortName: home.team.shortDisplayName || home.team.abbreviation,
       logo: home.team.logo || '',
       linescores: home.linescores,
     },
     awayTeam: {
       id: away.id,
-      name: away.team.shortDisplayName || away.team.displayName, // Use shortDisplayName
-      shortName: away.team.abbreviation,
+      name: away.team.displayName || away.team.shortDisplayName, // Use displayName for better matching
+      shortName: away.team.shortDisplayName || away.team.abbreviation,
       logo: away.team.logo || '',
       linescores: away.linescores,
     },
@@ -544,6 +544,10 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
 };
 
 export const fetchStandings = async (leagueId: string): Promise<StandingEntry[]> => {
+  if (leagueId === 'following' || leagueId === 'top') {
+    return [];
+  }
+
   let url = '';
   const isNba = leagueId === 'nba';
   const isNfl = leagueId === 'nfl';
@@ -654,6 +658,9 @@ export const fetchStandings = async (leagueId: string): Promise<StandingEntry[]>
 };
 
 export const fetchPlayerStats = async (leagueId: string): Promise<PlayerStatCategory[]> => {
+  if (leagueId === 'following' || leagueId === 'top') {
+    return [];
+  }
   let url = '';
   const isNba = leagueId === 'nba';
 

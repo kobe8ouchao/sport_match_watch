@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useLocation, Navigate, Link } from 'react-router-dom';
 import Header from './components/Header';
 import LeagueNav from './components/LeagueNav';
 import MatchCard from './components/MatchCard';
@@ -8,9 +8,10 @@ import InlineCalendar from './components/InlineCalendar';
 import FeaturedCarousel from './components/FeaturedCarousel';
 import Footer from './components/Footer';
 import { LEAGUES, MOCK_MATCHES, MatchWithHot } from './constants';
+import { Team as AuthTeam } from './types/auth';
 import { fetchMatches } from './services/api';
 import { isSameDay } from './utils';
-import { Loader2, ArrowUp, CalendarDays, ArrowDown } from 'lucide-react';
+import { Loader2, ArrowUp, CalendarDays, ArrowDown, Heart } from 'lucide-react';
 import MatchDetail from './components/MatchDetail';
 import NewsSection from './components/NewsSection';
 import NewsCarousel from './components/NewsCarousel';
@@ -18,6 +19,7 @@ import StandingsWidget from './components/StandingsWidget';
 
 // Wrapper to handle navigation
 const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedLeagueId, setSelectedLeagueId] = useState('top');
@@ -43,6 +45,8 @@ const Dashboard: React.FC = () => {
   const [featuredMatches, setFeaturedMatches] = useState<MatchWithHot[]>([]);
   const [featuredCalendarEntries, setFeaturedCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [followedTeamIds, setFollowedTeamIds] = useState<Set<string>>(new Set());
+  const [followedTeamsList, setFollowedTeamsList] = useState<AuthTeam[]>([]);
 
   // Theme Toggle Effect
   useEffect(() => {
@@ -58,9 +62,96 @@ const Dashboard: React.FC = () => {
     const loadMatches = async () => {
       setLoading(true);
       try {
-        const { matches, calendar } = await fetchMatches(selectedLeagueId, selectedDate);
-        setMatches(matches);
-        setCalendarEntries(calendar);
+        if (selectedLeagueId === 'following') {
+          if (!user) {
+             setMatches([]);
+             setCalendarEntries([]);
+             setLoading(false);
+             return;
+          }
+          
+          const followedTeams = await storageService.getFollowedTeams();
+          setFollowedTeamIds(new Set(followedTeams.map(t => t.id)));
+          setFollowedTeamsList(followedTeams);
+          
+          if (followedTeams.length === 0) {
+             setMatches([]);
+             setCalendarEntries([]);
+             setLoading(false);
+             return;
+          }
+          
+          // Fetch matches from all available leagues to filter
+          // We broaden the search to include all defined leagues to ensure we catch followed teams
+          const leaguesToFetch = LEAGUES
+            .filter(l => l.id !== 'following' && l.id !== 'top')
+            .map(l => l.id);
+            
+          const fetchPromises = leaguesToFetch.map(id => fetchMatches(id, selectedDate));
+          // Add 'top' to ensure we catch major games
+          fetchPromises.push(fetchMatches('top', selectedDate));
+
+          const responses = await Promise.all(fetchPromises);
+          
+          const allMatches = responses.flatMap(r => r.matches);
+          
+          // Deduplicate by ID
+          const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
+          
+          // Filter matches involving followed teams
+          console.log("Filtering matches for followed teams:", followedTeams);
+          const filteredMatches = uniqueMatches.filter(match => {
+            const homeId = match.homeTeam.id;
+            const awayId = match.awayTeam.id;
+            const homeName = match.homeTeam.name.toLowerCase();
+            const awayName = match.awayTeam.name.toLowerCase();
+            
+            // Check if any followed team matches home or away
+            return followedTeams.some(team => {
+                 if (!team.id || !team.name) return false;
+
+                 const teamIdBase = team.id.split('_')[1] || team.id; // e.g. 'nba_lakers' -> 'lakers'
+                 const teamName = team.name.toLowerCase();
+
+                 // 1. ID Match (Prioritize strict ID matching)
+                 const idMatch = 
+                     homeId === team.id || 
+                     homeId === teamIdBase || 
+                     awayId === team.id || 
+                     awayId === teamIdBase;
+                 
+                 if (idMatch) return true;
+
+                 // 2. Name Match (Stricter than before)
+                 // Only allow partial match if the team name is long enough to be unique (e.g. > 3 chars)
+                 // and avoids common short words unless exact match.
+                 if (teamName.length < 4) {
+                    return homeName === teamName || awayName === teamName;
+                 }
+
+                 // Check if team name is part of home/away name (e.g. "Lakers" in "LA Lakers")
+                 const nameMatchHome = homeName.includes(teamName);
+                 const nameMatchAway = awayName.includes(teamName);
+                 
+                 // Reverse check: home name part of team name (e.g. "Jazz" in "Utah Jazz")
+                 // But be careful: "Man" in "Man Utd" is dangerous if homeName is just "Man"
+                 const reverseMatchHome = teamName.includes(homeName) && homeName.length > 3;
+                 const reverseMatchAway = teamName.includes(awayName) && awayName.length > 3;
+
+                 return nameMatchHome || nameMatchAway || reverseMatchHome || reverseMatchAway;
+            });
+          });
+          
+          setMatches(filteredMatches);
+          // The last response corresponds to 'top' which we use for the calendar
+          setCalendarEntries(responses[responses.length - 1].calendar); 
+        } else {
+          const { matches, calendar } = await fetchMatches(selectedLeagueId, selectedDate);
+          // Deduplicate matches by ID to avoid key warnings
+          const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
+          setMatches(uniqueMatches);
+          setCalendarEntries(calendar);
+        }
       } catch (error) {
         console.error("Error loading matches:", error);
       } finally {
@@ -69,7 +160,7 @@ const Dashboard: React.FC = () => {
     };
 
     loadMatches();
-  }, [selectedDate, selectedLeagueId]);
+  }, [selectedDate, selectedLeagueId, user]);
 
   // Reset past matches when selection changes
   useEffect(() => {
@@ -241,7 +332,31 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
 
-              {loading ? (
+              {selectedLeagueId === 'following' && !user ? (
+                <div className="bg-white dark:bg-white/5 rounded-2xl p-8 text-center border border-dashed border-gray-200 dark:border-white/10">
+                   <div className="w-16 h-16 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Heart className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+                   </div>
+                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Follow Your Teams</h3>
+                   <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                      Sign in to select your favorite teams and see their matches right here.
+                   </p>
+                   <div className="flex justify-center gap-4">
+                      <Link 
+                        to="/login"
+                        className="px-6 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
+                      >
+                        Sign In
+                      </Link>
+                      <Link 
+                        to="/register"
+                        className="px-6 py-2 bg-white dark:bg-transparent border border-gray-200 dark:border-white/20 text-gray-700 dark:text-white rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+                      >
+                        Register
+                      </Link>
+                   </div>
+                </div>
+              ) : loading ? (
                 <div className="flex justify-center items-center py-20">
                   <Loader2 className="animate-spin text-gray-400" size={40} />
                 </div>
@@ -257,7 +372,39 @@ const Dashboard: React.FC = () => {
                   ))}
       </div>
     ) : (
-      <NewsSection leagueId={selectedLeagueId} />
+      selectedLeagueId === 'following' ? (
+        followedTeamsList.length === 0 ? (
+          <div className="bg-white dark:bg-white/5 rounded-2xl p-8 text-center border border-dashed border-gray-200 dark:border-white/10">
+              <div className="w-16 h-16 bg-teal-50 dark:bg-teal-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                 <Heart className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Followed Teams</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                 You haven't followed any teams yet. Add teams to see their matches here.
+              </p>
+               <Link 
+                 to="/following"
+                 className="px-6 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
+               >
+                 Find Teams to Follow
+               </Link>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-white/5 rounded-2xl p-8 text-center border border-dashed border-gray-200 dark:border-white/10">
+              <p className="text-gray-500 dark:text-gray-400">
+                 No matches found for your followed teams on this date.
+              </p>
+               <Link 
+                 to="/following"
+                 className="mt-4 inline-block px-4 py-2 text-sm text-teal-600 dark:text-teal-400 font-medium hover:underline"
+               >
+                 Manage Followed Teams
+               </Link>
+          </div>
+        )
+      ) : (
+        <NewsSection leagueId={selectedLeagueId} />
+      )
     )}
 
             {/* Past Matches Section - Infinite Scroll */}
@@ -337,14 +484,26 @@ const Dashboard: React.FC = () => {
 
             {/* Standings */}
             <div className="w-full space-y-6">
-              {selectedLeagueId === 'top' ? (
+              {(selectedLeagueId === 'top' || selectedLeagueId === 'following') ? (
                 <>
-                  <StandingsWidget leagueId="nba" />
-                  <StandingsWidget leagueId="eng.1" />
-                  <StandingsWidget leagueId="esp.1" />
-                  <StandingsWidget leagueId="ita.1" />
-                  <StandingsWidget leagueId="ger.1" />
-                  <StandingsWidget leagueId="fra.1" />
+                  <StandingsWidget leagueId="nba" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
+                  <StandingsWidget leagueId="eng.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
+                  <StandingsWidget leagueId="esp.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
+                  <StandingsWidget leagueId="ita.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
+                  <StandingsWidget leagueId="ger.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
+                  <StandingsWidget leagueId="fra.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
+                  {selectedLeagueId === 'following' && (() => {
+                      const defaultLeagues = new Set(['nba', 'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1']);
+                      const extraLeagues = new Set<string>();
+                      followedTeamsList.forEach(t => {
+                          if (t.leagueId && !defaultLeagues.has(t.leagueId) && t.leagueId !== 'following') {
+                              extraLeagues.add(t.leagueId);
+                          }
+                      });
+                      return Array.from(extraLeagues).map(lid => (
+                          <StandingsWidget key={lid} leagueId={lid} highlightTeamIds={followedTeamIds} />
+                      ));
+                  })()}
                 </>
               ) : (
                 <StandingsWidget leagueId={selectedLeagueId} />
@@ -473,6 +632,29 @@ import NFLScheduleDifficulty from './components/NFLScheduleDifficulty';
 import NFLTrending from './components/NFLTrending';
 import NFLFantasyLanding from './components/NFLFantasyLanding';
 import SuperBowlPage from './components/SuperBowlPage';
+import LoginPage from './components/auth/LoginPage';
+import RegisterPage from './components/auth/RegisterPage';
+import FollowingPage from './components/following/FollowingPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { storageService } from './services/storageService';
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-pantone-cloud dark:bg-zinc-950">
+        <Loader2 className="animate-spin text-teal-600" size={40} />
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const App: React.FC = () => {
   // Shared state for theme
@@ -491,9 +673,13 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <SEO />
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
+      <AuthProvider>
+        <SEO />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/following" element={<FollowingPage />} />
+          <Route path="/" element={<Dashboard />} />
         {/* Super Bowl LX Landing Page */}
         <Route path="/match/nfl/401772988" element={<SuperBowlPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
         <Route path="/match/nfl/seahawks-vs-patriots-super-bowl-lx-2026" element={<SuperBowlPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
@@ -728,6 +914,7 @@ const App: React.FC = () => {
         />
 
       </Routes>
+      </AuthProvider>
     </Router>
   );
 };

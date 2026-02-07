@@ -6,28 +6,18 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/fpl-api/(.*)",
-      "destination": "/api/proxy?endpoint=$1"
-    },
-    {
-      "source": "/api/espn/fantasy/(.*)",
-      "destination": "/api/espn_fantasy_proxy?path=$1"
-    },
-    {
-      "source": "/api/espn/site/(.*)",
-      "destination": "https://site.api.espn.com/apis/site/v2/$1"
-    },
-    {
-      "source": "/api/espn/web-site/(.*)",
-      "destination": "https://site.web.api.espn.com/apis/site/v2/$1"
-    },
-    {
-      "source": "/api/espn/common/(.*)",
-      "destination": "https://site.web.api.espn.com/apis/common/v3/$1"
-    },
+    { "source": "/fpl-api/(.*)", "destination": "/api/proxy?endpoint=$1" },
+    { "source": "/api/espn/fantasy/(.*)", "destination": "/api/espn_fantasy_proxy?path=$1" },
+    { "source": "/api/espn/site/(.*)", "destination": "https://site.api.espn.com/apis/site/v2/$1" },
+    { "source": "/api/espn/web-site/(.*)", "destination": "https://site.web.api.espn.com/apis/site/v2/$1" },
+    { "source": "/api/espn/common/(.*)", "destination": "https://site.web.api.espn.com/apis/common/v3/$1" },
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    
+    
+    { 
+      "source": "/((?!api/|@|src/|node_modules/|.*\\..*).*)", 
+      "destination": "/index.html" 
+    }
   ]
 }
