@@ -16,7 +16,7 @@
     
     
     { 
-      "source": "/((?!api/|@|src/|node_modules/|.*\\..*).*)", 
+      "source": "/((?!api/|@|src/|node_modules/|.*\\.(?:js|css|png|jpg|jpeg|gif|ico|svg|json|xml|txt|webp|woff|woff2|ttf|eot|map)).*)", 
       "destination": "/index.html" 
     }
   ]

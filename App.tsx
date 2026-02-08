@@ -11,7 +11,7 @@ import { LEAGUES, MOCK_MATCHES, MatchWithHot } from './constants';
 import { Team as AuthTeam } from './types/auth';
 import { fetchMatches } from './services/api';
 import { isSameDay } from './utils';
-import { Loader2, ArrowUp, CalendarDays, ArrowDown, Heart } from 'lucide-react';
+import { Loader2, ArrowUp, CalendarDays, ArrowDown, Heart, Plus } from 'lucide-react';
 import MatchDetail from './components/MatchDetail';
 import NewsSection from './components/NewsSection';
 import NewsCarousel from './components/NewsCarousel';
@@ -330,6 +330,13 @@ const Dashboard: React.FC = () => {
                 <span className="text-sm text-gray-500 font-medium bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-full">
                   {matches.length}
                 </span>
+                <Link 
+                  to="/following" 
+                  className="ml-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                  title="Add teams"
+                >
+                  <Plus size={20} />
+                </Link>
               </div>
 
               {selectedLeagueId === 'following' && !user ? (

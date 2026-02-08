@@ -101,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
           </button>
 
           <Link
-            to={user ? "/following" : "/login"}
+            to="/following"
             target="_blank"
             rel="noopener noreferrer"
             className={`p-2 rounded-full border transition-all shadow-sm hover:shadow-md flex items-center justify-center ${
@@ -158,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({ darkMode, toggleTheme, onOpenCalendar, 
       {isMenuOpen && (
           <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-2 z-50 flex flex-col gap-2 md:hidden animate-in slide-in-from-top-2 duration-200">
              <Link
-                 to={user ? "/following" : "/login"}
+                 to="/following"
                  target="_blank"
                  rel="noopener noreferrer"
                  onClick={() => setIsMenuOpen(false)}
