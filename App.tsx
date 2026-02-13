@@ -639,6 +639,7 @@ import NFLScheduleDifficulty from './components/NFLScheduleDifficulty';
 import NFLTrending from './components/NFLTrending';
 import NFLFantasyLanding from './components/NFLFantasyLanding';
 import SuperBowlPage from './components/SuperBowlPage';
+import NBAAllStar2026 from './components/NBAAllStar2026';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 import FollowingPage from './components/following/FollowingPage';
@@ -742,6 +743,9 @@ const App: React.FC = () => {
 
         {/* Super Bowl LX Landing Page */}
         <Route path="/match/nfl/seahawks-vs-patriots-super-bowl-lx-2026" element={<SuperBowlPage darkMode={darkMode} toggleTheme={toggleTheme} />} />
+
+        {/* NBA All-Star 2026 Landing Page */}
+        <Route path="/nba-all-star-2026" element={<NBAAllStar2026 darkMode={darkMode} toggleTheme={toggleTheme} />} />
 
         {/* Dynamic SEO Landing Pages */}
         {SEO_PAGES.map((page) => (
