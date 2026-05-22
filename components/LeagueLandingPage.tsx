@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import StandingsWidget from './StandingsWidget';
 import Header from './Header';
 import Footer from './Footer';
+import TennisRankingsPanel from './TennisRankingsPanel';
 import { ArrowRight, Trophy, Calendar, Activity, TrendingUp, Users, Star } from 'lucide-react';
 
 interface LeagueSEOData {
@@ -117,6 +118,15 @@ const LEAGUE_SPECIFIC_CONTENT: Record<string, LeagueSEOData> = {
         faq: [
             { question: "Why is the FA Cup special?", answer: "It is open to all eligible clubs down to Level 10 of the English football league system, allowing unmatched opportunities for underdogs." }
         ]
+    },
+    'Tennis': {
+        intro: "Follow ATP and WTA tennis in one place. From Grand Slams to 1000-level events and weekly tour stops, track the world's top players, live singles scores, and the latest rankings updates across both tours.",
+        popularTeams: ["Novak Djokovic", "Carlos Alcaraz", "Jannik Sinner", "Daniil Medvedev", "Rafael Nadal"],
+        searchKeywords: ["ATP Rankings", "WTA Rankings", "Tennis Live Scores", "Grand Slam Results", "ATP WTA Schedule", "Singles Tennis Matches"],
+        narrative: "Track every ace, break point, and match point across ATP and WTA tennis. We surface live singles matches, tournament rounds, set-by-set scorelines, and player rankings so you can follow both tours with a cleaner match-first view.",
+        faq: [
+            { question: "What do ATP and WTA stand for?", answer: "ATP is the Association of Tennis Professionals, which governs the leading men's professional tour. WTA is the Women's Tennis Association, which governs the leading women's professional tour." }
+        ]
     }
 };
 
@@ -139,6 +149,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
   darkMode,
   toggleTheme,
 }) => {
+  const isTennis = leagueId === 'tennis.atp';
   
   const content = LEAGUE_SPECIFIC_CONTENT[leagueId] || {
       intro: description,
@@ -208,7 +219,7 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
                             to={`/standings/${leagueId}`}
                             className="inline-flex items-center px-8 py-4 rounded-2xl bg-white dark:bg-white/10 text-gray-900 dark:text-white font-bold text-lg shadow-lg hover:bg-gray-50 dark:hover:bg-white/20 transition-colors border border-gray-200 dark:border-white/10"
                         >
-                            Full Standings
+                            {isTennis ? 'Player Rankings' : 'Full Standings'}
                         </Link>
                     </div>
 
@@ -230,12 +241,16 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
                             <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400">
                                 <Trophy size={24} />
                             </div>
-                            <span className="font-semibold text-sm">Live Standings</span>
+                            <span className="font-semibold text-sm">{isTennis ? 'Live Rankings' : 'Live Standings'}</span>
                         </div>
                     </div>
                 </div>
 
-                {leagueId !== 'nfl' && (
+                {isTennis && (
+                <TennisRankingsPanel className="lg:w-1/2 w-full" />
+                )}
+
+                {leagueId !== 'nfl' && !isTennis && (
                 <div className="lg:w-1/2 w-full">
                     <div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-white/40 dark:border-white/5 shadow-2xl">
                         <h2 className="text-2xl font-bold mb-6 flex items-center">
@@ -253,12 +268,12 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
         <div className="bg-white dark:bg-zinc-900 py-16">
              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                {/* Popular Teams Section */}
+                {/* Popular Teams/Players Section */}
                 {content.popularTeams.length > 0 && (
                     <div className="mb-12">
                         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                             <Users className="text-gray-400" />
-                            Popular Teams
+                            {isTennis ? 'Popular Players' : 'Popular Teams'}
                         </h2>
                         <div className="flex flex-wrap gap-3">
                             {content.popularTeams.map(team => (
@@ -272,13 +287,15 @@ const LeagueLandingPage: React.FC<LeagueLandingPageProps> = ({
 
                 {/* Narrative Content */}
                 <div className="mb-12">
-                    <h2 className="text-3xl font-bold mb-8 text-center">Why Follow {title.split(' ')[0]} on Sports Match?</h2>
+                    <h2 className="text-3xl font-bold mb-8 text-center">
+                        {isTennis ? 'Why Follow ATP & WTA on Sports Match?' : `Why Follow ${title.split(' ')[0]} on Sports Match?`}
+                    </h2>
                     <div className="prose dark:prose-invert max-w-none space-y-6 text-lg text-gray-600 dark:text-gray-300">
                         <p>{content.narrative}</p>
                         <p>
                             Our platform is designed for speed and accuracy. Whether you are tracking 
-                            <strong> {leagueId === 'nba' ? 'NBA playoff races' : 'relegation battles'}</strong> or 
-                            following your favorite team's journey to the championship, we have the data you need.
+                            <strong> {isTennis ? 'ranking movement and tournament progress' : leagueId === 'nba' ? 'NBA playoff races' : 'relegation battles'}</strong> or 
+                            {isTennis ? ' following your favorite player through the draw, we have the data you need.' : " following your favorite team's journey to the championship, we have the data you need."}
                         </p>
                     </div>
                 </div>

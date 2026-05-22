@@ -20,11 +20,13 @@ const UCL_LOGO = "https://a.espncdn.com/i/leaguelogos/soccer/500/2.png"; // Usin
 
 // Default Team Logo
 export const DEFAULT_TEAM_LOGO = "https://a.espncdn.com/combiner/i?img=/i/teamlogos/default-team-logo-500.png&w=100&h=100";
+export const DEFAULT_TENNIS_HEADSHOT = "/default-avatar.svg";
 
 export const LEAGUES: League[] = [
   { id: 'top', name: 'Top', logo: <Star size={16} /> }, 
   { id: 'following', name: 'Following', logo: <Heart size={16} /> },
   { id: 'nba', name: 'NBA', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png' },
+  { id: 'tennis.atp', name: 'ATP/WTA', logo: 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-tennis.png' },
   { id: 'nfl', name: 'NFL', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png' },
   { id: 'uefa.champions', name: 'UEFA', logo: UCL_LOGO },
   

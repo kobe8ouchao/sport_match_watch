@@ -1,10 +1,10 @@
-import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory, Article } from '../types';
+import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory, Article, TennisRankingPlayer, TennisTourEvent } from '../types';
 import { formatDateForApi, isSameDay } from '../utils';
 import { MatchWithHot } from '../constants';
 
 export interface MatchesResponse {
   matches: MatchWithHot[];
-  calendar: { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[];
+  calendar: { date: Date; sport: 'basketball' | 'soccer' | 'football' | 'tennis'; leagueId: string }[];
 }
 
 // Helper to determine match status from ESPN data
@@ -22,37 +22,194 @@ const getMinute = (status: any) => {
   return status?.displayClock || status?.period;
 };
 
+const getEntityName = (competitor: any) => {
+  if (competitor?.athlete) return competitor.athlete.displayName || competitor.athlete.shortName;
+  if (competitor?.team) return competitor.team.displayName || competitor.team.shortDisplayName || competitor.team.name;
+  return 'Unknown';
+};
+
+const getEntityShortName = (competitor: any) => {
+  if (competitor?.athlete) return competitor.athlete.shortName || competitor.athlete.displayName;
+  if (competitor?.team) return competitor.team.shortDisplayName || competitor.team.abbreviation;
+  return 'Unknown';
+};
+
+const getEntityLink = (competitor: any) => {
+  return competitor?.athlete?.links?.find((link: any) =>
+    Array.isArray(link?.rel) && link.rel.includes('athlete')
+  )?.href;
+};
+
+const getImageHref = (image: any): string | undefined => {
+  if (!image) return undefined;
+  if (typeof image === 'string') return image;
+  if (typeof image?.href === 'string') return image.href;
+  return undefined;
+};
+
+const getAthleteId = (competitor: any): string | undefined => {
+  const directId = competitor?.athlete?.id || competitor?.id;
+  if (directId) return String(directId);
+
+  const playerCardHref = competitor?.athlete?.links?.find((link: any) =>
+    Array.isArray(link?.rel) && link.rel.includes('athlete')
+  )?.href;
+  const matchedId = typeof playerCardHref === 'string' ? playerCardHref.match(/\/id\/(\d+)\//)?.[1] : undefined;
+
+  return matchedId;
+};
+
+const getTennisHeadshotById = (athleteId?: string): string | undefined => {
+  if (!athleteId) return undefined;
+  return `https://a.espncdn.com/i/headshots/tennis/players/full/${athleteId}.png`;
+};
+
+const getEntityLogo = (competitor: any) => {
+  if (competitor?.athlete?.flag) return getImageHref(competitor.athlete.flag) || '';
+  if (competitor?.team?.logo) return competitor.team.logo;
+  return '';
+};
+
+const getEntityHeadshot = (competitor: any) => {
+  return getImageHref(competitor?.athlete?.headshot) || getTennisHeadshotById(getAthleteId(competitor));
+};
+
+const getCompetitorScore = (competitor: any) => {
+  if (competitor?.score !== undefined && competitor?.score !== null && competitor?.score !== '') {
+    return parseInt(String(competitor.score), 10) || 0;
+  }
+
+  if (Array.isArray(competitor?.linescores) && competitor.linescores.length > 0) {
+    return competitor.linescores.reduce((wins: number, set: any) => wins + (set?.winner ? 1 : 0), 0);
+  }
+
+  return 0;
+};
+
+const getVenueLabel = (competition: any, fallback?: string) => {
+  const parts = [competition?.venue?.fullName, competition?.venue?.court].filter(Boolean);
+  if (parts.length > 0) return parts.join(' - ');
+  return fallback || 'Unknown Venue';
+};
+
+const getSetScores = (home: any, away: any) => {
+  const homeSets = Array.isArray(home?.linescores) ? home.linescores : [];
+  const awaySets = Array.isArray(away?.linescores) ? away.linescores : [];
+  const totalSets = Math.max(homeSets.length, awaySets.length);
+
+  const formatSetValue = (set: any) => {
+    const baseValue = set?.displayValue ?? set?.value;
+    if (baseValue === undefined || baseValue === null || baseValue === '') return '-';
+    if (set?.tiebreak !== undefined && set?.tiebreak !== null && set?.tiebreak !== '') {
+      return `${baseValue}(${set.tiebreak})`;
+    }
+    return baseValue;
+  };
+
+  return Array.from({ length: totalSets }, (_, index) => ({
+    home: formatSetValue(homeSets[index]),
+    away: formatSetValue(awaySets[index]),
+  }));
+};
+
+const isTennisLeague = (leagueId: string) => leagueId === 'tennis.atp' || leagueId === 'tennis.wta';
+
+const getTennisLeagueSlug = (leagueId: string): 'atp' | 'wta' => leagueId === 'tennis.wta' ? 'wta' : 'atp';
+
+const getTennisSinglesSlug = (leagueId: string) => leagueId === 'tennis.wta' ? 'womens-singles' : 'mens-singles';
+
 // Transform API data to our Match interface
-const transformEspnEvent = (event: any, leagueId: string): MatchWithHot => {
-  const competition = event.competitions[0];
-  const competitors = competition.competitors;
+const transformEspnEvent = (event: any, leagueId: string): MatchWithHot | null => {
+  const competition = event?.competitions?.[0];
+  const competitors = competition?.competitors || [];
   const home = competitors.find((c: any) => c.homeAway === 'home');
   const away = competitors.find((c: any) => c.homeAway === 'away');
+
+  if (!competition || !home || !away) return null;
 
   return {
     id: event.id,
     leagueId: leagueId,
     homeTeam: {
       id: home.id,
-      name: home.team.displayName || home.team.shortDisplayName, // Use displayName for better matching
-      shortName: home.team.shortDisplayName || home.team.abbreviation,
-      logo: home.team.logo || '',
+      name: getEntityName(home),
+      shortName: getEntityShortName(home),
+      logo: getEntityLogo(home),
+      headshot: getEntityHeadshot(home),
+      link: getEntityLink(home),
       linescores: home.linescores,
     },
     awayTeam: {
       id: away.id,
-      name: away.team.displayName || away.team.shortDisplayName, // Use displayName for better matching
-      shortName: away.team.shortDisplayName || away.team.abbreviation,
-      logo: away.team.logo || '',
+      name: getEntityName(away),
+      shortName: getEntityShortName(away),
+      logo: getEntityLogo(away),
+      headshot: getEntityHeadshot(away),
+      link: getEntityLink(away),
       linescores: away.linescores,
     },
-    homeScore: parseInt(home.score || '0'),
-    awayScore: parseInt(away.score || '0'),
+    homeScore: getCompetitorScore(home),
+    awayScore: getCompetitorScore(away),
     status: getMatchStatus(event.status),
     minute: getMinute(event.status),
     startTime: new Date(event.date), // JavaScript Date handles ISO strings correctly
-    stadium: competition.venue?.fullName || 'Unknown Venue',
+    stadium: getVenueLabel(competition),
   };
+};
+
+const transformTennisCompetition = (competition: any, leagueId: string, tournamentName?: string): MatchWithHot | null => {
+  const competitors = competition?.competitors || [];
+  const home = competitors.find((c: any) => c.homeAway === 'home') || competitors[0];
+  const away = competitors.find((c: any) => c.homeAway === 'away') || competitors[1];
+
+  if (!competition || !home || !away) return null;
+  if (!home.athlete || !away.athlete) return null;
+  if (competition?.type?.slug !== getTennisSinglesSlug(leagueId)) return null;
+
+  return {
+    id: competition.id,
+    leagueId,
+    homeTeam: {
+      id: home.id,
+      name: getEntityName(home),
+      shortName: getEntityShortName(home),
+      logo: getEntityLogo(home),
+      headshot: getEntityHeadshot(home),
+      linescores: home.linescores,
+    },
+    awayTeam: {
+      id: away.id,
+      name: getEntityName(away),
+      shortName: getEntityShortName(away),
+      logo: getEntityLogo(away),
+      headshot: getEntityHeadshot(away),
+      linescores: away.linescores,
+    },
+    homeScore: getCompetitorScore(home),
+    awayScore: getCompetitorScore(away),
+    status: getMatchStatus(competition.status),
+    minute: getMinute(competition.status),
+    startTime: new Date(competition.date || competition.startDate),
+    stadium: getVenueLabel(competition, tournamentName),
+    tournamentName,
+    roundName: competition?.round?.displayName || competition?.type?.text,
+    setScores: getSetScores(home, away),
+  };
+};
+
+const extractTennisMatches = (events: any[], leagueId: string): MatchWithHot[] => {
+  return events.flatMap((event: any) => {
+    const groupedCompetitions = Array.isArray(event?.groupings)
+      ? event.groupings.flatMap((group: any) => group?.competitions || [])
+      : [];
+
+    const directCompetitions = Array.isArray(event?.competitions) ? event.competitions : [];
+    const competitions = groupedCompetitions.length > 0 ? groupedCompetitions : directCompetitions;
+
+    return competitions
+      .map((competition: any) => transformTennisCompetition(competition, leagueId, event.shortName || event.name))
+      .filter((match: MatchWithHot | null): match is MatchWithHot => Boolean(match));
+  });
 };
 
 const leagueBanner: Record<string, string> = {
@@ -87,6 +244,8 @@ const LEAGUE_TIMEZONES: Record<string, string> = {
   'esp.copa_del_rey': 'Europe/Madrid',
   'ita.coppa_italia': 'Europe/Rome',
   'eng.fa': 'Europe/London',
+  'tennis.atp': 'America/New_York', // default, ATP matches occur globally
+  'tennis.wta': 'America/New_York',
 };
 
 // Helper to format date for specific league timezone
@@ -171,6 +330,8 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
       url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${queryDateStr}`;
     } else if (queryId === 'nfl') {
       url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${queryDateStr}`;
+    } else if (isTennisLeague(queryId)) {
+      url = `https://site.api.espn.com/apis/site/v2/sports/tennis/${getTennisLeagueSlug(queryId)}/scoreboard?dates=${queryDateStr}`;
     } else {
       url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${queryId}/scoreboard?dates=${queryDateStr}`;
     }
@@ -183,18 +344,23 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
       }
       const data = await response.json();
 
-      const calendar: { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[] =
+      const calendar: { date: Date; sport: 'basketball' | 'soccer' | 'football' | 'tennis'; leagueId: string }[] =
         Array.isArray(data?.leagues?.[0]?.calendar)
           ? data.leagues[0].calendar.map((c: string) => ({
             date: new Date(c),
-            sport: leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : 'soccer'),
+            sport: leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : (isTennisLeague(leagueId) ? 'tennis' : 'soccer')),
             leagueId,
           }))
           : [];
 
       if (!data.events) return { matches: [], calendar };
 
-      const matches = data.events.map((event: any) => transformEspnEvent(event, leagueId));
+      const matches = isTennisLeague(leagueId)
+        ? extractTennisMatches(data.events, leagueId)
+        : data.events
+            .map((event: any) => transformEspnEvent(event, leagueId))
+            .filter((match: MatchWithHot | null): match is MatchWithHot => Boolean(match));
+
       return { matches: attachBanner(matches), calendar };
     } catch (error) {
       console.error(`Failed to fetch matches for ${queryDateStr}:`, error);
@@ -247,21 +413,121 @@ const fetchNbaTeamRecord = async (teamId: string): Promise<string> => {
   }
 };
 
+const buildTennisMonthRange = (date: Date) => {
+  const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0));
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${start.getUTCFullYear()}${pad(start.getUTCMonth() + 1)}${pad(start.getUTCDate())}-${end.getUTCFullYear()}${pad(end.getUTCMonth() + 1)}${pad(end.getUTCDate())}`;
+};
+
+const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
+  const monthAnchors = [-1, 0, 1].map((offset) => {
+    const date = new Date();
+    date.setUTCMonth(date.getUTCMonth() + offset);
+    return date;
+  });
+
+  for (const anchor of monthAnchors) {
+    try {
+      const range = buildTennisMonthRange(anchor);
+      const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/tennis/${getTennisLeagueSlug(leagueId)}/scoreboard?dates=${range}`);
+      if (!response.ok) continue;
+
+      const scoreboard = await response.json();
+      const eventEntry = (scoreboard?.events || []).find((event: any) => {
+        const groupedCompetitions = Array.isArray(event?.groupings)
+          ? event.groupings.flatMap((group: any) => group?.competitions || [])
+          : [];
+        const directCompetitions = Array.isArray(event?.competitions) ? event.competitions : [];
+        const competitions = groupedCompetitions.length > 0 ? groupedCompetitions : directCompetitions;
+
+        return competitions.some((competition: any) => String(competition?.id) === String(matchId));
+      });
+
+      if (!eventEntry) continue;
+
+      const groupedCompetitions = Array.isArray(eventEntry?.groupings)
+        ? eventEntry.groupings.flatMap((group: any) => group?.competitions || [])
+        : [];
+      const directCompetitions = Array.isArray(eventEntry?.competitions) ? eventEntry.competitions : [];
+      const competitions = groupedCompetitions.length > 0 ? groupedCompetitions : directCompetitions;
+      const competition = competitions.find((item: any) => String(item?.id) === String(matchId));
+      if (!competition) continue;
+
+      const competitors = competition?.competitors || [];
+      const home = competitors.find((c: any) => c.homeAway === 'home') || competitors[0];
+      const away = competitors.find((c: any) => c.homeAway === 'away') || competitors[1];
+      if (!home || !away) continue;
+
+      return {
+        id: String(competition.id),
+        leagueId,
+        homeTeam: {
+          id: home.id,
+          name: getEntityName(home),
+          shortName: getEntityShortName(home),
+          logo: getEntityLogo(home),
+          headshot: getEntityHeadshot(home),
+          link: getEntityLink(home),
+          linescores: home.linescores,
+        },
+        awayTeam: {
+          id: away.id,
+          name: getEntityName(away),
+          shortName: getEntityShortName(away),
+          logo: getEntityLogo(away),
+          headshot: getEntityHeadshot(away),
+          link: getEntityLink(away),
+          linescores: away.linescores,
+        },
+        homeScore: getCompetitorScore(home),
+        awayScore: getCompetitorScore(away),
+        status: getMatchStatus(competition.status),
+        minute: getMinute(competition.status),
+        startTime: new Date(competition.date || competition.startDate || eventEntry.date),
+        stadium: competition?.venue?.fullName || eventEntry?.name || 'Unknown Venue',
+        court: competition?.venue?.court,
+        tournamentName: eventEntry?.shortName || eventEntry?.name,
+        roundName: competition?.round?.displayName || competition?.type?.text,
+        setScores: getSetScores(home, away),
+        bestOf: competition?.format?.regulation?.periods,
+        summaryNote: competition?.notes?.[0]?.text,
+        statusDetail: competition?.status?.type?.detail || competition?.status?.type?.description,
+        events: [],
+        stats: [],
+        homePlayers: [],
+        awayPlayers: [],
+      };
+    } catch (error) {
+      console.error(`Error loading tennis fallback details for ${matchId}:`, error);
+    }
+  }
+
+  return null;
+};
+
 export const fetchMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
-  const sport = leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : 'soccer');
+  const sport = leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : (isTennisLeague(leagueId) ? 'tennis' : 'soccer'));
 
   let url = '';
   if (sport === 'basketball') {
     url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${matchId}`;
   } else if (sport === 'football') {
     url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${matchId}`;
+  } else if (sport === 'tennis') {
+    url = `https://site.api.espn.com/apis/site/v2/sports/tennis/${getTennisLeagueSlug(leagueId)}/summary?event=${matchId}`;
   } else {
     url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueId}/summary?event=${matchId}`;
   }
 
   try {
     const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch details');
+    if (!response.ok) {
+      if (sport === 'tennis') {
+        return await fetchTennisFallbackMatchDetails(matchId, leagueId);
+      }
+      throw new Error('Failed to fetch details');
+    }
     const data = await response.json();
 
     // Transform data
@@ -294,22 +560,45 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
         return '';
     };
 
+    const getEntityName = (competitor: any) => {
+      if (competitor.athlete) return competitor.athlete.displayName || competitor.athlete.shortName;
+      if (competitor.team) return competitor.team.shortDisplayName || competitor.team.displayName || competitor.team.name;
+      return 'Unknown';
+    };
+
+    const getEntityShortName = (competitor: any) => {
+      if (competitor.athlete) return competitor.athlete.shortName || competitor.athlete.displayName;
+      if (competitor.team) return competitor.team.abbreviation || competitor.team.shortDisplayName || competitor.team.displayName;
+      return 'Unknown';
+    };
+
+    const getEntityLogo = (competitor: any) => {
+      if (competitor.athlete && competitor.athlete.flag) return getImageHref(competitor.athlete.flag) || '';
+      if (competitor.team && competitor.team.logos?.[0]?.href) return competitor.team.logos[0].href;
+      if (competitor.team && competitor.team.logo) return competitor.team.logo;
+      return '';
+    };
+
     const baseMatch: MatchWithHot = {
       id: header.id,
       leagueId: leagueId,
       homeTeam: {
         id: home.id,
-        name: home.team.shortDisplayName || home.team.displayName || home.team.name || 'Home Team',
-        shortName: home.team.abbreviation || home.team.shortDisplayName || home.team.displayName || 'Home',
-        logo: home.team.logos?.[0]?.href || home.team.logo || '',
+        name: getEntityName(home),
+        shortName: getEntityShortName(home),
+        logo: getEntityLogo(home),
+        headshot: getEntityHeadshot(home),
+        link: getEntityLink(home),
         linescores: home.linescores,
         record: getRecord(home),
       },
       awayTeam: {
         id: away.id,
-        name: away.team.shortDisplayName || away.team.displayName || away.team.name || 'Away Team',
-        shortName: away.team.abbreviation || away.team.shortDisplayName || away.team.displayName || 'Away',
-        logo: away.team.logos?.[0]?.href || away.team.logo || '',
+        name: getEntityName(away),
+        shortName: getEntityShortName(away),
+        logo: getEntityLogo(away),
+        headshot: getEntityHeadshot(away),
+        link: getEntityLink(away),
         linescores: away.linescores,
         record: getRecord(away),
       },
@@ -319,6 +608,13 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
       minute: getMinute(header.status || competition.status),
       startTime: new Date(header.date || competition.date),
       stadium: data.gameInfo?.venue?.fullName || competition.venue?.fullName || 'Unknown Venue',
+      court: competition?.venue?.court,
+      tournamentName: competition?.event?.shortName || competition?.event?.name || data?.event?.shortName || data?.event?.name,
+      roundName: competition?.round?.displayName || competition?.type?.text,
+      setScores: getSetScores(home, away),
+      bestOf: competition?.format?.regulation?.periods,
+      summaryNote: competition?.notes?.[0]?.text || header?.note,
+      statusDetail: header?.status?.type?.detail || competition?.status?.type?.detail,
     };
 
     // Fetch records if missing for NBA
@@ -538,6 +834,10 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
     };
 
   } catch (error) {
+    if (sport === 'tennis') {
+      const fallback = await fetchTennisFallbackMatchDetails(matchId, leagueId);
+      if (fallback) return fallback;
+    }
     console.error("Error fetching match details:", error);
     return null;
   }
@@ -841,13 +1141,15 @@ export const fetchNews = async (leagueId: string, matchId?: string): Promise<Art
     endpoint = 'basketball/nba';
   } else if (leagueId === 'nfl') {
     endpoint = 'football/nfl';
+  } else if (isTennisLeague(leagueId)) {
+    endpoint = `tennis/${getTennisLeagueSlug(leagueId)}`;
   } else {
     endpoint = `soccer/${leagueId}`;
   }
   
   let url = `https://site.api.espn.com/apis/site/v2/sports/${endpoint}/news`;
   
-  if (leagueId != 'nba' && leagueId != 'nfl' && matchId) {
+  if (leagueId !== 'nba' && leagueId !== 'nfl' && !isTennisLeague(leagueId) && matchId) {
     url += `?event=${matchId}`;
   }
 
@@ -868,4 +1170,237 @@ export const fetchNews = async (leagueId: string, matchId?: string): Promise<Art
     console.error(`Error fetching news for ${leagueId} ${matchId ? 'event ' + matchId : ''}:`, error);
     return [];
   }
+};
+
+const normalizeCoreApiUrl = (url: string): string => {
+  return url.replace(/^http:\/\//, 'https://');
+};
+
+const fetchTennisLeagueRanking = async (
+  leagueSlug: 'atp' | 'wta',
+  rankingId: number,
+  limit = 10
+): Promise<TennisRankingPlayer[]> => {
+  try {
+    const rankingListResp = await fetch(`https://sports.core.api.espn.com/v2/sports/tennis/leagues/${leagueSlug}/rankings?limit=20`);
+    if (!rankingListResp.ok) throw new Error(`Failed to fetch ${leagueSlug} rankings list`);
+
+    const rankingListData = await rankingListResp.json();
+    const rankingRef = rankingListData?.items?.find((item: any) => String(item?.$ref || '').includes(`/rankings/${rankingId}`))?.$ref
+      || rankingListData?.items?.[0]?.$ref;
+
+    if (!rankingRef) return [];
+
+    const rankingResp = await fetch(normalizeCoreApiUrl(rankingRef));
+    if (!rankingResp.ok) throw new Error(`Failed to fetch ${leagueSlug} ranking details`);
+
+    const rankingData = await rankingResp.json();
+    const ranks = Array.isArray(rankingData?.ranks) ? rankingData.ranks.slice(0, limit) : [];
+
+    const players = await Promise.all(
+      ranks.map(async (rank: any): Promise<TennisRankingPlayer | null> => {
+        try {
+          const athleteRef = rank?.athlete?.$ref;
+          if (!athleteRef) return null;
+
+          const athleteResp = await fetch(normalizeCoreApiUrl(athleteRef));
+          if (!athleteResp.ok) return null;
+
+          const athleteData = await athleteResp.json();
+          const athleteId = String(athleteData?.id || '');
+
+          return {
+            athleteId,
+            rank: rank?.current || 0,
+            previousRank: rank?.previous,
+            points: Number(rank?.points || 0),
+            trend: rank?.trend,
+            displayName: athleteData?.displayName || athleteData?.fullName || 'Unknown Player',
+            shortName: athleteData?.shortName || athleteData?.displayName || 'Unknown Player',
+            headshot: getImageHref(athleteData?.headshot) || getTennisHeadshotById(athleteId),
+            flag: getImageHref(athleteData?.flag) || getImageHref(athleteData?.citizenshipCountry?.flag),
+          };
+        } catch (error) {
+          console.error(`Failed to fetch ${leagueSlug} athlete ranking detail:`, error);
+          return null;
+        }
+      })
+    );
+
+    return players.filter((player: TennisRankingPlayer | null): player is TennisRankingPlayer => Boolean(player));
+  } catch (error) {
+    console.error(`Error fetching ${leagueSlug} rankings:`, error);
+    return [];
+  }
+};
+
+export const fetchTennisRankings = async (limit = 10): Promise<{ atp: TennisRankingPlayer[]; wta: TennisRankingPlayer[] }> => {
+  const [atp, wta] = await Promise.all([
+    fetchTennisLeagueRanking('atp', 1, limit),
+    fetchTennisLeagueRanking('wta', 2, limit),
+  ]);
+
+  return { atp, wta };
+};
+
+const getTennisTourEventStatus = (startDate: Date, endDate: Date): TennisTourEvent['status'] => {
+  const now = new Date();
+  if (now < startDate) return 'UPCOMING';
+  if (now > endDate) return 'COMPLETED';
+  return 'ONGOING';
+};
+
+const normalizeTournamentName = (name: string) => name.toLowerCase().replace(/[''.]/g, '').trim();
+
+const inferTennisSurface = (name: string, isMajor: boolean, indoor?: boolean): TennisTourEvent['surface'] => {
+  const normalized = normalizeTournamentName(name);
+
+  if (indoor) return 'indoor-hard';
+
+  const clayKeywords = [
+    'roland garros', 'french open', 'monte carlo', 'madrid', 'internazionali', 'italian open',
+    'rome', 'barcelona', 'geneva', 'hamburg', 'gstaad', 'bastad', 'lyon', 'marrakech',
+    'rio', 'buenos aires', 'santiago', 'strasbourg', 'estoril', 'parma'
+  ];
+  const grassKeywords = [
+    'wimbledon', 'halle', 'queens', "queen's", 'eastbourne', 'mallorca', 's hertogenbosch',
+    'stuttgart', 'nottingham', 'berlin'
+  ];
+  const hardKeywords = [
+    'australian open', 'us open', 'indian wells', 'miami', 'cincinnati', 'shanghai', 'paris',
+    'beijing', 'wuhan', 'dubai', 'doha', 'tokyo', 'adelaide', 'auckland', 'brisbane',
+    'washington', 'delray beach', 'acapulco', 'montreal', 'toronto', 'national bank open'
+  ];
+
+  if (grassKeywords.some((keyword) => normalized.includes(keyword))) return 'grass';
+  if (clayKeywords.some((keyword) => normalized.includes(keyword))) return 'clay';
+  if (hardKeywords.some((keyword) => normalized.includes(keyword))) return 'hard';
+
+  if (isMajor) return normalized.includes('wimbledon') ? 'grass' : normalized.includes('french open') || normalized.includes('roland garros') ? 'clay' : 'hard';
+  return 'unknown';
+};
+
+const inferTennisLevel = (name: string, leagueSlug: 'atp' | 'wta', isMajor: boolean): string => {
+  const normalized = normalizeTournamentName(name);
+  const leagueLabel = leagueSlug.toUpperCase();
+
+  if (isMajor) return 'Grand Slam';
+  if (normalized.includes('finals')) return `${leagueLabel} Finals`;
+
+  const masters1000Keywords = [
+    'indian wells', 'miami', 'monte carlo', 'madrid', 'italian open', 'internazionali',
+    'national bank open', 'cincinnati', 'shanghai', 'paris', 'beijing', 'wuhan', 'dubai', 'doha'
+  ];
+  const level500Keywords = [
+    'barcelona', 'queens', 'halle', 'washington', 'tokyo', 'china open', 'vienna',
+    'basel', 'hamburg', 'stuttgart', 'berlin', 'charleston'
+  ];
+  const level250Keywords = [
+    'geneva', 'strasbourg', 'estoril', 'eastbourne', 'mallorca', 'auckland', 'adelaide',
+    'brisbane', 'marrakech', 'lyon', 'delray beach', 'acapulco', 'gstaad', 'bastad', 'nottingham'
+  ];
+
+  if (masters1000Keywords.some((keyword) => normalized.includes(keyword))) return `${leagueLabel} 1000`;
+  if (level500Keywords.some((keyword) => normalized.includes(keyword))) return `${leagueLabel} 500`;
+  if (level250Keywords.some((keyword) => normalized.includes(keyword))) return `${leagueLabel} 250`;
+
+  return `${leagueLabel} Tour`;
+};
+
+const getTennisTournamentBackground = (name: string, surface: TennisTourEvent['surface']): string | undefined => {
+  const normalized = normalizeTournamentName(name);
+
+  const knownBackgrounds: Record<string, string> = {
+    'australian open': 'https://images.unsplash.com/photo-1542144582-1ba00456b5e3?auto=format&fit=crop&w=1200&q=80',
+    'french open': 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1200&q=80',
+    'roland garros': 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1200&q=80',
+    'wimbledon': 'https://images.unsplash.com/photo-1560012057-4372e14c5085?auto=format&fit=crop&w=1200&q=80',
+    'us open': 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80',
+    'indian wells': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80',
+    'miami': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
+    'monte carlo': 'https://images.unsplash.com/photo-1531315630201-bb15abeb1653?auto=format&fit=crop&w=1200&q=80',
+    'madrid': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
+    'italian open': 'https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=1200&q=80',
+    'geneva': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1200&q=80',
+    'strasbourg': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
+  };
+
+  const matchedKey = Object.keys(knownBackgrounds).find((key) => normalized.includes(key));
+  if (matchedKey) return knownBackgrounds[matchedKey];
+
+  if (surface === 'clay') return 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80';
+  if (surface === 'grass') return 'https://images.unsplash.com/photo-1560012057-4372e14c5085?auto=format&fit=crop&w=1200&q=80';
+  if (surface === 'hard' || surface === 'indoor-hard') return 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80';
+  return undefined;
+};
+
+const fetchMonthlyLeagueTourEvents = async (
+  leagueSlug: 'atp' | 'wta',
+  monthRange: string
+): Promise<TennisTourEvent[]> => {
+  try {
+    const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/tennis/${leagueSlug}/scoreboard?dates=${monthRange}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${leagueSlug} monthly tour events`);
+    }
+
+    const data = await response.json();
+    const events = Array.isArray(data?.events) ? data.events : [];
+
+    return events
+      .map((event: any): TennisTourEvent | null => {
+        const competitions = Array.isArray(event?.groupings)
+          ? event.groupings.flatMap((group: any) => group?.competitions || [])
+          : Array.isArray(event?.competitions)
+            ? event.competitions
+            : [];
+
+        const singlesCompetitions = competitions.filter((competition: any) => competition?.type?.slug?.includes('singles'));
+        if (singlesCompetitions.length === 0) return null;
+
+        const firstCompetition = singlesCompetitions[0];
+        const startDate = new Date(event?.date || firstCompetition?.date);
+        const endDate = new Date(event?.endDate || event?.date || firstCompetition?.date);
+
+        return {
+          id: String(event?.id || `${leagueSlug}-${event?.name}`),
+          league: leagueSlug,
+          name: event?.shortName || event?.name || 'Unknown Tournament',
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          location: firstCompetition?.venue?.fullName,
+          court: firstCompetition?.venue?.court,
+          isMajor: Boolean(event?.major),
+          status: getTennisTourEventStatus(startDate, endDate),
+          singlesMatchCount: singlesCompetitions.length,
+          surface: inferTennisSurface(event?.shortName || event?.name || '', Boolean(event?.major), Boolean(firstCompetition?.venue?.indoor)),
+          level: inferTennisLevel(event?.shortName || event?.name || '', leagueSlug, Boolean(event?.major)),
+          backgroundImage: getTennisTournamentBackground(
+            event?.shortName || event?.name || '',
+            inferTennisSurface(event?.shortName || event?.name || '', Boolean(event?.major), Boolean(firstCompetition?.venue?.indoor))
+          ),
+        };
+      })
+      .filter((event: TennisTourEvent | null): event is TennisTourEvent => Boolean(event))
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  } catch (error) {
+    console.error(`Error fetching monthly ${leagueSlug} tour events:`, error);
+    return [];
+  }
+};
+
+export const fetchMonthlyTennisTourEvents = async (): Promise<{ atp: TennisTourEvent[]; wta: TennisTourEvent[] }> => {
+  const now = new Date();
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const monthRange = `${start.getUTCFullYear()}${pad(start.getUTCMonth() + 1)}${pad(start.getUTCDate())}-${end.getUTCFullYear()}${pad(end.getUTCMonth() + 1)}${pad(end.getUTCDate())}`;
+
+  const [atp, wta] = await Promise.all([
+    fetchMonthlyLeagueTourEvents('atp', monthRange),
+    fetchMonthlyLeagueTourEvents('wta', monthRange),
+  ]);
+
+  return { atp, wta };
 };

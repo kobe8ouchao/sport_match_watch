@@ -7,6 +7,8 @@ export interface Team {
   name: string;
   logo: string; // URL
   shortName: string;
+  headshot?: string;
+  link?: string;
   linescores?: { value: number; displayValue?: string }[];
   record?: string;
 }
@@ -22,6 +24,13 @@ export interface Match {
   minute?: string | number; // For live matches
   startTime: Date; // The full date object
   stadium?: string;
+  court?: string;
+  tournamentName?: string;
+  roundName?: string;
+  setScores?: { home: number | string; away: number | string }[];
+  bestOf?: number;
+  summaryNote?: string;
+  statusDetail?: string;
 }
 
 export interface MatchEvent {
@@ -155,4 +164,32 @@ export interface Article {
   published: string;
   link: string;
   images: { url: string }[];
+}
+
+export interface TennisRankingPlayer {
+  athleteId: string;
+  rank: number;
+  previousRank?: number;
+  points: number;
+  trend?: string;
+  displayName: string;
+  shortName: string;
+  headshot?: string;
+  flag?: string;
+}
+
+export interface TennisTourEvent {
+  id: string;
+  league: 'atp' | 'wta';
+  name: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  court?: string;
+  isMajor: boolean;
+  status: 'LIVE' | 'ONGOING' | 'UPCOMING' | 'COMPLETED';
+  singlesMatchCount: number;
+  surface: 'hard' | 'clay' | 'grass' | 'indoor-hard' | 'unknown';
+  level: string;
+  backgroundImage?: string;
 }

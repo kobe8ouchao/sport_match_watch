@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { fetchStandings, fetchPlayerStats } from '../services/api';
 import { StandingEntry, PlayerStatCategory } from '../types';
 import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
-import { Loader2, User } from 'lucide-react';
+import { CalendarDays, Loader2, Trophy, User } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
+import TennisRankingsPanel from './TennisRankingsPanel';
+import TennisTourPanel from './TennisTourPanel';
 
 interface StandingsPageProps {
     toggleTheme: () => void;
@@ -16,6 +18,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
     const { leagueId } = useParams<{ leagueId: string }>();
     const isNba = leagueId === 'nba';
     const isNfl = leagueId === 'nfl';
+    const isTennis = leagueId === 'tennis.atp';
     const currentLeague = LEAGUES.find(l => l.id === leagueId);
     
     // For NBA, we use tabs. For Soccer, we show side-by-side.
@@ -36,6 +39,13 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
         if (!leagueId) return;
 
         const loadData = async () => {
+            if (isTennis) {
+                setStandings([]);
+                setPlayerStats([]);
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
                 const [standingsData, playerData] = await Promise.all([
@@ -52,7 +62,7 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
         };
 
         loadData();
-    }, [leagueId]);
+    }, [leagueId, isTennis]);
 
     return (
         <div className={`min-h-screen transition-colors duration-500 relative overflow-x-hidden flex flex-col ${darkMode ? 'bg-zinc-950 text-white' : 'bg-pantone-cloud text-gray-900'
@@ -90,10 +100,10 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                         )}
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                {isNba ? 'NBA' : leagueId?.toUpperCase()} Standings & Stats
+                                {isTennis ? 'ATP & WTA Player Rankings' : isNba ? 'NBA' : leagueId?.toUpperCase()} {isTennis ? '' : 'Standings & Stats'}
                             </h1>
                             <p className="text-gray-500 dark:text-gray-400 mt-1">
-                                Current season statistics and rankings
+                                {isTennis ? 'Live ATP and WTA player rankings with movement and points' : 'Current season statistics and rankings'}
                             </p>
                         </div>
                     </div>
@@ -131,6 +141,67 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                     {loading ? (
                         <div className="flex justify-center py-20">
                             <Loader2 className="animate-spin text-gray-400" size={40} />
+                        </div>
+                    ) : isTennis ? (
+                        <div className="space-y-8">
+                            <div className="rounded-3xl border border-gray-100 dark:border-white/5 bg-white dark:bg-zinc-900/50 backdrop-blur-md p-6 shadow-sm">
+                                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                                    <div className="max-w-3xl">
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                                            ATP/WTA Tennis Rankings and Tour Coverage
+                                        </h2>
+                                        <p className="text-gray-600 dark:text-gray-300 leading-7">
+                                            Follow live ATP and WTA player rankings, movement by position, ranking points,
+                                            and this month&apos;s active tour events in one place. This page focuses on singles
+                                            rankings and current tournament context, while the main tennis page tracks live ATP/WTA match cards.
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
+                                        <Link
+                                            to="/tennis"
+                                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-sm font-semibold transition-all"
+                                        >
+                                            <CalendarDays size={16} />
+                                            View Tennis Matches
+                                        </Link>
+                                        <Link
+                                            to="/schedule"
+                                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
+                                        >
+                                            <Trophy size={16} />
+                                            View Full Schedule
+                                        </Link>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                    <div className="rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 p-4">
+                                        <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Rankings</div>
+                                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                                            ATP and WTA player rankings with top 20 placement, points, and movement since the previous update.
+                                        </div>
+                                    </div>
+                                    <div className="rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 p-4">
+                                        <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Tour Events</div>
+                                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                                            Monthly ATP and WTA tournament coverage with level, surface, venue, and current event status.
+                                        </div>
+                                    </div>
+                                    <div className="rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 p-4">
+                                        <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Live Coverage</div>
+                                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                                            Use the tennis page for live singles match cards, round labels, set-by-set scores, and match detail pages.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col lg:flex-row gap-8 items-start">
+                                <div className="w-full lg:w-3/5">
+                                    <TennisRankingsPanel />
+                                </div>
+                                <div className="w-full lg:w-2/5">
+                                    <TennisTourPanel />
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-col lg:flex-row gap-8">

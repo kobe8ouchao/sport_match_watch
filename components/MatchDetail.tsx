@@ -13,6 +13,7 @@ import { MatchDetailData } from '../types';
 import SoccerMatchDetail from './SoccerMatchDetail';
 import BasketballMatchDetail from './BasketballMatchDetail';
 import NFLMatchDetail from './NFLMatchDetail';
+import TennisMatchDetail from './TennisMatchDetail';
 import { Loader2 } from 'lucide-react';
 
 interface MatchDetailProps {
@@ -63,6 +64,8 @@ const MatchDetail: React.FC<MatchDetailProps> = ({ matchId, leagueId, onBack }) 
     ? <BasketballMatchDetail match={matchData} onBack={onBack} />
     : leagueId === 'nfl'
       ? <NFLMatchDetail match={matchData} onBack={onBack} />
+      : leagueId === 'tennis.atp' || leagueId === 'tennis.wta'
+        ? <TennisMatchDetail match={matchData} onBack={onBack} />
       : <SoccerMatchDetail match={matchData} onBack={onBack} />;
 
   return (

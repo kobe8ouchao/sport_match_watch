@@ -1,6 +1,6 @@
 import React from 'react';
 import { Match } from '../types';
-import { LEAGUES, DEFAULT_TEAM_LOGO } from '../constants';
+import { LEAGUES, DEFAULT_TEAM_LOGO, DEFAULT_TENNIS_HEADSHOT } from '../constants';
 import { MapPin, Clock } from 'lucide-react';
 
 interface MatchCardProps {
@@ -13,9 +13,37 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   const isLive = match.status === 'LIVE' || match.status === 'HT';
   const isScheduled = match.status === 'SCHEDULED';
   const isFinished = match.status === 'FINISHED';
+  const isTennis = match.leagueId === 'tennis.atp' || match.leagueId === 'tennis.wta';
+  const topLabel = isTennis
+    ? [match.tournamentName, match.roundName].filter(Boolean).join(' · ')
+    : null;
 
   // Format time for scheduled matches
   const timeString = match.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const formatTennisName = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length <= 1) return name;
+    return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
+  };
+  const homeDisplayName = isTennis ? formatTennisName(match.homeTeam.name) : match.homeTeam.name;
+  const awayDisplayName = isTennis ? formatTennisName(match.awayTeam.name) : match.awayTeam.name;
+  const homeImage = isTennis ? (match.homeTeam.headshot || DEFAULT_TENNIS_HEADSHOT) : (match.homeTeam.logo || DEFAULT_TEAM_LOGO);
+  const awayImage = isTennis ? (match.awayTeam.headshot || DEFAULT_TENNIS_HEADSHOT) : (match.awayTeam.logo || DEFAULT_TEAM_LOGO);
+  const setScoreText = isTennis && match.setScores?.length
+    ? match.setScores.map((setScore) => `${setScore.home}:${setScore.away}`).join('  ')
+    : '';
+  const tennisCurrentSet =
+    typeof match.minute === 'number'
+      ? match.minute
+      : typeof match.minute === 'string'
+        ? parseInt(match.minute, 10)
+        : NaN;
+  const tennisLiveLabel = isTennis
+    ? Number.isFinite(tennisCurrentSet) && tennisCurrentSet > 0
+      ? `LIVE · Set ${tennisCurrentSet}`
+      : 'LIVE'
+    : '';
+  const finishedLabel = isTennis ? 'Final' : (match.minute ? `${match.minute}'` : 'FT');
 
   return (
     <div
@@ -28,7 +56,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
       {/* Top Meta: League & Status Indicator */}
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center space-x-2">
-          {showLeagueLogo && (() => {
+          {isTennis ? (
+            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 truncate max-w-[180px]" title={topLabel || undefined}>
+              {topLabel}
+            </span>
+          ) : showLeagueLogo && (() => {
              const league = LEAGUES.find(l => l.id === match.leagueId);
              if (league) {
                 return (
@@ -54,7 +86,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
             </span>
             <span className="text-[10px] font-bold text-red-500 tracking-wide">
-              {match.status === 'HT' ? 'HT' : `${match.minute}'`}
+              {isTennis ? tennisLiveLabel : (match.status === 'HT' ? 'HT' : `${match.minute}'`)}
             </span>
           </div>
         )}
@@ -65,35 +97,41 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
       <div className="flex items-center justify-between flex-1 relative z-10 w-full">
         {/* Home */}
         <div className="flex flex-col items-center flex-1 min-w-0 space-y-2 px-1">
-          <div className="h-10 w-10 md:h-12 md:w-12 relative transition-transform duration-300 transform group-hover:scale-110 filter drop-shadow-sm">
+          <div className={`h-10 w-10 md:h-12 md:w-12 relative transition-transform duration-300 transform group-hover:scale-110 filter drop-shadow-sm ${isTennis ? 'rounded-full overflow-hidden border border-gray-200 dark:border-white/10 bg-white' : ''}`}>
             <img
-              src={match.homeTeam.logo || DEFAULT_TEAM_LOGO}
+              src={homeImage}
               alt={match.homeTeam.name}
-              className="w-full h-full object-contain"
+              className={`w-full h-full ${isTennis ? 'object-cover' : 'object-contain'}`}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO;
+                const target = e.target as HTMLImageElement;
+                target.src = isTennis ? DEFAULT_TENNIS_HEADSHOT : DEFAULT_TEAM_LOGO;
               }}
             />
           </div>
           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate w-full" title={match.homeTeam.name}>
-            {match.homeTeam.name}
+            {homeDisplayName}
           </span>
         </div>
 
         {/* Center Score / VS */}
-        <div className="flex flex-col items-center justify-center w-16 md:w-20 shrink-0">
+        <div className={`flex flex-col items-center justify-center shrink-0 ${isTennis ? 'w-32 md:w-36' : 'w-16 md:w-20'}`}>
           {isScheduled ? (
             <div className="flex flex-col items-center">
               <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{timeString}</span>
               <div className="h-6 w-6 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-gray-500">
                 VS
               </div>
+              {setScoreText && (
+                <div className="mt-1 max-w-full text-center text-[9px] font-semibold tracking-tight text-gray-500 dark:text-gray-400">
+                  {setScoreText}
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center">
               {isFinished && (
                 <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-0.5">
-                  {match.minute ? `${match.minute}'` : 'FT'}
+                  {finishedLabel}
                 </span>
               )}
               <div className="flex items-center space-x-1">
@@ -105,24 +143,30 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
                   {match.awayScore}
                 </span>
               </div>
+              {setScoreText && (
+                <div className="mt-1 max-w-full text-center text-[9px] font-semibold tracking-tight text-gray-500 dark:text-gray-400">
+                  {setScoreText}
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Away */}
         <div className="flex flex-col items-center flex-1 min-w-0 space-y-2 px-1">
-          <div className="h-10 w-10 md:h-12 md:w-12 relative transition-transform duration-300 transform group-hover:scale-110 filter drop-shadow-sm">
+          <div className={`h-10 w-10 md:h-12 md:w-12 relative transition-transform duration-300 transform group-hover:scale-110 filter drop-shadow-sm ${isTennis ? 'rounded-full overflow-hidden border border-gray-200 dark:border-white/10 bg-white' : ''}`}>
             <img
-              src={match.awayTeam.logo || DEFAULT_TEAM_LOGO}
+              src={awayImage}
               alt={match.awayTeam.name}
-              className="w-full h-full object-contain"
+              className={`w-full h-full ${isTennis ? 'object-cover' : 'object-contain'}`}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO;
+                const target = e.target as HTMLImageElement;
+                target.src = isTennis ? DEFAULT_TENNIS_HEADSHOT : DEFAULT_TEAM_LOGO;
               }}
             />
           </div>
           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate w-full" title={match.awayTeam.name}>
-            {match.awayTeam.name}
+            {awayDisplayName}
           </span>
         </div>
       </div>

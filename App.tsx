@@ -20,9 +20,18 @@ import StandingsWidget from './components/StandingsWidget';
 // Wrapper to handle navigation
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [darkMode, setDarkMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedLeagueId, setSelectedLeagueId] = useState('top');
+  const [selectedTennisTour, setSelectedTennisTour] = useState<'atp' | 'wta'>('atp');
+  
+  // Read initial league from query params if available
+  const initialLeague = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('league') || 'top';
+  }, [location.search]);
+
+  const [selectedLeagueId, setSelectedLeagueId] = useState(initialLeague);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -41,12 +50,13 @@ const Dashboard: React.FC = () => {
   // Keep track of how many days back we have loaded
   const [daysBackLoaded, setDaysBackLoaded] = useState(0);
 
-  const [calendarEntries, setCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[]>([]);
+  const [calendarEntries, setCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer' | 'football' | 'tennis'; leagueId: string }[]>([]);
   const [featuredMatches, setFeaturedMatches] = useState<MatchWithHot[]>([]);
-  const [featuredCalendarEntries, setFeaturedCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer'; leagueId: string }[]>([]);
+  const [featuredCalendarEntries, setFeaturedCalendarEntries] = useState<{ date: Date; sport: 'basketball' | 'soccer' | 'football' | 'tennis'; leagueId: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [followedTeamIds, setFollowedTeamIds] = useState<Set<string>>(new Set());
   const [followedTeamsList, setFollowedTeamsList] = useState<AuthTeam[]>([]);
+  const activeLeagueId = selectedLeagueId === 'tennis.atp' ? `tennis.${selectedTennisTour}` : selectedLeagueId;
 
   // Theme Toggle Effect
   useEffect(() => {
@@ -146,7 +156,7 @@ const Dashboard: React.FC = () => {
           // The last response corresponds to 'top' which we use for the calendar
           setCalendarEntries(responses[responses.length - 1].calendar); 
         } else {
-          const { matches, calendar } = await fetchMatches(selectedLeagueId, selectedDate);
+          const { matches, calendar } = await fetchMatches(activeLeagueId, selectedDate);
           // Deduplicate matches by ID to avoid key warnings
           const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
           setMatches(uniqueMatches);
@@ -160,7 +170,7 @@ const Dashboard: React.FC = () => {
     };
 
     loadMatches();
-  }, [selectedDate, selectedLeagueId, user]);
+  }, [selectedDate, selectedLeagueId, activeLeagueId, user]);
 
   // Reset past matches when selection changes
   useEffect(() => {
@@ -197,7 +207,7 @@ const Dashboard: React.FC = () => {
       for (let i = 1; i <= daysToLoad; i++) {
         const d = new Date();
         d.setDate(d.getDate() - (daysBackLoaded + i));
-        requests.push(fetchMatches(selectedLeagueId, d));
+        requests.push(fetchMatches(activeLeagueId, d));
       }
       
       const results = await Promise.all(requests);
@@ -257,7 +267,7 @@ const Dashboard: React.FC = () => {
         return `${c.sport}-${c.leagueId}-invalid-${Math.random()}`;
       }
     };
-    const map = new Map<string, { date: Date; sport: 'basketball' | 'soccer'; leagueId: string }>();
+    const map = new Map<string, { date: Date; sport: 'basketball' | 'soccer' | 'football' | 'tennis'; leagueId: string }>();
     [...calendarEntries, ...featuredCalendarEntries].forEach((c) => {
       if (c.date instanceof Date && !isNaN(c.date.getTime())) {
         map.set(key(c), c);
@@ -325,7 +335,9 @@ const Dashboard: React.FC = () => {
              {/* Context Title */}
              <div className="flex items-center space-x-2 h-8">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {isSameDay(selectedDate, new Date()) ? "Today's Matches" : selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  {selectedLeagueId === 'tennis.atp'
+                    ? `${selectedTennisTour.toUpperCase()} ${isSameDay(selectedDate, new Date()) ? "Singles Matches" : 'Singles Schedule'}`
+                    : isSameDay(selectedDate, new Date()) ? "Today's Matches" : selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                 </h2>
                 <span className="text-sm text-gray-500 font-medium bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-full">
                   {matches.length}
@@ -338,6 +350,23 @@ const Dashboard: React.FC = () => {
                   <Plus size={20} />
                 </Link>
               </div>
+              {selectedLeagueId === 'tennis.atp' && (
+                <div className="flex items-center gap-2">
+                  {(['atp', 'wta'] as const).map((tour) => (
+                    <button
+                      key={tour}
+                      onClick={() => setSelectedTennisTour(tour)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
+                        selectedTennisTour === tour
+                          ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900 border-gray-900 dark:border-white'
+                          : 'bg-white/80 dark:bg-white/5 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10'
+                      }`}
+                    >
+                      {tour.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {selectedLeagueId === 'following' && !user ? (
                 <div className="bg-white dark:bg-white/5 rounded-2xl p-8 text-center border border-dashed border-gray-200 dark:border-white/10">
@@ -410,7 +439,7 @@ const Dashboard: React.FC = () => {
           </div>
         )
       ) : (
-        <NewsSection leagueId={selectedLeagueId} />
+        <NewsSection leagueId={activeLeagueId} />
       )
     )}
 
@@ -470,7 +499,9 @@ const Dashboard: React.FC = () => {
             {/* Banner / Featured Carousel */}
             <div className="w-full">
                <div className="flex items-center justify-between h-8 mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Show & Standings</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {selectedLeagueId === 'tennis.atp' ? 'Ongoing Tournaments & Rankings' : 'Show & Standings'}
+                </h3>
                 <button
                   onClick={() => setIsCalendarOpen(true)}
                   className="p-2 rounded-xl bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/20 text-gray-700 dark:text-white transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center"
@@ -479,7 +510,13 @@ const Dashboard: React.FC = () => {
                   <CalendarDays size={18} />
                 </button>
                </div>
-              {hotMatches.length > 0 ? (
+              {selectedLeagueId === 'tennis.atp' ? (
+                <TennisTourPanel
+                  filterStatuses={['LIVE', 'ONGOING']}
+                  maxEventsPerLeague={3}
+                  visibleLeagues={[selectedTennisTour]}
+                />
+              ) : hotMatches.length > 0 ? (
                 <FeaturedCarousel
                   matches={hotMatches}
                   onMatchClick={(m) => openMatchDetail(m.id, m.leagueId)}
@@ -512,6 +549,8 @@ const Dashboard: React.FC = () => {
                       ));
                   })()}
                 </>
+              ) : selectedLeagueId === 'tennis.atp' ? (
+                <TennisRankingsPanel />
               ) : (
                 <StandingsWidget leagueId={selectedLeagueId} />
               )}
@@ -613,6 +652,8 @@ import SchedulePage from './components/SchedulePage';
 import SitemapPage from './components/SitemapPage';
 import SEO from './components/SEO';
 import LeagueLandingPage from './components/LeagueLandingPage';
+import TennisRankingsPanel from './components/TennisRankingsPanel';
+import TennisTourPanel from './components/TennisTourPanel';
 import WorldCupPage from './components/WorldCupPage';
 import SEOArticlePage from './components/SEOArticlePage';
 import { SEO_PAGES } from './constants/seoPages';
@@ -778,6 +819,20 @@ const App: React.FC = () => {
               description="Get real-time NBA scores, live updates, standings, and schedule for the 2025-26 season. Follow your favorite teams with instant match statistics."
               keywords="NBA Scores, NBA Standings, NBA Schedule, Live Basketball Scores, NBA Results 2025, nfl scores, nba scores, champions league, cricket live, mlb scores, formula 1, nhl scores, super bowl, nba games today, epl table, football scores, nfl games today, nba standings, tennis, live sports, nba playoffs, soccer, mma, boxing, world cup"
               heroColor="bg-orange-600"
+              darkMode={darkMode}
+              toggleTheme={toggleTheme}
+            />
+          } 
+        />
+        <Route 
+          path="/tennis" 
+          element={
+            <LeagueLandingPage 
+              leagueId="tennis.atp"
+              title="ATP Tennis Live Scores & Schedule"
+              description="Get real-time ATP Tennis scores, live updates, and schedule. Follow your favorite players on the court."
+              keywords="Tennis Scores, ATP Standings, ATP Schedule, Live Tennis Scores"
+              heroColor="bg-lime-600"
               darkMode={darkMode}
               toggleTheme={toggleTheme}
             />
