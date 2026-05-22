@@ -57,6 +57,29 @@ const Dashboard: React.FC = () => {
   const [followedTeamIds, setFollowedTeamIds] = useState<Set<string>>(new Set());
   const [followedTeamsList, setFollowedTeamsList] = useState<AuthTeam[]>([]);
   const activeLeagueId = selectedLeagueId === 'tennis.atp' ? `tennis.${selectedTennisTour}` : selectedLeagueId;
+  const sortMatchesForDisplay = (inputMatches: MatchWithHot[]) => {
+    if (activeLeagueId !== 'tennis.atp' && activeLeagueId !== 'tennis.wta') {
+      return inputMatches;
+    }
+
+    const statusPriority: Record<string, number> = {
+      LIVE: 0,
+      HT: 0,
+      SCHEDULED: 1,
+      FINISHED: 2,
+    };
+
+    return [...inputMatches].sort((a, b) => {
+      const statusDiff = (statusPriority[a.status] ?? 3) - (statusPriority[b.status] ?? 3);
+      if (statusDiff !== 0) return statusDiff;
+
+      if (a.status === 'FINISHED' && b.status === 'FINISHED') {
+        return b.startTime.getTime() - a.startTime.getTime();
+      }
+
+      return a.startTime.getTime() - b.startTime.getTime();
+    });
+  };
 
   // Theme Toggle Effect
   useEffect(() => {
@@ -152,14 +175,14 @@ const Dashboard: React.FC = () => {
             });
           });
           
-          setMatches(filteredMatches);
+          setMatches(sortMatchesForDisplay(filteredMatches));
           // The last response corresponds to 'top' which we use for the calendar
           setCalendarEntries(responses[responses.length - 1].calendar); 
         } else {
           const { matches, calendar } = await fetchMatches(activeLeagueId, selectedDate);
           // Deduplicate matches by ID to avoid key warnings
           const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
-          setMatches(uniqueMatches);
+          setMatches(sortMatchesForDisplay(uniqueMatches));
           setCalendarEntries(calendar);
         }
       } catch (error) {

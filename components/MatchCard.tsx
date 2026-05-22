@@ -32,6 +32,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   const setScoreText = isTennis && match.setScores?.length
     ? match.setScores.map((setScore) => `${setScore.home}:${setScore.away}`).join('  ')
     : '';
+  const liveGameScoreText = isTennis && match.liveGameScore
+    ? `${match.liveGameScore.home}:${match.liveGameScore.away}`
+    : '';
   const tennisCurrentSet =
     typeof match.minute === 'number'
       ? match.minute
@@ -43,6 +46,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
       ? `LIVE · Set ${tennisCurrentSet}`
       : 'LIVE'
     : '';
+  const homeServing = isTennis && match.servingSide === 'home';
+  const awayServing = isTennis && match.servingSide === 'away';
   const finishedLabel = isTennis ? 'Final' : (match.minute ? `${match.minute}'` : 'FT');
 
   return (
@@ -111,6 +116,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate w-full" title={match.homeTeam.name}>
             {homeDisplayName}
           </span>
+          {homeServing && (
+            <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+              Serving
+            </span>
+          )}
         </div>
 
         {/* Center Score / VS */}
@@ -124,6 +134,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
               {setScoreText && (
                 <div className="mt-1 max-w-full text-center text-[9px] font-semibold tracking-tight text-gray-500 dark:text-gray-400">
                   {setScoreText}
+                </div>
+              )}
+              {liveGameScoreText && (
+                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-emerald-600 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20">
+                  Game {liveGameScoreText}
                 </div>
               )}
             </div>
@@ -148,6 +163,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
                   {setScoreText}
                 </div>
               )}
+              {isLive && liveGameScoreText && (
+                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-emerald-600 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20">
+                  Game {liveGameScoreText}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -168,6 +188,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate w-full" title={match.awayTeam.name}>
             {awayDisplayName}
           </span>
+          {awayServing && (
+            <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+              Serving
+            </span>
+          )}
         </div>
       </div>
 

@@ -28,6 +28,8 @@ export interface Match {
   tournamentName?: string;
   roundName?: string;
   setScores?: { home: number | string; away: number | string }[];
+  liveGameScore?: { home: string; away: string };
+  servingSide?: 'home' | 'away';
   bestOf?: number;
   summaryNote?: string;
   statusDetail?: string;

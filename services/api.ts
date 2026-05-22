@@ -112,6 +112,63 @@ const getSetScores = (home: any, away: any) => {
   }));
 };
 
+const normalizeTennisPointScore = (value: any): string | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const stringValue = String(value).trim();
+  if (!stringValue) return undefined;
+
+  const upper = stringValue.toUpperCase();
+  if (upper === 'ADV' || upper === 'AD' || upper === 'A') return 'Ad';
+  return stringValue;
+};
+
+const getTennisLiveGameScore = (competition: any, home: any, away: any) => {
+  const homeCandidates = [
+    home?.pointScore,
+    home?.currentGameScore,
+    home?.gameScore,
+    home?.statistics?.find?.((stat: any) => /point|game/i.test(String(stat?.name || stat?.label || '')))?.displayValue,
+    competition?.situation?.homeScore,
+    competition?.situation?.score?.home,
+    competition?.situation?.lastPlay?.homeScore,
+  ];
+
+  const awayCandidates = [
+    away?.pointScore,
+    away?.currentGameScore,
+    away?.gameScore,
+    away?.statistics?.find?.((stat: any) => /point|game/i.test(String(stat?.name || stat?.label || '')))?.displayValue,
+    competition?.situation?.awayScore,
+    competition?.situation?.score?.away,
+    competition?.situation?.lastPlay?.awayScore,
+  ];
+
+  const homeScore = homeCandidates.map(normalizeTennisPointScore).find(Boolean);
+  const awayScore = awayCandidates.map(normalizeTennisPointScore).find(Boolean);
+
+  if (!homeScore || !awayScore) return undefined;
+  return { home: homeScore, away: awayScore };
+};
+
+const getTennisServingSide = (competition: any, home: any, away: any): 'home' | 'away' | undefined => {
+  const servingIdCandidates = [
+    competition?.situation?.servingCompetitorId,
+    competition?.situation?.serving?.id,
+    competition?.situation?.lastPlay?.servingCompetitorId,
+    competition?.situation?.lastPlay?.serving?.id,
+  ].map((value) => (value !== undefined && value !== null ? String(value) : undefined)).filter(Boolean);
+
+  if (servingIdCandidates.includes(String(home?.id))) return 'home';
+  if (servingIdCandidates.includes(String(away?.id))) return 'away';
+
+  const homeServing = [home?.serving, home?.isServing, home?.hasServe].some((value) => value === true);
+  const awayServing = [away?.serving, away?.isServing, away?.hasServe].some((value) => value === true);
+
+  if (homeServing && !awayServing) return 'home';
+  if (awayServing && !homeServing) return 'away';
+  return undefined;
+};
+
 const isTennisLeague = (leagueId: string) => leagueId === 'tennis.atp' || leagueId === 'tennis.wta';
 
 const getTennisLeagueSlug = (leagueId: string): 'atp' | 'wta' => leagueId === 'tennis.wta' ? 'wta' : 'atp';
@@ -194,6 +251,8 @@ const transformTennisCompetition = (competition: any, leagueId: string, tourname
     tournamentName,
     roundName: competition?.round?.displayName || competition?.type?.text,
     setScores: getSetScores(home, away),
+    liveGameScore: getTennisLiveGameScore(competition, home, away),
+    servingSide: getTennisServingSide(competition, home, away),
   };
 };
 
@@ -490,6 +549,8 @@ const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string
         tournamentName: eventEntry?.shortName || eventEntry?.name,
         roundName: competition?.round?.displayName || competition?.type?.text,
         setScores: getSetScores(home, away),
+        liveGameScore: getTennisLiveGameScore(competition, home, away),
+        servingSide: getTennisServingSide(competition, home, away),
         bestOf: competition?.format?.regulation?.periods,
         summaryNote: competition?.notes?.[0]?.text,
         statusDetail: competition?.status?.type?.detail || competition?.status?.type?.description,
@@ -612,6 +673,8 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
       tournamentName: competition?.event?.shortName || competition?.event?.name || data?.event?.shortName || data?.event?.name,
       roundName: competition?.round?.displayName || competition?.type?.text,
       setScores: getSetScores(home, away),
+      liveGameScore: getTennisLiveGameScore(competition, home, away),
+      servingSide: getTennisServingSide(competition, home, away),
       bestOf: competition?.format?.regulation?.periods,
       summaryNote: competition?.notes?.[0]?.text || header?.note,
       statusDetail: header?.status?.type?.detail || competition?.status?.type?.detail,
