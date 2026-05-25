@@ -29,9 +29,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   const awayDisplayName = isTennis ? formatTennisName(match.awayTeam.name) : match.awayTeam.name;
   const homeImage = isTennis ? (match.homeTeam.headshot || DEFAULT_TENNIS_HEADSHOT) : (match.homeTeam.logo || DEFAULT_TEAM_LOGO);
   const awayImage = isTennis ? (match.awayTeam.headshot || DEFAULT_TENNIS_HEADSHOT) : (match.awayTeam.logo || DEFAULT_TEAM_LOGO);
-  const setScoreText = isTennis && match.setScores?.length
-    ? match.setScores.map((setScore) => `${setScore.home}:${setScore.away}`).join('  ')
-    : '';
+  const homeFlag = isTennis ? match.homeTeam.logo : '';
+  const awayFlag = isTennis ? match.awayTeam.logo : '';
+  const setScores = isTennis && match.setScores?.length ? match.setScores : [];
   const liveGameScoreText = isTennis && match.liveGameScore
     ? `${match.liveGameScore.home}:${match.liveGameScore.away}`
     : '';
@@ -49,6 +49,53 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   const homeServing = isTennis && match.servingSide === 'home';
   const awayServing = isTennis && match.servingSide === 'away';
   const finishedLabel = isTennis ? 'Final' : (match.minute ? `${match.minute}'` : 'FT');
+  const parseTennisSetDisplay = (value: string | number) => {
+    const stringValue = String(value ?? '').trim();
+    const matched = stringValue.match(/^(.+?)\((.+)\)$/);
+
+    if (!matched) {
+      return { score: stringValue, tiebreak: '' };
+    }
+
+    return {
+      score: matched[1].trim(),
+      tiebreak: matched[2].trim(),
+    };
+  };
+  const tennisSetColumns = setScores.length > 0 ? (
+    <div className="mt-2 w-full rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/80 dark:bg-white/5 px-2 py-1.5">
+      <div
+        className="grid gap-2 text-center"
+        style={{ gridTemplateColumns: `repeat(${setScores.length}, minmax(0, 1fr))` }}
+      >
+        {setScores.map((setScore, index) => {
+          const homeSet = parseTennisSetDisplay(setScore.home);
+          const awaySet = parseTennisSetDisplay(setScore.away);
+
+          return (
+            <div key={`${match.id}-set-${index}`} className="min-w-0 flex flex-col items-center gap-1">
+              <div className="relative flex w-full justify-center text-[11px] md:text-xs font-semibold text-gray-700 dark:text-gray-200 leading-none">
+                <span>{homeSet.score}</span>
+                {homeSet.tiebreak && (
+                  <span className="absolute -top-1 -right-1.5 text-[8px] font-semibold leading-none text-gray-400 dark:text-gray-500">
+                    {homeSet.tiebreak}
+                  </span>
+                )}
+              </div>
+              <div className="relative flex w-full justify-center text-[11px] md:text-xs font-semibold text-gray-500 dark:text-gray-400 leading-none">
+                <span>{awaySet.score}</span>
+                {awaySet.tiebreak && (
+                  <span className="absolute -top-1 -right-1.5 text-[8px] font-semibold leading-none text-gray-400 dark:text-gray-500">
+                    {awaySet.tiebreak}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  ) : null;
 
   return (
     <div
@@ -113,9 +160,18 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
               }}
             />
           </div>
-          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate w-full" title={match.homeTeam.name}>
-            {homeDisplayName}
-          </span>
+          <div className="flex items-center justify-center gap-1 min-w-0 w-full">
+            {homeFlag && (
+              <img
+                src={homeFlag}
+                alt={`${match.homeTeam.name} flag`}
+                className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
+              />
+            )}
+            <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate min-w-0" title={match.homeTeam.name}>
+              {homeDisplayName}
+            </span>
+          </div>
           {homeServing && (
             <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
               Serving
@@ -131,11 +187,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
               <div className="h-6 w-6 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-gray-500">
                 VS
               </div>
-              {setScoreText && (
-                <div className="mt-1 max-w-full text-center text-[9px] font-semibold tracking-tight text-gray-500 dark:text-gray-400">
-                  {setScoreText}
-                </div>
-              )}
+              {tennisSetColumns}
               {liveGameScoreText && (
                 <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-emerald-600 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20">
                   Game {liveGameScoreText}
@@ -158,11 +210,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
                   {match.awayScore}
                 </span>
               </div>
-              {setScoreText && (
-                <div className="mt-1 max-w-full text-center text-[9px] font-semibold tracking-tight text-gray-500 dark:text-gray-400">
-                  {setScoreText}
-                </div>
-              )}
+              {tennisSetColumns}
               {isLive && liveGameScoreText && (
                 <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-emerald-600 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20">
                   Game {liveGameScoreText}
@@ -185,9 +233,18 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
               }}
             />
           </div>
-          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate w-full" title={match.awayTeam.name}>
-            {awayDisplayName}
-          </span>
+          <div className="flex items-center justify-center gap-1 min-w-0 w-full">
+            {awayFlag && (
+              <img
+                src={awayFlag}
+                alt={`${match.awayTeam.name} flag`}
+                className="h-3.5 w-3.5 rounded-full object-cover shrink-0"
+              />
+            )}
+            <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 text-center leading-tight truncate min-w-0" title={match.awayTeam.name}>
+              {awayDisplayName}
+            </span>
+          </div>
           {awayServing && (
             <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
               Serving

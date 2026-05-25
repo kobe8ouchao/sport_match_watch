@@ -1,10 +1,18 @@
 import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, StandingEntry, PlayerStatCategory, Article, TennisRankingPlayer, TennisTourEvent } from '../types';
 import { formatDateForApi, isSameDay } from '../utils';
 import { MatchWithHot } from '../constants';
+import atpPlayer1000 from './atp-player1000.json';
 
 export interface MatchesResponse {
   matches: MatchWithHot[];
   calendar: { date: Date; sport: 'basketball' | 'soccer' | 'football' | 'tennis'; leagueId: string }[];
+}
+
+type TennisHeadshotMap = Map<string, string>;
+
+interface AtpRankingEntry {
+  Name?: string;
+  UrlHeadshotImage?: string;
 }
 
 // Helper to determine match status from ESPN data
@@ -47,6 +55,72 @@ const getImageHref = (image: any): string | undefined => {
   return undefined;
 };
 
+const normalizeTennisPlayerName = (name?: string): string => {
+  if (!name) return '';
+
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const toAbsoluteUrl = (value?: string, base = 'https://www.atptour.com'): string | undefined => {
+  if (!value) return undefined;
+
+  try {
+    return new URL(value, base).toString();
+  } catch {
+    return undefined;
+  }
+};
+
+const buildTennisNameAliases = (name?: string): string[] => {
+  const normalized = normalizeTennisPlayerName(name);
+  if (!normalized) return [];
+
+  const parts = normalized.split(' ').filter(Boolean);
+  const aliases = new Set<string>([normalized]);
+
+  if (parts.length >= 2) {
+    aliases.add(`${parts[0].charAt(0)} ${parts.slice(1).join(' ')}`.trim());
+    aliases.add(parts.slice(1).join(' '));
+  }
+
+  return Array.from(aliases).filter(Boolean);
+};
+
+const getCompetitorNameCandidates = (competitor: any): string[] => {
+  const rawNames = [
+    competitor?.athlete?.displayName,
+    competitor?.athlete?.fullName,
+    competitor?.athlete?.shortName,
+    getEntityName(competitor),
+    getEntityShortName(competitor),
+  ];
+
+  const aliases = new Set<string>();
+  rawNames.forEach((name) => {
+    buildTennisNameAliases(name).forEach((alias) => aliases.add(alias));
+  });
+
+  return Array.from(aliases);
+};
+
+const ATP_HEADSHOT_MAP: TennisHeadshotMap = new Map(
+  (Array.isArray(atpPlayer1000) ? atpPlayer1000 : []).flatMap((item: AtpRankingEntry) => {
+    const headshotUrl = toAbsoluteUrl(item?.UrlHeadshotImage);
+
+    if (!headshotUrl) return [];
+
+    return buildTennisNameAliases(item?.Name).map((alias) => [alias, headshotUrl] as const);
+  })
+);
+
+const fetchAtpHeadshotMap = async (): Promise<TennisHeadshotMap> => ATP_HEADSHOT_MAP;
+
 const getAthleteId = (competitor: any): string | undefined => {
   const directId = competitor?.athlete?.id || competitor?.id;
   if (directId) return String(directId);
@@ -70,8 +144,21 @@ const getEntityLogo = (competitor: any) => {
   return '';
 };
 
-const getEntityHeadshot = (competitor: any) => {
-  return getImageHref(competitor?.athlete?.headshot) || getTennisHeadshotById(getAthleteId(competitor));
+const getEntityHeadshot = (
+  competitor: any,
+  options?: { leagueId?: string; tennisHeadshotMap?: TennisHeadshotMap }
+) => {
+  const espnHeadshot = getImageHref(competitor?.athlete?.headshot);
+  if (espnHeadshot) return espnHeadshot;
+
+  if (options?.leagueId === 'tennis.atp' && options.tennisHeadshotMap) {
+    for (const candidate of getCompetitorNameCandidates(competitor)) {
+      const atpHeadshot = options.tennisHeadshotMap.get(candidate);
+      if (atpHeadshot) return atpHeadshot;
+    }
+  }
+
+  return getTennisHeadshotById(getAthleteId(competitor));
 };
 
 const getCompetitorScore = (competitor: any) => {
@@ -214,7 +301,12 @@ const transformEspnEvent = (event: any, leagueId: string): MatchWithHot | null =
   };
 };
 
-const transformTennisCompetition = (competition: any, leagueId: string, tournamentName?: string): MatchWithHot | null => {
+const transformTennisCompetition = (
+  competition: any,
+  leagueId: string,
+  tournamentName?: string,
+  tennisHeadshotMap?: TennisHeadshotMap
+): MatchWithHot | null => {
   const competitors = competition?.competitors || [];
   const home = competitors.find((c: any) => c.homeAway === 'home') || competitors[0];
   const away = competitors.find((c: any) => c.homeAway === 'away') || competitors[1];
@@ -231,7 +323,7 @@ const transformTennisCompetition = (competition: any, leagueId: string, tourname
       name: getEntityName(home),
       shortName: getEntityShortName(home),
       logo: getEntityLogo(home),
-      headshot: getEntityHeadshot(home),
+      headshot: getEntityHeadshot(home, { leagueId, tennisHeadshotMap }),
       linescores: home.linescores,
     },
     awayTeam: {
@@ -239,7 +331,7 @@ const transformTennisCompetition = (competition: any, leagueId: string, tourname
       name: getEntityName(away),
       shortName: getEntityShortName(away),
       logo: getEntityLogo(away),
-      headshot: getEntityHeadshot(away),
+      headshot: getEntityHeadshot(away, { leagueId, tennisHeadshotMap }),
       linescores: away.linescores,
     },
     homeScore: getCompetitorScore(home),
@@ -256,7 +348,7 @@ const transformTennisCompetition = (competition: any, leagueId: string, tourname
   };
 };
 
-const extractTennisMatches = (events: any[], leagueId: string): MatchWithHot[] => {
+const extractTennisMatches = (events: any[], leagueId: string, tennisHeadshotMap?: TennisHeadshotMap): MatchWithHot[] => {
   return events.flatMap((event: any) => {
     const groupedCompetitions = Array.isArray(event?.groupings)
       ? event.groupings.flatMap((group: any) => group?.competitions || [])
@@ -266,7 +358,7 @@ const extractTennisMatches = (events: any[], leagueId: string): MatchWithHot[] =
     const competitions = groupedCompetitions.length > 0 ? groupedCompetitions : directCompetitions;
 
     return competitions
-      .map((competition: any) => transformTennisCompetition(competition, leagueId, event.shortName || event.name))
+      .map((competition: any) => transformTennisCompetition(competition, leagueId, event.shortName || event.name, tennisHeadshotMap))
       .filter((match: MatchWithHot | null): match is MatchWithHot => Boolean(match));
   });
 };
@@ -361,6 +453,26 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
       // Optional: Deduplicate calendar if needed, but for now flatMap is fine
       // or we could use a Map to unique by date+league
 
+      if (allMatches.length === 0) {
+        const tennisResults = await Promise.all([
+          fetchMatches('tennis.atp', date),
+          fetchMatches('tennis.wta', date),
+        ]);
+
+        const tennisMatches = tennisResults.flatMap((result) => result.matches);
+        const tennisCalendar = tennisResults.flatMap((result) => result.calendar);
+        const sortedTennisMatches = tennisMatches.sort((a, b) => {
+          if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
+          if (a.status !== 'LIVE' && b.status === 'LIVE') return 1;
+          return a.startTime.getTime() - b.startTime.getTime();
+        });
+
+        return {
+          matches: sortedTennisMatches,
+          calendar: tennisCalendar.length > 0 ? tennisCalendar : allCalendar,
+        };
+      }
+
       // Sort: Live first, then by time
       const sortedMatches = allMatches.sort((a, b) => {
         if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
@@ -414,8 +526,12 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
 
       if (!data.events) return { matches: [], calendar };
 
+      const tennisHeadshotMap = leagueId === 'tennis.atp'
+        ? await fetchAtpHeadshotMap()
+        : undefined;
+
       const matches = isTennisLeague(leagueId)
-        ? extractTennisMatches(data.events, leagueId)
+        ? extractTennisMatches(data.events, leagueId, tennisHeadshotMap)
         : data.events
             .map((event: any) => transformEspnEvent(event, leagueId))
             .filter((match: MatchWithHot | null): match is MatchWithHot => Boolean(match));
@@ -480,6 +596,10 @@ const buildTennisMonthRange = (date: Date) => {
 };
 
 const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
+  const tennisHeadshotMap = leagueId === 'tennis.atp'
+    ? await fetchAtpHeadshotMap()
+    : undefined;
+
   const monthAnchors = [-1, 0, 1].map((offset) => {
     const date = new Date();
     date.setUTCMonth(date.getUTCMonth() + offset);
@@ -526,7 +646,7 @@ const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string
           name: getEntityName(home),
           shortName: getEntityShortName(home),
           logo: getEntityLogo(home),
-          headshot: getEntityHeadshot(home),
+          headshot: getEntityHeadshot(home, { leagueId, tennisHeadshotMap }),
           link: getEntityLink(home),
           linescores: home.linescores,
         },
@@ -535,7 +655,7 @@ const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string
           name: getEntityName(away),
           shortName: getEntityShortName(away),
           logo: getEntityLogo(away),
-          headshot: getEntityHeadshot(away),
+          headshot: getEntityHeadshot(away, { leagueId, tennisHeadshotMap }),
           link: getEntityLink(away),
           linescores: away.linescores,
         },
@@ -569,6 +689,9 @@ const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string
 
 export const fetchMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
   const sport = leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : (isTennisLeague(leagueId) ? 'tennis' : 'soccer'));
+  const tennisHeadshotMap = leagueId === 'tennis.atp'
+    ? await fetchAtpHeadshotMap()
+    : undefined;
 
   let url = '';
   if (sport === 'basketball') {
@@ -648,7 +771,7 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
         name: getEntityName(home),
         shortName: getEntityShortName(home),
         logo: getEntityLogo(home),
-        headshot: getEntityHeadshot(home),
+        headshot: getEntityHeadshot(home, { leagueId, tennisHeadshotMap }),
         link: getEntityLink(home),
         linescores: home.linescores,
         record: getRecord(home),
@@ -658,7 +781,7 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
         name: getEntityName(away),
         shortName: getEntityShortName(away),
         logo: getEntityLogo(away),
-        headshot: getEntityHeadshot(away),
+        headshot: getEntityHeadshot(away, { leagueId, tennisHeadshotMap }),
         link: getEntityLink(away),
         linescores: away.linescores,
         record: getRecord(away),
@@ -1245,6 +1368,10 @@ const fetchTennisLeagueRanking = async (
   limit = 10
 ): Promise<TennisRankingPlayer[]> => {
   try {
+    const atpHeadshotMap = leagueSlug === 'atp'
+      ? await fetchAtpHeadshotMap()
+      : undefined;
+
     const rankingListResp = await fetch(`https://sports.core.api.espn.com/v2/sports/tennis/leagues/${leagueSlug}/rankings?limit=20`);
     if (!rankingListResp.ok) throw new Error(`Failed to fetch ${leagueSlug} rankings list`);
 
@@ -1280,7 +1407,10 @@ const fetchTennisLeagueRanking = async (
             trend: rank?.trend,
             displayName: athleteData?.displayName || athleteData?.fullName || 'Unknown Player',
             shortName: athleteData?.shortName || athleteData?.displayName || 'Unknown Player',
-            headshot: getImageHref(athleteData?.headshot) || getTennisHeadshotById(athleteId),
+            headshot:
+              getImageHref(athleteData?.headshot)
+              || atpHeadshotMap?.get(normalizeTennisPlayerName(athleteData?.displayName || athleteData?.fullName))
+              || getTennisHeadshotById(athleteId),
             flag: getImageHref(athleteData?.flag) || getImageHref(athleteData?.citizenshipCountry?.flag),
           };
         } catch (error) {

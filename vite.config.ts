@@ -62,6 +62,20 @@ export default defineConfig(({ mode }) => {
               });
             },
           },
+          '/api/tennis/atp-rankings': {
+            target: 'https://www.atptour.com',
+            changeOrigin: true,
+            secure: true,
+            rewrite: () => '/en/-/www/rank/sglroll/1000?v=1',
+            configure: (proxy, _options) => {
+              proxy.on('proxyReq', (proxyReq, _req, _res) => {
+                proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
+                proxyReq.setHeader('Accept', 'application/json, text/plain, */*');
+                proxyReq.setHeader('Referer', 'https://www.atptour.com/en/rankings/singles');
+                proxyReq.setHeader('Origin', 'https://www.atptour.com');
+              });
+            },
+          },
         },
       },
       plugins: [react()],
