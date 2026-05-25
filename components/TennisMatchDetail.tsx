@@ -74,18 +74,22 @@ const TennisMatchDetail: React.FC<TennisMatchDetailProps> = ({ match }) => {
                 target.src = DEFAULT_TENNIS_HEADSHOT;
               }}
             />
-            {player.logo && (
-              <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full overflow-hidden border border-white bg-white shadow-sm">
-                <img src={player.logo} alt={`${player.name} flag`} className="w-full h-full object-cover" />
-              </div>
-            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
               {side === 'home' ? 'Player 1' : 'Player 2'}
             </div>
-            <div className="text-xl font-bold text-gray-900 dark:text-white truncate">
-              {player.name}
+            <div className="mt-1 flex items-center gap-2 min-w-0">
+              {player.logo && (
+                <img
+                  src={player.logo}
+                  alt={`${player.name} flag`}
+                  className="h-4 w-4 rounded-full object-cover shrink-0"
+                />
+              )}
+              <div className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                {player.name}
+              </div>
             </div>
             {player.link && (
               <a
