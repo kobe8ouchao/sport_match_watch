@@ -148,6 +148,11 @@ const TennisMatchDetail: React.FC<TennisMatchDetailProps> = ({ match }) => {
                 <Clock3 size={14} />
                 <span>{formattedDateTime}</span>
               </div>
+              {isFinished && match.matchDuration && (
+                <div className="mt-2 text-xs text-white/80">
+                  Duration: {match.matchDuration}
+                </div>
+              )}
               {match.bestOf && (
                 <div className="mt-2 text-xs text-white/70">
                   Best of {match.bestOf}
@@ -287,6 +292,12 @@ const TennisMatchDetail: React.FC<TennisMatchDetailProps> = ({ match }) => {
                   <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Format</div>
                   <div className="mt-2 text-lg font-bold text-gray-900 dark:text-white">
                     {match.bestOf ? `Best of ${match.bestOf}` : 'Unavailable'}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-white/70 dark:bg-white/5 p-4 border border-gray-100 dark:border-white/5">
+                  <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Duration</div>
+                  <div className="mt-2 text-lg font-bold text-gray-900 dark:text-white">
+                    {isFinished ? (match.matchDuration || 'Unavailable') : 'In Progress'}
                   </div>
                 </div>
                 <div className="rounded-2xl bg-white/70 dark:bg-white/5 p-4 border border-gray-100 dark:border-white/5">

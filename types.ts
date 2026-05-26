@@ -31,6 +31,7 @@ export interface Match {
   liveGameScore?: { home: string; away: string };
   servingSide?: 'home' | 'away';
   bestOf?: number;
+  matchDuration?: string;
   summaryNote?: string;
   statusDetail?: string;
 }

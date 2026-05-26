@@ -49,6 +49,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   const homeServing = isTennis && match.servingSide === 'home';
   const awayServing = isTennis && match.servingSide === 'away';
   const finishedLabel = isTennis ? 'Final' : (match.minute ? `${match.minute}'` : 'FT');
+  const tennisFinishedDuration = isTennis && isFinished ? match.matchDuration : undefined;
   const parseTennisSetDisplay = (value: string | number) => {
     const stringValue = String(value ?? '').trim();
     const matched = stringValue.match(/^(.+?)\((.+)\)$/);
@@ -211,6 +212,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
                 </span>
               </div>
               {tennisSetColumns}
+              {tennisFinishedDuration && (
+                <div className="mt-1 text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                  {tennisFinishedDuration}
+                </div>
+              )}
               {isLive && liveGameScoreText && (
                 <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wide text-emerald-600 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/20">
                   Game {liveGameScoreText}

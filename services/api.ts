@@ -256,6 +256,65 @@ const getTennisServingSide = (competition: any, home: any, away: any): 'home' | 
   return undefined;
 };
 
+const normalizeMatchDuration = (value: any): string | undefined => {
+  if (value === undefined || value === null) return undefined;
+
+  const raw = String(value).trim();
+  if (!raw) return undefined;
+
+  const compact = raw.replace(/\s+/g, ' ');
+  const hourMinuteMatch = compact.match(/(\d+)\s*h(?:ours?)?(?:\s*(\d+)\s*m(?:in(?:utes?)?)?)?/i);
+  if (hourMinuteMatch) {
+    const hours = hourMinuteMatch[1];
+    const minutes = hourMinuteMatch[2];
+    return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+
+  const minuteOnlyMatch = compact.match(/^(\d+)\s*m(?:in(?:utes?)?)?$/i);
+  if (minuteOnlyMatch) {
+    return `${minuteOnlyMatch[1]}m`;
+  }
+
+  if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(compact)) {
+    const parts = compact.split(':').map((part) => parseInt(part, 10));
+    if (parts.length === 2) {
+      const [minutes, seconds] = parts;
+      if (seconds === 0) return `${minutes}m`;
+      return `${minutes}m`;
+    }
+
+    if (parts.length === 3) {
+      const [hours, minutes] = parts;
+      return minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+  }
+
+  return undefined;
+};
+
+const getTennisMatchDuration = (source: any): string | undefined => {
+  const candidates = [
+    source?.matchTime?.displayValue,
+    source?.matchTime,
+    source?.timeElapsed?.displayValue,
+    source?.timeElapsed,
+    source?.duration?.displayValue,
+    source?.duration,
+    source?.status?.displayClock,
+    source?.status?.type?.detail,
+    source?.status?.type?.shortDetail,
+    source?.note,
+    source?.notes?.[0]?.text,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeMatchDuration(candidate);
+    if (normalized) return normalized;
+  }
+
+  return undefined;
+};
+
 const isTennisLeague = (leagueId: string) => leagueId === 'tennis.atp' || leagueId === 'tennis.wta';
 
 const getTennisLeagueSlug = (leagueId: string): 'atp' | 'wta' => leagueId === 'tennis.wta' ? 'wta' : 'atp';
@@ -345,6 +404,7 @@ const transformTennisCompetition = (
     setScores: getSetScores(home, away),
     liveGameScore: getTennisLiveGameScore(competition, home, away),
     servingSide: getTennisServingSide(competition, home, away),
+    matchDuration: getTennisMatchDuration(competition),
   };
 };
 
@@ -672,6 +732,7 @@ const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string
         liveGameScore: getTennisLiveGameScore(competition, home, away),
         servingSide: getTennisServingSide(competition, home, away),
         bestOf: competition?.format?.regulation?.periods,
+        matchDuration: getTennisMatchDuration(competition) || getTennisMatchDuration(eventEntry),
         summaryNote: competition?.notes?.[0]?.text,
         statusDetail: competition?.status?.type?.detail || competition?.status?.type?.description,
         events: [],
@@ -799,6 +860,7 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
       liveGameScore: getTennisLiveGameScore(competition, home, away),
       servingSide: getTennisServingSide(competition, home, away),
       bestOf: competition?.format?.regulation?.periods,
+      matchDuration: getTennisMatchDuration(competition) || getTennisMatchDuration(header),
       summaryNote: competition?.notes?.[0]?.text || header?.note,
       statusDetail: header?.status?.type?.detail || competition?.status?.type?.detail,
     };
