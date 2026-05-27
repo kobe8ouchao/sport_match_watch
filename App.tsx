@@ -24,7 +24,6 @@ const Dashboard: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTennisTour, setSelectedTennisTour] = useState<'atp' | 'wta'>('atp');
-  const [topDisplayMode, setTopDisplayMode] = useState<'basketball' | 'soccer' | 'tennis' | 'news'>('basketball');
   
   // Read initial league from query params if available
   const initialLeague = useMemo(() => {
@@ -58,63 +57,9 @@ const Dashboard: React.FC = () => {
   const [followedTeamIds, setFollowedTeamIds] = useState<Set<string>>(new Set());
   const [followedTeamsList, setFollowedTeamsList] = useState<AuthTeam[]>([]);
   const activeLeagueId = selectedLeagueId === 'tennis.atp' ? `tennis.${selectedTennisTour}` : selectedLeagueId;
-  const topSoccerLeagueIds = [
-    'eng.1',
-    'esp.1',
-    'ita.1',
-    'ger.1',
-    'fra.1',
-    'uefa.champions',
-    'uefa.europa',
-    'uefa.europa.conf',
-    'esp.copa_del_rey',
-    'ita.coppa_italia',
-    'eng.fa',
-  ];
 
-  const dedupeMatches = (inputMatches: MatchWithHot[]) => (
-    Array.from(new Map(inputMatches.map((match) => [match.id, match])).values())
-  );
 
-  const sortTopPriorityMatches = (inputMatches: MatchWithHot[]) => {
-    return [...inputMatches].sort((a, b) => {
-      if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
-      if (a.status !== 'LIVE' && b.status === 'LIVE') return 1;
-      return a.startTime.getTime() - b.startTime.getTime();
-    });
-  };
 
-  const fetchTopPriorityMatches = async (date: Date) => {
-    const [basketballResponse, soccerResponses, tennisResponses] = await Promise.all([
-      fetchMatches('nba', date),
-      Promise.all(topSoccerLeagueIds.map((leagueId) => fetchMatches(leagueId, date))),
-      Promise.all([fetchMatches('tennis.atp', date), fetchMatches('tennis.wta', date)]),
-    ]);
-
-    const basketballMatches = sortTopPriorityMatches(dedupeMatches(basketballResponse.matches));
-    const soccerMatches = sortTopPriorityMatches(dedupeMatches(soccerResponses.flatMap((response) => response.matches)));
-    const tennisMatches = sortTopPriorityMatches(dedupeMatches(tennisResponses.flatMap((response) => response.matches)));
-
-    const calendar = [
-      ...basketballResponse.calendar,
-      ...soccerResponses.flatMap((response) => response.calendar),
-      ...tennisResponses.flatMap((response) => response.calendar),
-    ];
-
-    if (basketballMatches.length > 0) {
-      return { matches: basketballMatches, calendar, mode: 'basketball' as const };
-    }
-
-    if (soccerMatches.length > 0) {
-      return { matches: soccerMatches, calendar, mode: 'soccer' as const };
-    }
-
-    if (tennisMatches.length > 0) {
-      return { matches: tennisMatches, calendar, mode: 'tennis' as const };
-    }
-
-    return { matches: [], calendar, mode: 'news' as const };
-  };
 
   const sortMatchesForDisplay = (inputMatches: MatchWithHot[]) => {
     if (activeLeagueId !== 'tennis.atp' && activeLeagueId !== 'tennis.wta') {
@@ -237,19 +182,18 @@ const Dashboard: React.FC = () => {
           setMatches(sortMatchesForDisplay(filteredMatches));
           // The last response corresponds to 'top' which we use for the calendar
           setCalendarEntries(responses[responses.length - 1].calendar); 
-          setTopDisplayMode('news');
         } else if (selectedLeagueId === 'top') {
-          const { matches, calendar, mode } = await fetchTopPriorityMatches(selectedDate);
-          setMatches(matches);
+          const { matches, calendar } = await fetchMatches('top', selectedDate);
+          // Deduplicate matches by ID to avoid key warnings
+          const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
+          setMatches(uniqueMatches);
           setCalendarEntries(calendar);
-          setTopDisplayMode(mode);
         } else {
           const { matches, calendar } = await fetchMatches(activeLeagueId, selectedDate);
           // Deduplicate matches by ID to avoid key warnings
           const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
           setMatches(sortMatchesForDisplay(uniqueMatches));
           setCalendarEntries(calendar);
-          setTopDisplayMode('news');
         }
       } catch (error) {
         console.error("Error loading matches:", error);
@@ -296,7 +240,7 @@ const Dashboard: React.FC = () => {
       for (let i = 1; i <= daysToLoad; i++) {
         const d = new Date();
         d.setDate(d.getDate() - (daysBackLoaded + i));
-        requests.push(selectedLeagueId === 'top' ? fetchTopPriorityMatches(d) : fetchMatches(activeLeagueId, d));
+        requests.push(fetchMatches(activeLeagueId, d));
       }
       
       const results = await Promise.all(requests);
@@ -386,15 +330,7 @@ const Dashboard: React.FC = () => {
     window.open(url, '_blank');
   };
 
-  const contextTitle = selectedLeagueId === 'top'
-    ? topDisplayMode === 'basketball'
-      ? 'Basketball Matches'
-      : topDisplayMode === 'soccer'
-        ? 'Football Matches'
-        : topDisplayMode === 'tennis'
-          ? 'Tennis Matches'
-          : 'Top Sports News'
-    : selectedLeagueId === 'tennis.atp'
+  const contextTitle = selectedLeagueId === 'tennis.atp'
       ? `${selectedTennisTour.toUpperCase()} ${isSameDay(selectedDate, new Date()) ? "Singles Matches" : 'Singles Schedule'}`
       : isSameDay(selectedDate, new Date())
         ? "Today's Matches"
@@ -540,24 +476,7 @@ const Dashboard: React.FC = () => {
           </div>
         )
       ) : (
-        selectedLeagueId === 'top' ? (
-          <div className="space-y-8 animate-slide-up">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Basketball News</h3>
-              <NewsSection leagueId="nba" hideHeader limit={6} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Football News</h3>
-              <NewsSection leagueId="eng.1" hideHeader limit={6} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Tennis News</h3>
-              <NewsSection leagueId="tennis.atp" hideHeader limit={6} />
-            </div>
-          </div>
-        ) : (
           <NewsSection leagueId={activeLeagueId} />
-        )
       )
     )}
 

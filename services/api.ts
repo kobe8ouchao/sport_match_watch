@@ -496,44 +496,19 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
       'uefa.europa.conf', // Conference League
       'esp.copa_del_rey', // Copa del Rey
       'ita.coppa_italia', // Coppa Italia
-      'eng.fa' // FA Cup
+      'eng.fa', // FA Cup
+      'tennis.atp', // ATP
+      'tennis.wta', // WTA
     ];
 
     try {
-      // Fetch matches for the selected date for all leagues
-      // Note: Recursive calls will handle timezone/date filtering logic
       const results = await Promise.all(
         leaguesToFetch.map(id => fetchMatches(id, date))
       );
 
       const allMatches = results.flatMap(r => r.matches);
-      
-      // Merge and deduplicate calendar entries
       const allCalendar = results.flatMap(r => r.calendar);
-      // Optional: Deduplicate calendar if needed, but for now flatMap is fine
-      // or we could use a Map to unique by date+league
 
-      if (allMatches.length === 0) {
-        const tennisResults = await Promise.all([
-          fetchMatches('tennis.atp', date),
-          fetchMatches('tennis.wta', date),
-        ]);
-
-        const tennisMatches = tennisResults.flatMap((result) => result.matches);
-        const tennisCalendar = tennisResults.flatMap((result) => result.calendar);
-        const sortedTennisMatches = tennisMatches.sort((a, b) => {
-          if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
-          if (a.status !== 'LIVE' && b.status === 'LIVE') return 1;
-          return a.startTime.getTime() - b.startTime.getTime();
-        });
-
-        return {
-          matches: sortedTennisMatches,
-          calendar: tennisCalendar.length > 0 ? tennisCalendar : allCalendar,
-        };
-      }
-
-      // Sort: Live first, then by time
       const sortedMatches = allMatches.sort((a, b) => {
         if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
         if (a.status !== 'LIVE' && b.status === 'LIVE') return 1;
