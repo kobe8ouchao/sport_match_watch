@@ -2,6 +2,7 @@ import { MatchStatus, MatchDetailData, MatchEvent, MatchStat, PlayerStat, Standi
 import { formatDateForApi, isSameDay } from '../utils';
 import { MatchWithHot } from '../constants';
 import atpPlayer1000 from './atp-player1000.json';
+import wtaPlayer1000 from './wta-player1000.json';
 
 export interface MatchesResponse {
   matches: MatchWithHot[];
@@ -119,7 +120,26 @@ const ATP_HEADSHOT_MAP: TennisHeadshotMap = new Map(
   })
 );
 
+interface WtaRankingEntry {
+  player?: {
+    id?: number;
+    fullName?: string;
+  };
+}
+
+const WTA_HEADSHOT_MAP: TennisHeadshotMap = new Map(
+  (Array.isArray(wtaPlayer1000) ? wtaPlayer1000 : []).flatMap((item: WtaRankingEntry) => {
+    const playerId = item?.player?.id;
+    const fullName = item?.player?.fullName;
+    if (!playerId || !fullName) return [];
+
+    const headshotUrl = `https://wtafiles.blob.core.windows.net/images/headshots/${playerId}.jpg`;
+    return buildTennisNameAliases(fullName).map((alias) => [alias, headshotUrl] as const);
+  })
+);
+
 const fetchAtpHeadshotMap = async (): Promise<TennisHeadshotMap> => ATP_HEADSHOT_MAP;
+const fetchWtaHeadshotMap = async (): Promise<TennisHeadshotMap> => WTA_HEADSHOT_MAP;
 
 const getAthleteId = (competitor: any): string | undefined => {
   const directId = competitor?.athlete?.id || competitor?.id;
@@ -151,10 +171,10 @@ const getEntityHeadshot = (
   const espnHeadshot = getImageHref(competitor?.athlete?.headshot);
   if (espnHeadshot) return espnHeadshot;
 
-  if (options?.leagueId === 'tennis.atp' && options.tennisHeadshotMap) {
+  if ((options?.leagueId === 'tennis.atp' || options?.leagueId === 'tennis.wta') && options.tennisHeadshotMap) {
     for (const candidate of getCompetitorNameCandidates(competitor)) {
-      const atpHeadshot = options.tennisHeadshotMap.get(candidate);
-      if (atpHeadshot) return atpHeadshot;
+      const headshot = options.tennisHeadshotMap.get(candidate);
+      if (headshot) return headshot;
     }
   }
 
@@ -408,19 +428,40 @@ const transformTennisCompetition = (
   };
 };
 
+const TENNIS_LOW_LEVEL_NAME_PATTERNS = [
+  'challenger',
+  'itf',
+  '125k',
+  'challenger tour',
+  'world tennis tour',
+];
+
+const isTournamentLevel250OrAbove = (event: any): boolean => {
+  if (event?.major === true) return true;
+
+  const eventName = ((event?.name || '') + ' ' + (event?.shortName || '')).toLowerCase();
+  for (const pattern of TENNIS_LOW_LEVEL_NAME_PATTERNS) {
+    if (eventName.includes(pattern)) return false;
+  }
+
+  return true;
+};
+
 const extractTennisMatches = (events: any[], leagueId: string, tennisHeadshotMap?: TennisHeadshotMap): MatchWithHot[] => {
-  return events.flatMap((event: any) => {
-    const groupedCompetitions = Array.isArray(event?.groupings)
-      ? event.groupings.flatMap((group: any) => group?.competitions || [])
-      : [];
+  return events
+    .filter(isTournamentLevel250OrAbove)
+    .flatMap((event: any) => {
+      const groupedCompetitions = Array.isArray(event?.groupings)
+        ? event.groupings.flatMap((group: any) => group?.competitions || [])
+        : [];
 
-    const directCompetitions = Array.isArray(event?.competitions) ? event.competitions : [];
-    const competitions = groupedCompetitions.length > 0 ? groupedCompetitions : directCompetitions;
+      const directCompetitions = Array.isArray(event?.competitions) ? event.competitions : [];
+      const competitions = groupedCompetitions.length > 0 ? groupedCompetitions : directCompetitions;
 
-    return competitions
-      .map((competition: any) => transformTennisCompetition(competition, leagueId, event.shortName || event.name, tennisHeadshotMap))
-      .filter((match: MatchWithHot | null): match is MatchWithHot => Boolean(match));
-  });
+      return competitions
+        .map((competition: any) => transformTennisCompetition(competition, leagueId, event.shortName || event.name, tennisHeadshotMap))
+        .filter((match: MatchWithHot | null): match is MatchWithHot => Boolean(match));
+    });
 };
 
 const leagueBanner: Record<string, string> = {
@@ -563,7 +604,9 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
 
       const tennisHeadshotMap = leagueId === 'tennis.atp'
         ? await fetchAtpHeadshotMap()
-        : undefined;
+        : leagueId === 'tennis.wta'
+          ? await fetchWtaHeadshotMap()
+          : undefined;
 
       const matches = isTennisLeague(leagueId)
         ? extractTennisMatches(data.events, leagueId, tennisHeadshotMap)
@@ -633,7 +676,9 @@ const buildTennisMonthRange = (date: Date) => {
 const fetchTennisFallbackMatchDetails = async (matchId: string, leagueId: string): Promise<MatchDetailData | null> => {
   const tennisHeadshotMap = leagueId === 'tennis.atp'
     ? await fetchAtpHeadshotMap()
-    : undefined;
+    : leagueId === 'tennis.wta'
+      ? await fetchWtaHeadshotMap()
+      : undefined;
 
   const monthAnchors = [-1, 0, 1].map((offset) => {
     const date = new Date();
@@ -727,7 +772,9 @@ export const fetchMatchDetails = async (matchId: string, leagueId: string): Prom
   const sport = leagueId === 'nba' ? 'basketball' : (leagueId === 'nfl' ? 'football' : (isTennisLeague(leagueId) ? 'tennis' : 'soccer'));
   const tennisHeadshotMap = leagueId === 'tennis.atp'
     ? await fetchAtpHeadshotMap()
-    : undefined;
+    : leagueId === 'tennis.wta'
+      ? await fetchWtaHeadshotMap()
+      : undefined;
 
   let url = '';
   if (sport === 'basketball') {
@@ -1405,9 +1452,9 @@ const fetchTennisLeagueRanking = async (
   limit = 10
 ): Promise<TennisRankingPlayer[]> => {
   try {
-    const atpHeadshotMap = leagueSlug === 'atp'
+    const headshotMap = leagueSlug === 'atp'
       ? await fetchAtpHeadshotMap()
-      : undefined;
+      : await fetchWtaHeadshotMap();
 
     const rankingListResp = await fetch(`https://sports.core.api.espn.com/v2/sports/tennis/leagues/${leagueSlug}/rankings?limit=20`);
     if (!rankingListResp.ok) throw new Error(`Failed to fetch ${leagueSlug} rankings list`);
@@ -1446,7 +1493,7 @@ const fetchTennisLeagueRanking = async (
             shortName: athleteData?.shortName || athleteData?.displayName || 'Unknown Player',
             headshot:
               getImageHref(athleteData?.headshot)
-              || atpHeadshotMap?.get(normalizeTennisPlayerName(athleteData?.displayName || athleteData?.fullName))
+              || headshotMap?.get(normalizeTennisPlayerName(athleteData?.displayName || athleteData?.fullName))
               || getTennisHeadshotById(athleteId),
             flag: getImageHref(athleteData?.flag) || getImageHref(athleteData?.citizenshipCountry?.flag),
           };
