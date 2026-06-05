@@ -19,11 +19,15 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
     const isNba = leagueId === 'nba';
     const isNfl = leagueId === 'nfl';
     const isTennis = leagueId === 'tennis.atp';
+    const isWorldCup = leagueId === 'fifa.world';
     const currentLeague = LEAGUES.find(l => l.id === leagueId);
     
     // For NBA, we use tabs. For Soccer, we show side-by-side.
     // 'both' is a special state for side-by-side view (default for soccer)
-    const [activeTab, setActiveTab] = useState<'teams' | 'players' | 'both'>((isNba || isNfl) ? 'teams' : 'both');
+    const [activeTab, setActiveTab] = useState<'teams' | 'players' | 'both' | 'knockout'>(
+        isWorldCup ? 'both' : (isNba || isNfl) ? 'teams' : 'both'
+    );
+    const [worldCupView, setWorldCupView] = useState<'groups' | 'knockout'>('groups');
     
     const [standings, setStandings] = useState<StandingEntry[]>([]);
     const [playerStats, setPlayerStats] = useState<PlayerStatCategory[]>([]);
@@ -141,6 +145,205 @@ const StandingsPage: React.FC<StandingsPageProps> = ({ toggleTheme, darkMode }) 
                     {loading ? (
                         <div className="flex justify-center py-20">
                             <Loader2 className="animate-spin text-gray-400" size={40} />
+                        </div>
+                    ) : isWorldCup ? (
+                        <div>
+                            {/* World Cup View Toggle */}
+                            <div className="flex space-x-2 p-1 bg-gray-100 dark:bg-white/5 rounded-2xl w-fit mb-6">
+                                <button
+                                    onClick={() => setWorldCupView('groups')}
+                                    className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${worldCupView === 'groups'
+                                        ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                        }`}
+                                >
+                                    Group Stage
+                                </button>
+                                <button
+                                    onClick={() => setWorldCupView('knockout')}
+                                    className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${worldCupView === 'knockout'
+                                        ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                        }`}
+                                >
+                                    Knockout Stage
+                                </button>
+                            </div>
+
+                            {worldCupView === 'groups' ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                                    {(() => {
+                                        const groupMap = new Map<string, StandingEntry[]>();
+                                        standings.forEach((entry) => {
+                                            const group = entry.group || 'Group';
+                                            if (!groupMap.has(group)) groupMap.set(group, []);
+                                            groupMap.get(group)!.push(entry);
+                                        });
+                                        const sortedGroups = Array.from(groupMap.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+                                        if (sortedGroups.length === 0) {
+                                            return (
+                                                <div className="col-span-full text-center py-20 text-gray-500">
+                                                    Group stage standings not yet available. Check back once the tournament begins.
+                                                </div>
+                                            );
+                                        }
+
+                                        return sortedGroups.map(([groupName, entries]) => (
+                                            <div key={groupName} className="bg-white dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm">
+                                                <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 px-4 py-3">
+                                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                                                        {groupName}
+                                                    </h3>
+                                                </div>
+                                                <table className="w-full text-xs">
+                                                    <thead className="bg-gray-50/80 dark:bg-white/5">
+                                                        <tr className="text-gray-500 dark:text-gray-400 font-medium">
+                                                            <th className="py-2.5 pl-3 w-6 text-left">#</th>
+                                                            <th className="py-2.5 text-left">Team</th>
+                                                            <th className="py-2.5 text-center w-7">P</th>
+                                                            <th className="py-2.5 text-center w-7">W</th>
+                                                            <th className="py-2.5 text-center w-7">D</th>
+                                                            <th className="py-2.5 text-center w-7">L</th>
+                                                            <th className="py-2.5 text-center w-7">GD</th>
+                                                            <th className="py-2.5 text-center w-9 pr-3 font-bold">Pts</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50/80 dark:divide-white/5">
+                                                        {entries.map((entry, idx) => {
+                                                            const isQualified = idx < 2;
+                                                            const isThirdPlace = idx === 2;
+                                                            return (
+                                                                <tr key={entry.team.id} className={`transition-colors ${isQualified ? 'border-l-3 border-l-green-500' : isThirdPlace ? 'border-l-3 border-l-yellow-400' : 'border-l-3 border-l-transparent'}`}>
+                                                                    <td className="py-2 pl-3 font-medium text-gray-500 dark:text-gray-400">
+                                                                        {idx + 1}
+                                                                    </td>
+                                                                    <td className="py-2">
+                                                                        <div className="flex items-center space-x-2">
+                                                                            <img
+                                                                                src={entry.team.logo || DEFAULT_TEAM_LOGO}
+                                                                                alt={entry.team.shortName}
+                                                                                className="w-5 h-5 object-contain"
+                                                                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                                            />
+                                                                            <span className={`font-semibold truncate max-w-[100px] ${isQualified ? 'text-green-700 dark:text-green-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                                                                                {entry.team.shortName}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="py-2 text-center text-gray-500">{entry.stats.gamesPlayed}</td>
+                                                                    <td className="py-2 text-center text-gray-500">{entry.stats.wins}</td>
+                                                                    <td className="py-2 text-center text-gray-500">{entry.stats.draws}</td>
+                                                                    <td className="py-2 text-center text-gray-500">{entry.stats.losses}</td>
+                                                                    <td className="py-2 text-center text-gray-500">
+                                                                        {(entry.stats.goalDiff || 0) > 0 ? `+${entry.stats.goalDiff}` : entry.stats.goalDiff}
+                                                                    </td>
+                                                                    <td className="py-2 text-center pr-3 font-bold text-gray-900 dark:text-white">{entry.stats.points}</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                                <div className="px-3 py-2 bg-gray-50/50 dark:bg-white/[0.02] border-t border-gray-100 dark:border-white/5 flex items-center gap-3 text-[10px] text-gray-400 dark:text-gray-500">
+                                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>Qualified</span>
+                                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>Best 3rd</span>
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()}
+                                </div>
+                            ) : (
+                                <div className="bg-white dark:bg-zinc-900/50 backdrop-blur-md rounded-3xl border border-gray-100 dark:border-white/5 p-6 md:p-10 shadow-sm">
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">Knockout Stage Bracket</h2>
+                                    <div className="overflow-x-auto">
+                                        <div className="min-w-[900px]">
+                                            <div className="grid grid-cols-6 gap-3 items-center">
+                                                {/* Round of 32 */}
+                                                <div className="space-y-2">
+                                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center mb-3">Round of 32</h4>
+                                                    {[
+                                                        ['1A', '3C/D/E/F'], ['1B', '3A/C/D/E'],
+                                                        ['1C', '3A/B/D/E'], ['1D', '3A/B/C/E'],
+                                                        ['1E', '3A/B/C/D'], ['1F', '2A'],
+                                                        ['1G', '3A/B/C/F'], ['1H', '3A/B/D/F'],
+                                                        ['1I', '3A/B/E/F'], ['1J', '3A/C/E/F'],
+                                                        ['1K', '3B/C/D/F'], ['1L', '3B/C/D/E'],
+                                                        ['2B', '2E'], ['2C', '2F'],
+                                                        ['2D', '1E'], ['3rd', '3rd'],
+                                                    ].map(([home, away], i) => (
+                                                        <div key={i} className="bg-gray-50 dark:bg-white/5 rounded-xl p-2 border border-gray-100 dark:border-white/5">
+                                                            <div className="text-[10px] font-bold text-gray-700 dark:text-gray-300 text-center py-1">{home}</div>
+                                                            <div className="border-t border-gray-200 dark:border-white/10 my-1"></div>
+                                                            <div className="text-[10px] font-bold text-gray-700 dark:text-gray-300 text-center py-1">{away}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Round of 16 */}
+                                                <div className="space-y-4 pt-8">
+                                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center mb-3">Round of 16</h4>
+                                                    {Array.from({ length: 8 }, (_, i) => (
+                                                        <div key={i} className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-2.5 border border-blue-100 dark:border-blue-500/20 h-[52px]">
+                                                            <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                            <div className="border-t border-blue-200/50 dark:border-blue-500/20 my-1"></div>
+                                                            <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Quarter Finals */}
+                                                <div className="space-y-8 pt-16">
+                                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center mb-3">Quarter Finals</h4>
+                                                    {Array.from({ length: 4 }, (_, i) => (
+                                                        <div key={i} className="bg-orange-50 dark:bg-orange-900/10 rounded-xl p-2.5 border border-orange-100 dark:border-orange-500/20 h-[52px]">
+                                                            <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                            <div className="border-t border-orange-200/50 dark:border-orange-500/20 my-1"></div>
+                                                            <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Semi Finals */}
+                                                <div className="space-y-16 pt-28">
+                                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center mb-3">Semi Finals</h4>
+                                                    {Array.from({ length: 2 }, (_, i) => (
+                                                        <div key={i} className="bg-purple-50 dark:bg-purple-900/10 rounded-xl p-2.5 border border-purple-100 dark:border-purple-500/20 h-[52px]">
+                                                            <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                            <div className="border-t border-purple-200/50 dark:border-purple-500/20 my-1"></div>
+                                                            <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Third Place */}
+                                                <div className="space-y-8 pt-36">
+                                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center mb-3">3rd Place</h4>
+                                                    <div className="bg-yellow-50 dark:bg-yellow-900/10 rounded-xl p-2.5 border border-yellow-200 dark:border-yellow-500/20 h-[52px]">
+                                                        <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                        <div className="border-t border-yellow-200/50 dark:border-yellow-500/20 my-1"></div>
+                                                        <div className="text-[10px] text-gray-400 text-center py-1">TBD</div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Final */}
+                                                <div className="space-y-8 pt-36">
+                                                    <h4 className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-center mb-3 flex items-center justify-center gap-1">
+                                                        <Trophy size={12} /> Final
+                                                    </h4>
+                                                    <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-3 border-2 border-amber-300 dark:border-amber-500/30 h-[56px] shadow-lg">
+                                                        <div className="text-[10px] font-bold text-gray-400 text-center py-1">TBD</div>
+                                                        <div className="border-t border-amber-300/50 dark:border-amber-500/30 my-1"></div>
+                                                        <div className="text-[10px] font-bold text-gray-400 text-center py-1">TBD</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-8">
+                                        The knockout bracket will populate as group stage matches are completed.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     ) : isTennis ? (
                         <div className="space-y-8">

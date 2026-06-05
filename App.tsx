@@ -266,13 +266,15 @@ const Dashboard: React.FC = () => {
       try {
         const nextDay = new Date(selectedDate);
         nextDay.setDate(selectedDate.getDate() + 1);
-        const [nbaResp, soccerResp] = await Promise.all([
+        const [nbaResp, soccerResp, worldCupResp] = await Promise.all([
           fetchMatches('nba', nextDay),
           fetchMatches('eng.1', nextDay),
+          fetchMatches('fifa.world', nextDay),
         ]);
-        const combined = [...nbaResp.matches, ...soccerResp.matches];
+        const combined = [...worldCupResp.matches, ...nbaResp.matches, ...soccerResp.matches];
         setFeaturedMatches(combined);
         setFeaturedCalendarEntries([
+          ...worldCupResp.calendar,
           ...nbaResp.calendar,
           ...soccerResp.calendar,
         ]);
@@ -567,6 +569,7 @@ const Dashboard: React.FC = () => {
             <div className="w-full space-y-6">
               {(selectedLeagueId === 'top' || selectedLeagueId === 'following') ? (
                 <>
+                  <StandingsWidget leagueId="fifa.world" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
                   <StandingsWidget leagueId="nba" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
                   <StandingsWidget leagueId="eng.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />
                   <StandingsWidget leagueId="esp.1" highlightTeamIds={selectedLeagueId === 'following' ? followedTeamIds : undefined} />

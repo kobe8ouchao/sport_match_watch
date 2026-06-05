@@ -150,6 +150,12 @@ const SEOArticlePage: React.FC<SEOArticlePageProps> = ({
                         <h3 className="text-lg font-bold mb-4">Popular Pages</h3>
                         <ul className="space-y-3">
                             <li>
+                                <Link to="/world-cup-2026-schedule-live-scores" className="block p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 transition-colors border border-amber-200 dark:border-amber-500/20">
+                                    <div className="font-semibold text-gray-900 dark:text-white">World Cup 2026</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">Schedule, scores & groups</div>
+                                </Link>
+                            </li>
+                            <li>
                                 <Link to="/nba-live-scores" className="block p-3 rounded-xl bg-white dark:bg-black/20 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-gray-100 dark:border-white/5">
                                     <div className="font-semibold text-gray-900 dark:text-white">NBA Live Scores</div>
                                     <div className="text-xs text-gray-500 dark:text-gray-400">Real-time basketball updates</div>

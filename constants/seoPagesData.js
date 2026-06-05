@@ -754,5 +754,280 @@ export const SEO_PAGES_DATA = [
                 <p>Yes, our Player Compare tool allows you to compare multiple players simultaneously, making it easy to evaluate trade offers and waiver wire decisions.</p>
             </div>
         `
+    },
+    {
+        slug: 'world-cup-2026-schedule-live-scores',
+        keyword: 'world cup 2026 schedule live scores',
+        title: 'FIFA World Cup 2026 Schedule & Live Scores - All 104 Matches',
+        description: 'Complete FIFA World Cup 2026 schedule with live scores for all 104 matches. Group stage, knockout rounds, and final. June 11 - July 19, 2026 in USA, Canada & Mexico.',
+        h1: 'FIFA World Cup 2026 Schedule & Live Scores: All 104 Matches',
+        content: `
+            <p class="lead">The biggest sporting event in history is here. Follow the <strong>FIFA World Cup 2026 schedule and live scores</strong> for all 104 matches across three host nations: the United States, Canada, and Mexico. From the opening match at Estadio Azteca on June 11 to the final at MetLife Stadium on July 19, track every goal, every upset, and every moment of glory.</p>
+
+            <h2>Complete Tournament Schedule</h2>
+            <p>The <strong>World Cup 2026</strong> features an expanded format with 48 teams competing in 12 groups of four. The tournament runs from June 11 to July 19, 2026, with matches played across 16 host cities. Our live score center provides real-time updates for every single match, including:</p>
+            <ul class="feature-list">
+                <li><strong>Group Stage (June 11 - June 27):</strong> 72 matches across 12 groups, with the top two from each group plus the eight best third-placed teams advancing.</li>
+                <li><strong>Round of 32 (June 28 - July 2):</strong> 16 knockout matches begin the elimination phase.</li>
+                <li><strong>Round of 16 (July 3 - July 6):</strong> 8 matches narrow the field to the quarter-finalists.</li>
+                <li><strong>Quarter-Finals (July 7 - July 8):</strong> 4 matches decide who reaches the semi-finals.</li>
+                <li><strong>Semi-Finals (July 11 - July 12):</strong> The final four battle for a place in the World Cup Final.</li>
+                <li><strong>Third-Place Play-Off (July 18):</strong> The bronze medal match.</li>
+                <li><strong>Final (July 19):</strong> The World Cup Final at MetLife Stadium, New York/New Jersey.</li>
+            </ul>
+
+            <h2>Live Match Scores & Real-Time Updates</h2>
+            <p>Our <strong>World Cup 2026 live scores</strong> dashboard provides instant updates with less than 3-second latency. Track goals, cards, substitutions, and key statistics for every match. The platform includes live match timelines, possession stats, expected goals (xG), and detailed team statistics to keep you fully immersed in the action.</p>
+
+            <h2>Match Day Experience</h2>
+            <p>On match days, our homepage automatically surfaces <strong>World Cup matches</strong> at the top, making it easy to find today's fixtures. You can also use the dedicated World Cup 2026 tab to see all tournament matches grouped by stage, with group stage badges showing which group each match belongs to.</p>
+
+            <h2>Time Zone Support</h2>
+            <p>With matches spanning three time zones (Eastern, Central, Mountain, and Pacific), our schedule automatically displays kickoff times in your local time zone, so you never miss a match regardless of where you are in the world.</p>
+
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-section">
+                <h3>How many matches are in the 2026 World Cup?</h3>
+                <p>The FIFA World Cup 2026 features 104 total matches, expanded from 64 in previous tournaments due to the 48-team format.</p>
+                <h3>When does the World Cup 2026 start?</h3>
+                <p>The tournament kicks off on June 11, 2026, with the opening match at Estadio Azteca in Mexico City.</p>
+                <h3>Where is the World Cup 2026 Final?</h3>
+                <p>The final will be played at MetLife Stadium in New York/New Jersey on July 19, 2026.</p>
+            </div>
+        `,
+        relatedLeagueId: 'fifa.world'
+    },
+    {
+        slug: 'world-cup-2026-groups-draw-standings',
+        keyword: 'world cup 2026 groups draw standings',
+        title: 'FIFA World Cup 2026 Groups & Draw - All 12 Groups Standings',
+        description: 'View all 12 FIFA World Cup 2026 groups after the final draw. Live standings, group tables, and qualification scenarios for the 48-team tournament.',
+        h1: 'FIFA World Cup 2026 Groups & Draw: Complete Standings',
+        content: `
+            <p class="lead">The <strong>FIFA World Cup 2026 groups</strong> have been drawn, and the road to glory is set. With 48 teams split into 12 groups of four, every match matters in the race to qualify for the knockout stage. Track live group standings, points, goal difference, and qualification scenarios right here.</p>
+
+            <h2>The 12 Groups</h2>
+            <p>The final draw produced 12 exciting groups, each with a unique storyline:</p>
+            <ul class="feature-list">
+                <li><strong>Group A:</strong> Mexico, South Africa, South Korea, European Playoff D — Host nation Mexico begins their campaign at home.</li>
+                <li><strong>Group B:</strong> Canada, European Playoff A, Qatar, Switzerland — Co-host Canada faces a tough test.</li>
+                <li><strong>Group C:</strong> Brazil, Morocco, Haiti, Scotland — Five-time champions Brazil headline this group.</li>
+                <li><strong>Group D:</strong> United States, Paraguay, Australia, European Playoff C — Host nation USA looks to advance on home soil.</li>
+                <li><strong>Group E:</strong> Germany, Curacao, Ivory Coast, Ecuador — Four-time champions Germany are the favorites.</li>
+                <li><strong>Group F:</strong> Netherlands, Japan, European Playoff B, Tunisia — The Dutch face a tricky group.</li>
+                <li><strong>Group G:</strong> Belgium, Egypt, Iran, New Zealand — Belgium's Golden Generation seeks one last run.</li>
+                <li><strong>Group H:</strong> Spain, Cape Verde, Saudi Arabia, Uruguay — Spain and Uruguay clash in the standout group.</li>
+                <li><strong>Group I:</strong> France, Senegal, FIFA Playoff 2, Norway — Defending finalists France are the team to beat.</li>
+                <li><strong>Group J:</strong> Argentina, Algeria, Austria, Jordan — Reigning champions Argentina start as heavy favorites.</li>
+                <li><strong>Group K:</strong> Portugal, FIFA Playoff 1, Uzbekistan, Colombia — Cristiano Ronaldo's potential swansong?</li>
+                <li><strong>Group L:</strong> England, Croatia, Ghana, Panama — England seeks to finally end their trophy drought.</li>
+            </ul>
+
+            <h2>Live Group Standings</h2>
+            <p>Our <strong>World Cup 2026 standings</strong> tracker updates in real-time as matches are played. Each group table shows matches played (P), wins (W), draws (D), losses (L), goal difference (GD), and points (Pts). The top two teams from each group advance directly to the Round of 32, joined by the eight best third-placed teams.</p>
+
+            <h2>Qualification Scenarios</h2>
+            <p>With the expanded 48-team format, the qualification math is more complex than ever. Our standings page shows exactly which teams have qualified (green indicator), which are in the best third-place spots (yellow indicator), and which have been eliminated — all updated live as results come in.</p>
+
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-section">
+                <h3>How many teams qualify from each group?</h3>
+                <p>The top two teams from each of the 12 groups qualify automatically (24 teams). The eight best third-placed teams also advance, making 32 teams in the Round of 32.</p>
+                <h3>What happens if teams are tied on points?</h3>
+                <p>Tiebreakers are: 1) Goal difference, 2) Goals scored, 3) Points in head-to-head matches, 4) Goal difference in head-to-head matches, 5) Fair play points, 6) Drawing of lots.</p>
+                <h3>How many groups are there in the 2026 World Cup?</h3>
+                <p>There are 12 groups (A through L), each containing 4 teams, for a total of 48 teams.</p>
+            </div>
+        `,
+        relatedLeagueId: 'fifa.world'
+    },
+    {
+        slug: 'world-cup-2026-host-cities-venues-stadiums',
+        keyword: 'world cup 2026 host cities venues stadiums',
+        title: 'World Cup 2026 Host Cities, Venues & Stadiums Guide',
+        description: 'Complete guide to FIFA World Cup 2026 host cities, venues, and stadiums across USA, Canada, and Mexico. 16 cities, 16 stadiums, and everything you need to know.',
+        h1: 'FIFA World Cup 2026 Host Cities & Stadiums: The Complete Guide',
+        content: `
+            <p class="lead">The <strong>FIFA World Cup 2026</strong> will be played across 16 host cities in three countries: the United States (11 cities), Mexico (3 cities), and Canada (2 cities). Each venue offers a unique atmosphere, from the historic Estadio Azteca to the state-of-the-art MetLife Stadium. Here's your complete guide to every stadium and host city.</p>
+
+            <h2>United States Host Cities (11 Venues)</h2>
+            <ul class="feature-list">
+                <li><strong>New York/New Jersey — MetLife Stadium:</strong> Capacity 82,500. Hosts the World Cup Final, semi-finals, and other knockout matches. The biggest stadium in the tournament.</li>
+                <li><strong>Los Angeles — SoFi Stadium:</strong> Capacity 70,240. A modern marvel hosting quarter-final and group stage matches.</li>
+                <li><strong>Dallas — AT&T Stadium:</strong> Capacity 80,000. Home of the Cowboys, this venue hosts 9 matches including a semi-final.</li>
+                <li><strong>San Francisco Bay Area — Levi's Stadium:</strong> Capacity 68,500. Silicon Valley's premier sporting venue.</li>
+                <li><strong>Seattle — Lumen Field:</strong> Capacity 69,000. Known for its deafening crowd noise, perfect for World Cup atmosphere.</li>
+                <li><strong>Houston — NRG Stadium:</strong> Capacity 72,220. Hosts group stage and knockout matches.</li>
+                <li><strong>Philadelphia — Lincoln Financial Field:</strong> Capacity 69,796. The City of Brotherly Love welcomes the world.</li>
+                <li><strong>Miami — Hard Rock Stadium:</strong> Capacity 65,326. Sunshine, beaches, and world-class football.</li>
+                <li><strong>Atlanta — Mercedes-Benz Stadium:</strong> Capacity 71,000. Features a stunning retractable roof and oculus.</li>
+                <li><strong>Kansas City — Arrowhead Stadium:</strong> Capacity 76,416. One of the loudest stadiums in the world.</li>
+                <li><strong>Boston — Gillette Stadium:</strong> Capacity 65,878. New England's sporting home.</li>
+            </ul>
+
+            <h2>Mexico Host Cities (3 Venues)</h2>
+            <ul class="feature-list">
+                <li><strong>Mexico City — Estadio Azteca:</strong> Capacity 87,523. The most iconic stadium in World Cup history, hosting the opening match. The only stadium to host three World Cups.</li>
+                <li><strong>Guadalajara — Estadio Akron:</strong> Capacity 46,232. A brand-new stadium in the heart of tequila country.</li>
+                <li><strong>Monterrey — Estadio BBVA:</strong> Capacity 53,500. A stunning mountain backdrop makes this one of the most scenic venues.</li>
+            </ul>
+
+            <h2>Canada Host Cities (2 Venues)</h2>
+            <ul class="feature-list">
+                <li><strong>Toronto — BMO Field (expanded):</strong> Capacity 45,736. Canada's largest city hosts its first ever men's World Cup matches.</li>
+                <li><strong>Vancouver — BC Place:</strong> Capacity 54,500. The retractable-roof stadium on the Pacific coast.</li>
+            </ul>
+
+            <h2>Getting Between Venues</h2>
+            <p>With 16 cities spread across a continent, travel planning is essential. The United States offers the most domestic flight connections, while the Canadian and Mexican venues are well-served by international airports. FIFA has partnered with airlines to offer special World Cup travel packages for ticket holders.</p>
+
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-section">
+                <h3>Which stadium hosts the World Cup 2026 Final?</h3>
+                <p>MetLife Stadium in New York/New Jersey hosts the final on July 19, 2026.</p>
+                <h3>How many matches does each city host?</h3>
+                <p>The USA hosts 60 matches (including all quarter-finals onward), while Canada and Mexico each host 10 matches.</p>
+                <h3>Which is the largest stadium?</h3>
+                <p>Estadio Azteca in Mexico City is the largest at 87,523 capacity, followed by MetLife Stadium at 82,500.</p>
+            </div>
+        `,
+        relatedLeagueId: 'fifa.world'
+    },
+    {
+        slug: 'world-cup-2026-qualified-teams-48-nations',
+        keyword: 'world cup 2026 qualified teams 48 nations',
+        title: 'World Cup 2026 Qualified Teams - All 48 Nations Guide',
+        description: 'Complete list of all 48 qualified teams for FIFA World Cup 2026. Team profiles, key players, FIFA rankings, and championship history for every nation.',
+        h1: 'FIFA World Cup 2026 Qualified Teams: All 48 Nations',
+        content: `
+            <p class="lead">The <strong>FIFA World Cup 2026</strong> features an expanded field of 48 teams, up from 32 in previous tournaments. This historic expansion brings more nations than ever to the world's biggest sporting event. Here's your complete guide to every qualified nation, their key players, and their championship pedigree.</p>
+
+            <h2>Traditional Powerhouses</h2>
+            <p>Several nations enter the tournament as favorites based on their World Cup history and current form:</p>
+            <ul class="feature-list">
+                <li><strong>Argentina:</strong> Reigning champions led by Lionel Messi's legacy. Winners of the 2022 final against France.</li>
+                <li><strong>France:</strong> 2018 champions with a deep squad of world-class talent across every position.</li>
+                <li><strong>Brazil:</strong> Five-time champions seeking a record sixth title, with a new generation of stars.</li>
+                <li><strong>Germany:</strong> Four-time champions looking to bounce back from recent tournament disappointments.</li>
+                <li><strong>Spain:</strong> European champions with a possession-based style and exciting young talent.</li>
+                <li><strong>England:</strong> The Three Lions seek to end their long wait for a second World Cup title.</li>
+            </ul>
+
+            <h2>Host Nations</h2>
+            <p>Three nations have automatic qualification as hosts:</p>
+            <ul class="feature-list">
+                <li><strong>United States:</strong> The USMNT has improved dramatically, with young stars playing in top European leagues. Home advantage could be decisive.</li>
+                <li><strong>Mexico:</strong> El Tri is a World Cup institution, having reached the knockout stage in seven consecutive tournaments. Home support at the Azteca will be electric.</li>
+                <li><strong>Canada:</strong> Making only their second World Cup appearance, Canada's golden generation is ready to make history on home soil.</li>
+            </ul>
+
+            <h2>Rising Nations & Dark Horses</h2>
+            <p>The expanded format has given more nations the chance to shine on the world stage. Keep an eye on teams like Morocco (2022 semi-finalists), Japan (consistently improving), Senegal (African champions), and Ecuador (exciting young attack) to make deep runs in the tournament.</p>
+
+            <h2>FIFA Rankings & Tournament Seeds</h2>
+            <p>Our live standings page tracks each team's progress through the group stage and into the knockouts. Follow the <strong>48 qualified nations</strong> as they battle for football's ultimate prize across 104 matches in North America.</p>
+
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-section">
+                <h3>How many teams are in the 2026 World Cup?</h3>
+                <p>48 teams, expanded from 32 in the 2022 World Cup. This is the largest field in tournament history.</p>
+                <h3>Which confederation has the most teams?</h3>
+                <p>UEFA (Europe) has the most slots with 16 teams, followed by CAF (Africa) with 9-10 and AFC (Asia) with 8-9.</p>
+                <h3>Has any team qualified for every World Cup?</h3>
+                <p>Brazil is the only nation to have appeared in every FIFA World Cup since 1930.</p>
+            </div>
+        `,
+        relatedLeagueId: 'fifa.world'
+    },
+    {
+        slug: 'world-cup-2026-tickets-prices-hospitality',
+        keyword: 'world cup 2026 tickets prices hospitality',
+        title: 'FIFA World Cup 2026 Tickets, Prices & Hospitality Guide',
+        description: 'Complete guide to FIFA World Cup 2026 tickets, pricing tiers, hospitality packages, and how to buy tickets for matches in USA, Canada, and Mexico.',
+        h1: 'FIFA World Cup 2026 Tickets & Hospitality: Your Complete Guide',
+        content: `
+            <p class="lead">Securing <strong>FIFA World Cup 2026 tickets</strong> is the top priority for football fans worldwide. With 104 matches across three countries and 48 teams, demand has never been higher. This guide covers everything from ticket pricing tiers to premium hospitality packages, helping you plan your World Cup experience.</p>
+
+            <h2>Ticket Pricing Tiers</h2>
+            <p>FIFA offers multiple pricing categories for the <strong>World Cup 2026</strong>:</p>
+            <ul class="feature-list">
+                <li><strong>Supporter Entry Tier:</strong> Starting at USD $60 for group stage matches. These are the most affordable tickets and available for all 104 matches, including the final.</li>
+                <li><strong>Standard Tier:</strong> Mid-range pricing with better seating locations, typically $100-$300 depending on the stage and match.</li>
+                <li><strong>Premium Tier:</strong> Premium seats with excellent views, ranging from $300-$1,000+ for knockout matches.</li>
+                <li><strong>Hospitality Packages:</strong> All-inclusive experiences with premium seats, gourmet dining, and exclusive entertainment.</li>
+            </ul>
+
+            <h2>How to Buy Tickets</h2>
+            <p>Tickets are distributed through FIFA's official ticketing platform via random selection draws. Fans register during open windows, and successful applicants are allocated tickets. Key phases include:</p>
+            <ul class="feature-list">
+                <li><strong>Random Selection Draw:</strong> Apply for tickets during the registration window. All applications within the window have equal chance.</li>
+                <li><strong>First-Come, First-Served:</strong> Remaining tickets after draws are sold on a first-come basis.</li>
+                <li><strong>Last-Minute Sales:</strong> Additional tickets may be released closer to match dates.</li>
+            </ul>
+
+            <h2>Hospitality Packages</h2>
+            <p>For the ultimate <strong>World Cup 2026 experience</strong>, FIFA's official hospitality partner offers premium packages that include:</p>
+            <ul class="feature-list">
+                <li><strong>Premium Seating:</strong> The best seats in the stadium with unobstructed views.</li>
+                <li><strong>Gourmet Dining:</strong> World-class cuisine and beverages before, during, and after the match.</li>
+                <li><strong>Exclusive Lounges:</strong> Private hospitality suites with entertainment and guest speakers.</li>
+                <li><strong>Travel Packages:</strong> Multi-match packages that include accommodation and transportation between venues.</li>
+            </ul>
+
+            <h2>Travel & Accommodation Tips</h2>
+            <p>With matches across 16 cities, planning your travel is crucial. Book accommodation early, especially in cities hosting knockout matches. Consider FIFA's official travel partners for package deals that combine tickets with hotels and flights.</p>
+
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-section">
+                <h3>What is the cheapest World Cup 2026 ticket?</h3>
+                <p>Supporter Entry Tier tickets start at USD $60 for group stage matches.</p>
+                <h3>Can I resell my World Cup tickets?</h3>
+                <p>FIFA operates an official resale platform. Third-party resale may result in ticket cancellation.</p>
+                <h3>How many tickets can one person buy?</h3>
+                <p>Typically up to 6 tickets per match and 60 tickets total across the tournament per household.</p>
+            </div>
+        `,
+        relatedLeagueId: 'fifa.world'
+    },
+    {
+        slug: 'world-cup-2026-knockout-bracket-round-of-32',
+        keyword: 'world cup 2026 knockout bracket round of 32',
+        title: 'FIFA World Cup 2026 Knockout Bracket - Round of 32 to Final',
+        description: 'View the complete FIFA World Cup 2026 knockout bracket from Round of 32 to the Final. Live bracket updates, match results, and path to the trophy.',
+        h1: 'FIFA World Cup 2026 Knockout Bracket: From Round of 32 to the Final',
+        content: `
+            <p class="lead">The <strong>FIFA World Cup 2026 knockout bracket</strong> is the most complex in tournament history. With 48 teams and 104 matches, the path from the Round of 32 to the World Cup Final on July 19 is packed with potential upsets and drama. Track the bracket live as results come in and see which teams advance on the road to glory.</p>
+
+            <h2>Knockout Stage Format</h2>
+            <p>The 2026 knockout stage is unique in World Cup history:</p>
+            <ul class="feature-list">
+                <li><strong>Round of 32 (16 matches):</strong> 24 group qualifiers (top 2 from each group) plus 8 best third-placed teams compete. June 28 - July 2.</li>
+                <li><strong>Round of 16 (8 matches):</strong> The 16 surviving teams battle for quarter-final spots. July 3 - July 6.</li>
+                <li><strong>Quarter-Finals (4 matches):</strong> The final eight teams. July 7 - July 8.</li>
+                <li><strong>Semi-Finals (2 matches):</strong> The final four. July 11 - July 12.</li>
+                <li><strong>Third-Place Play-Off (1 match):</strong> The bronze medal match. July 18.</li>
+                <li><strong>Final (1 match):</strong> The World Cup Final at MetLife Stadium. July 19.</li>
+            </ul>
+
+            <h2>Round of 32 Matchups</h2>
+            <p>The Round of 32 matchups are determined by group finishing positions. Group winners are seeded against third-placed teams from other groups, while group runners-up face each other. This ensures the strongest group stage performers get the most favorable draw in the first knockout round.</p>
+
+            <h2>Live Bracket Updates</h2>
+            <p>Our <strong>World Cup 2026 bracket</strong> updates in real-time as knockout matches are completed. See which teams advance, view the full path from the Round of 32 through to the final, and follow your team's potential route to the trophy. Each knockout match features live scores, match events, statistics, and post-match analysis.</p>
+
+            <h2>Extra Time & Penalties</h2>
+            <p>All knockout matches that end in a draw after 90 minutes go to extra time (two 15-minute halves). If still tied, the match is decided by a penalty shoot-out. Our live tracker shows extra time goals and penalty shoot-out results in real-time.</p>
+
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-section">
+                <h3>How many teams are in the knockout stage?</h3>
+                <p>32 teams advance to the knockout stage: 24 from group stage top-2 finishes plus 8 best third-placed teams.</p>
+                <h3>Is there a third-place match?</h3>
+                <p>Yes, the semi-final losers play in the third-place play-off on July 18, 2026.</p>
+                <h3>Where are the knockout matches played?</h3>
+                <p>Knockout matches are played across all 16 venues, with quarter-finals and beyond hosted exclusively in the United States.</p>
+            </div>
+        `,
+        relatedLeagueId: 'fifa.world'
     }
 ];

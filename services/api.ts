@@ -341,6 +341,26 @@ const getTennisLeagueSlug = (leagueId: string): 'atp' | 'wta' => leagueId === 't
 
 const getTennisSinglesSlug = (leagueId: string) => leagueId === 'tennis.wta' ? 'womens-singles' : 'mens-singles';
 
+// Extract World Cup stage label from ESPN event data
+const getWorldCupStageLabel = (event: any, leagueId: string): string | undefined => {
+  if (leagueId !== 'fifa.world') return undefined;
+  const competition = event?.competitions?.[0];
+
+  // Try group name first (e.g. "Group A")
+  const groupName = competition?.group?.name || competition?.group?.shortName;
+  if (groupName) return groupName;
+
+  // Try event shortName / name (e.g. "Round of 16", "Quarter Final")
+  const eventName = event?.shortName || event?.name;
+  if (eventName) return eventName;
+
+  // Try competition type text
+  const compType = competition?.type?.text;
+  if (compType) return compType;
+
+  return undefined;
+};
+
 // Transform API data to our Match interface
 const transformEspnEvent = (event: any, leagueId: string): MatchWithHot | null => {
   const competition = event?.competitions?.[0];
@@ -377,6 +397,7 @@ const transformEspnEvent = (event: any, leagueId: string): MatchWithHot | null =
     minute: getMinute(event.status),
     startTime: new Date(event.date), // JavaScript Date handles ISO strings correctly
     stadium: getVenueLabel(competition),
+    tournamentName: getWorldCupStageLabel(event, leagueId),
   };
 };
 
@@ -475,6 +496,7 @@ const leagueBanner: Record<string, string> = {
   'esp.copa_del_rey': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
   'ita.coppa_italia': 'https://a.espncdn.com/i/leaguelogos/soccer/500/2192.png',
   'eng.fa': 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1600&auto=format&fit=crop',
+  'fifa.world': 'https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=1600&auto=format&fit=crop',
 };
 
 const attachBanner = (matches: MatchWithHot[]): MatchWithHot[] => {
@@ -496,6 +518,7 @@ const LEAGUE_TIMEZONES: Record<string, string> = {
   'esp.copa_del_rey': 'Europe/Madrid',
   'ita.coppa_italia': 'Europe/Rome',
   'eng.fa': 'Europe/London',
+  'fifa.world': 'America/New_York', // World Cup 2026 in USA/Canada/Mexico
   'tennis.atp': 'America/New_York', // default, ATP matches occur globally
   'tennis.wta': 'America/New_York',
 };
@@ -527,6 +550,7 @@ export const fetchMatches = async (leagueId: string, date: Date): Promise<Matche
     const leaguesToFetch = [
       'nba',
       'nfl',
+      'fifa.world', // FIFA World Cup 2026
       'eng.1', // Premier League
       'esp.1', // La Liga
       'ita.1', // Serie A

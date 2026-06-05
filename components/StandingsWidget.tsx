@@ -35,9 +35,9 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId, highlightTe
         loadStandings();
     }, [leagueId]);
 
-    // Determine if we should show tabs (only for NBA)
     const isNba = leagueId === 'nba';
     const isNfl = leagueId === 'nfl';
+    const isWorldCup = leagueId === 'fifa.world';
     const currentLeague = LEAGUES.find(l => l.id === leagueId);
 
     if (leagueId === 'following' || leagueId === 'top') {
@@ -172,6 +172,112 @@ const StandingsWidget: React.FC<StandingsWidgetProps> = ({ leagueId, highlightTe
             <div className="space-y-6">
                 {renderTable(west, 'Western Conference')}
                 {renderTable(east, 'Eastern Conference')}
+            </div>
+        );
+    }
+
+    if (isWorldCup) {
+        // Group standings by group name (Group A, Group B, etc.)
+        const groupMap = new Map<string, StandingEntry[]>();
+        standings.forEach((entry) => {
+            const group = entry.group || 'Group';
+            if (!groupMap.has(group)) groupMap.set(group, []);
+            groupMap.get(group)!.push(entry);
+        });
+
+        // Sort groups alphabetically
+        const sortedGroups = Array.from(groupMap.entries()).sort(([a], [b]) => a.localeCompare(b));
+
+        if (sortedGroups.length === 0) {
+            return renderTable([], currentLeague ? `${currentLeague.name} Standings` : 'Standings');
+        }
+
+        return (
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-white/5">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                        {currentLeague && (
+                            <div className="h-6 w-6 flex items-center justify-center">
+                                {typeof currentLeague.logo === 'string' ? (
+                                    <img src={currentLeague.logo} alt={`${currentLeague.name} Logo`} className="h-full w-full object-contain" />
+                                ) : (
+                                    <span className="text-yellow-500">{currentLeague.logo}</span>
+                                )}
+                            </div>
+                        )}
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                            {currentLeague?.name || 'World Cup'} Groups
+                        </h3>
+                    </div>
+                    <a
+                        href={`/standings/${leagueId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                        View All <ChevronRight size={14} />
+                    </a>
+                </div>
+
+                {loading ? (
+                    <div className="flex justify-center py-8">
+                        <Loader2 className="animate-spin text-gray-400" size={24} />
+                    </div>
+                ) : (
+                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
+                        {sortedGroups.map(([groupName, entries]) => (
+                            <div key={groupName} className="border border-gray-100 dark:border-white/5 rounded-2xl p-3">
+                                <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    {groupName}
+                                </h4>
+                                <table className="w-full text-xs">
+                                    <thead>
+                                        <tr className="text-gray-400 dark:text-gray-500 border-b border-gray-50 dark:border-white/5">
+                                            <th className="pb-1.5 pl-1 w-5 text-left">#</th>
+                                            <th className="pb-1.5 text-left">Team</th>
+                                            <th className="pb-1.5 text-center w-6">P</th>
+                                            <th className="pb-1.5 text-center w-6">W</th>
+                                            <th className="pb-1.5 text-center w-6">D</th>
+                                            <th className="pb-1.5 text-center w-6">L</th>
+                                            <th className="pb-1.5 text-center w-8 font-bold">Pts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {entries.map((entry, idx) => {
+                                            const highlighted = isHighlighted(entry.team);
+                                            const isQualified = idx < 2; // Top 2 qualify
+                                            return (
+                                                <tr key={entry.team.id} className={`${highlighted ? 'bg-yellow-50 dark:bg-yellow-900/10' : ''} ${isQualified ? 'border-l-2 border-l-green-400' : 'border-l-2 border-l-transparent'}`}>
+                                                    <td className="py-1.5 pl-1 text-gray-500 dark:text-gray-400 font-medium">
+                                                        {idx + 1}
+                                                    </td>
+                                                    <td className="py-1.5">
+                                                        <div className="flex items-center space-x-1.5">
+                                                            <img
+                                                                src={entry.team.logo || DEFAULT_TEAM_LOGO}
+                                                                alt={entry.team.shortName}
+                                                                className="w-4 h-4 object-contain"
+                                                                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_TEAM_LOGO; }}
+                                                            />
+                                                            <span className={`font-medium truncate max-w-[70px] ${highlighted ? 'text-yellow-700 dark:text-yellow-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                                                                {entry.team.shortName}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-1.5 text-center text-gray-500">{entry.stats.gamesPlayed}</td>
+                                                    <td className="py-1.5 text-center text-gray-500">{entry.stats.wins}</td>
+                                                    <td className="py-1.5 text-center text-gray-500">{entry.stats.draws}</td>
+                                                    <td className="py-1.5 text-center text-gray-500">{entry.stats.losses}</td>
+                                                    <td className="py-1.5 text-center font-bold text-gray-900 dark:text-white">{entry.stats.points}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         );
     }

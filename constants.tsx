@@ -24,6 +24,7 @@ export const DEFAULT_TENNIS_HEADSHOT = "/default-avatar.svg";
 
 export const LEAGUES: League[] = [
   { id: 'top', name: 'Top', logo: <Star size={16} /> }, 
+  { id: 'fifa.world', name: 'World Cup 2026', logo: 'https://digitalhub.fifa.com/transform/157d23bf-7e13-4d7b-949e-5d27d340987e/WC26_Logo?&io=transform:fill&quality=75' },
   { id: 'following', name: 'Following', logo: <Heart size={16} /> },
   { id: 'nba', name: 'NBA', logo: 'https://a.espncdn.com/i/teamlogos/leagues/500/nba.png' },
   { id: 'tennis.atp', name: 'ATP/WTA', logo: 'https://a.espncdn.com/combiner/i?img=/redesign/assets/img/icons/ESPN-icon-tennis.png' },

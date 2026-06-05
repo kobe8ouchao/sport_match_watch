@@ -14,9 +14,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
   const isScheduled = match.status === 'SCHEDULED';
   const isFinished = match.status === 'FINISHED';
   const isTennis = match.leagueId === 'tennis.atp' || match.leagueId === 'tennis.wta';
+  const isWorldCup = match.leagueId === 'fifa.world';
   const topLabel = isTennis
     ? [match.tournamentName, match.roundName].filter(Boolean).join(' · ')
     : null;
+  const worldCupStage = isWorldCup ? match.tournamentName : undefined;
 
   // Format time for scheduled matches
   const timeString = match.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -124,11 +126,21 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, onClick, showLeagueLogo = 
                     <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                       {league.name}
                     </span>
+                    {worldCupStage && (
+                      <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-500/30">
+                        {worldCupStage}
+                      </span>
+                    )}
                   </>
                 );
              }
-             return null; 
+             return null;
           })()}
+          {isWorldCup && !showLeagueLogo && worldCupStage && (
+            <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-500/30">
+              {worldCupStage}
+            </span>
+          )}
         </div>
 
         {/* Status Badge */}
