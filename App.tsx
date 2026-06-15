@@ -437,7 +437,16 @@ const Dashboard: React.FC = () => {
                 </div>
               ) : matches.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up">
-                  {matches.map(match => (
+                  {matches
+                    .filter(match => {
+                      // Filter out tennis qualifying matches in top view
+                      if (selectedLeagueId === 'top' && (match.leagueId === 'tennis.atp' || match.leagueId === 'tennis.wta')) {
+                        const roundName = (match.roundName || '').toLowerCase();
+                        return !roundName.includes('qualifying') && !roundName.includes('qualification') && !roundName.includes('qualifier');
+                      }
+                      return true;
+                    })
+                    .map(match => (
                     <MatchCard
                       key={match.id}
                       match={match}
@@ -497,7 +506,16 @@ const Dashboard: React.FC = () => {
                     </div>
                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {dayMatches.map(match => (
+                      {dayMatches
+                        .filter(match => {
+                          // Filter out tennis qualifying matches in top view
+                          if (selectedLeagueId === 'top' && (match.leagueId === 'tennis.atp' || match.leagueId === 'tennis.wta')) {
+                            const roundName = (match.roundName || '').toLowerCase();
+                            return !roundName.includes('qualifying') && !roundName.includes('qualification') && !roundName.includes('qualifier');
+                          }
+                          return true;
+                        })
+                        .map(match => (
                         <MatchCard
                           key={match.id}
                           match={match}
