@@ -11,6 +11,7 @@ export interface Team {
   link?: string;
   linescores?: { value: number; displayValue?: string }[];
   record?: string;
+  curatedRank?: number;
 }
 
 export interface Match {

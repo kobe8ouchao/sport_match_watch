@@ -425,6 +425,7 @@ const transformTennisCompetition = (
       logo: getEntityLogo(home),
       headshot: getEntityHeadshot(home, { leagueId, tennisHeadshotMap }),
       linescores: home.linescores,
+      curatedRank: home.curatedRank ?? home.athlete?.curatedRank,
     },
     awayTeam: {
       id: away.id,
@@ -433,6 +434,7 @@ const transformTennisCompetition = (
       logo: getEntityLogo(away),
       headshot: getEntityHeadshot(away, { leagueId, tennisHeadshotMap }),
       linescores: away.linescores,
+      curatedRank: away.curatedRank ?? away.athlete?.curatedRank,
     },
     homeScore: getCompetitorScore(home),
     awayScore: getCompetitorScore(away),

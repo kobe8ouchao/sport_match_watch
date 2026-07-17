@@ -442,7 +442,23 @@ const Dashboard: React.FC = () => {
                       // Filter out tennis qualifying matches in top view
                       if (selectedLeagueId === 'top' && (match.leagueId === 'tennis.atp' || match.leagueId === 'tennis.wta')) {
                         const roundName = (match.roundName || '').toLowerCase();
-                        return !roundName.includes('qualifying') && !roundName.includes('qualification') && !roundName.includes('qualifier');
+                        if (roundName.includes('qualifying') || roundName.includes('qualification') || roundName.includes('qualifier')) {
+                          return false;
+                        }
+                      }
+                      // For ATP matches in top view, only show if at least one player has curatedRank <= 10
+                      if (selectedLeagueId === 'top' && match.leagueId === 'tennis.atp') {
+                        
+                        const homeRank = match.homeTeam.curatedRank?.current || undefined;
+                        const awayRank = match.awayTeam.curatedRank?.current || undefined;
+                        console.log(homeRank, awayRank);
+                        if ((homeRank !== undefined && homeRank <= 10) ) {
+                          return true;
+                        }else if ((awayRank !== undefined && awayRank <= 10)) {
+                          return true;
+                        }else{
+                          return false;
+                        }
                       }
                       return true;
                     })
@@ -511,7 +527,15 @@ const Dashboard: React.FC = () => {
                           // Filter out tennis qualifying matches in top view
                           if (selectedLeagueId === 'top' && (match.leagueId === 'tennis.atp' || match.leagueId === 'tennis.wta')) {
                             const roundName = (match.roundName || '').toLowerCase();
-                            return !roundName.includes('qualifying') && !roundName.includes('qualification') && !roundName.includes('qualifier');
+                            if (roundName.includes('qualifying') || roundName.includes('qualification') || roundName.includes('qualifier')) {
+                              return false;
+                            }
+                          }
+                          // For ATP matches in top view, only show if at least one player has curatedRank <= 10
+                          if (selectedLeagueId === 'top' && match.leagueId === 'tennis.atp') {
+                            const homeRank = match.homeTeam.curatedRank;
+                            const awayRank = match.awayTeam.curatedRank;
+                            return (homeRank !== undefined && homeRank <= 10) || (awayRank !== undefined && awayRank <= 10);
                           }
                           return true;
                         })
